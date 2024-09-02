@@ -1,2 +1,2 @@
 # MAPI_TENSHI
-Desarrollo de robot con visión robótica embebido con Raspberry y ESP32
+Desarrollo de robot con visión robótica embebido implementado Raspberry y ESP32
