@@ -1,1 +1,3 @@
-Uso del ESP32 para el control general del robot
+Uso del ESP32 para el control general del robot.
+
+Subir aqui los archivos .ino relacionaddos con la placa
