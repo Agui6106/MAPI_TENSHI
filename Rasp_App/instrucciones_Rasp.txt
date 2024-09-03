@@ -1,0 +1,6 @@
+Carpeta de trabajo UNICAMANTE para el desarollo de aplicaciones de la RASPBERRY. Las cuales son:
+
+* Server Client - Envio de video e imagen por servidor
+* Py Camera - Control de RaspCam 
+* Py Serial - Control en modo autonomo del robot
+* Auto Py - Modo automatico del robot

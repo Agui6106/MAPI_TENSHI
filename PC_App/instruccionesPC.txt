@@ -1,0 +1,5 @@
+Carpeta de trabajo UNICAMANTE para el desarollo de aplicaciones de la PC CONTROL. Las cuales son:
+
+* Server Host y manejo del servidor - Recepcion de video e imagen por servidor
+* Py Game and Tk Inter (App Visual) - Desarollo de la app visual donde controlamos y monitoereamos el robot
+* MQTT Py - Implementacion del protocolo MQTT utilizado python para visualizar datos
