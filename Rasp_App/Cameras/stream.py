@@ -1,9 +1,9 @@
 # - TRANSMISION DEL VIDEO A UN SERVIDOR POR SOCKER - #
-
-# camara_streaming.py
-
 import io
 import socketserver
+import subprocess
+import re
+
 from threading import Condition
 from http import server
 from picamera2 import Picamera2
@@ -86,7 +86,28 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
+
+# Obtenemos la ip
+def obtener_ip_subprocess():
+    try:
+        # Ejecuta el comando ifconfig
+        resultado = subprocess.check_output(["ifconfig"], encoding='utf-8')
+        
+        # Usamos una expresión regular para buscar la IP local (IPv4)
+        ip_local = re.findall(r'inet (\d+\.\d+\.\d+\.\d+)', resultado)
+        
+        # Filtramos la IP local que no sea la de loopback (127.0.0.1)
+        ip_local = [ip for ip in ip_local if ip != "127.0.0.1"]
+        
+        if ip_local:
+            return ip_local[0]
+        else:
+            return "No se pudo encontrar la IP local."
+    except subprocess.CalledProcessError as e:
+        return f"Error al ejecutar el comando: {e}"
+    
 def iniciar_camara_streaming(puerto=8000, resolucion=(640, 480)):
+    ip = obtener_ip_subprocess()
     # Configuración de la cámara con Picamera2
     picam2 = Picamera2()
     video_config = picam2.create_video_configuration(main={"size": resolucion})
@@ -108,7 +129,7 @@ def iniciar_camara_streaming(puerto=8000, resolucion=(640, 480)):
         handler = lambda *args, **kwargs: StreamingHandler(output, *args, **kwargs)
         server = StreamingServer(address, handler)
         print(f"Servidor de streaming iniciado en el puerto {puerto}")
-        print(f"Consulta el video la direccion url: http://192.168.116.18:8000/index.html")
+        print(f"Consulta el video la direccion url: http://{ip}:8000/index.html")
         server.serve_forever()
     finally:
         # Detener la grabación y la cámara
