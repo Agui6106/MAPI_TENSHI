@@ -1,4 +1,9 @@
+# Importamos librerias python
+import threading
+
+# Importamos libreriras locales
 from Cameras.stream import camera_stream, get_ip
+from Cameras.camera_control import CameraControl
 from Cameras.contornos import contornos
 
 # Creacion de multiples camaras
@@ -13,7 +18,9 @@ if __name__ == "__main__":
     # - FUNCIONES DE CAMARA - #
     # Comenzar transmision de video
     print(f"\nInicializamos transmision de la camara...")
-    camera_stream(puerto=8000, resolucion=(640, 480))
+    cam_thread = threading.Thread(target=camera_stream(puerto=8000, resolucion=(640, 480)))
+    cam_thread.start()
+    
     
     # Toma de decision en base a contrnos
     #print(f"Iniciando camara de dteccion de contrnos...")
