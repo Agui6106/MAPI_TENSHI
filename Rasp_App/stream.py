@@ -11,6 +11,8 @@ from picamera2.encoders import MJPEGEncoder
 from picamera2.outputs import FileOutput
 import logging
 
+from Cameras.camera_control import CameraControl
+
 # Página HTML para mostrar el stream
 PAGE = """\
 <html>
@@ -105,12 +107,12 @@ def get_ip():
     except subprocess.CalledProcessError as e:
         return f"Error al ejecutar el comando: {e}"
     
-def camera_stream(puerto=8000, resolucion=(640, 480)):
+def camera_stream(cam, puerto, resolucion):
     ip = get_ip()
     # Configuración de la cámara con Picamera2
-    picam2 = Picamera2()
-    video_config = picam2.create_video_configuration(main={"size": resolucion})
-    picam2.configure(video_config)
+    picam2 = cam
+    #video_config = picam2.create_video_configuration(main={"size": resolucion})
+    #picam2.configure(video_config)
 
     # Crear el output para almacenar los frames en formato MJPEG
     output = StreamingOutput()
@@ -119,20 +121,24 @@ def camera_stream(puerto=8000, resolucion=(640, 480)):
     encoder = MJPEGEncoder()
 
     # Iniciar la cámara y la grabación de video
-    picam2.start()
-    picam2.start_encoder(encoder, FileOutput(output))
+    picam2.iniciar_camara()
+    picam2.encoders(encoder, FileOutput(output))
 
     try:
         # Configurar el servidor HTTP en el puerto especificado
         address = ('', puerto)
         handler = lambda *args, **kwargs: StreamingHandler(output, *args, **kwargs)
         server = StreamingServer(address, handler)
-        print(f"Servidor de streaming iniciado en el puerto {puerto}")
+        print(f"Servidor de streaming iniciado en el puerto: {puerto}")
         print(f"Consulta el video la direccion url: http://{ip}:8000/index.html")
         server.serve_forever()
     finally:
         # Detener la grabación y la cámara
         picam2.stop_encoder()
-        picam2.stop()
+        picam2.detener_camara()
 
+if __name__ == "__main__":
+    cam4vid = CameraControl(resolution=(640, 480))
+    camera_stream(cam=cam4vid, puerto=8000, resolucion=(640, 480))
+    
 

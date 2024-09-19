@@ -1,8 +1,9 @@
 # Importamos librerias python
 import threading
+import time
+import subprocess
 
 # Importamos libreriras locales
-from Cameras.stream import camera_stream, get_ip
 from Cameras.camera_control import CameraControl
 from Cameras.contornos import contornos
 
@@ -10,16 +11,22 @@ from Cameras.contornos import contornos
 
 if __name__ == "__main__":
     # - Inicializacion y bienvenida - #
-    print(f"MAPI-Tenshi Robot. Software Version 1.0.0 \nDeveloped and produced in Santiago de Queretaro, Mexico")
-    
-    ip = get_ip()
+    print(f"MAPI-Tenshi Robot. Software Version 1.0.0 \nDeveloped and produced in Santiago de Queretaro, Mexico\n")
+    cam4vid = CameraControl(resolution=(640, 480))
+    ip = CameraControl.get_ip()
     print(f"Ip de raspberry actual: {ip}")
     
+    cam4vid.prev()
+    cam4vid.detener_camara()
     # - FUNCIONES DE CAMARA - #
     # Comenzar transmision de video
-    print(f"\nInicializamos transmision de la camara...")
-    cam_thread = threading.Thread(target=camera_stream(puerto=8000, resolucion=(640, 480)))
-    cam_thread.start()
+    print(f"\nInicializando transmision de la camara...")
+    try:
+        subprocess.run(["python3", "./stream.py"])
+    except Exception as e:
+        print(f'Failed to start transmision: {str(e)}')
+    
+
     
     
     # Toma de decision en base a contrnos
