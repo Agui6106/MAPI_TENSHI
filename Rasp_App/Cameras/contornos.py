@@ -49,7 +49,7 @@ class ContourDetector:
         cv2.destroyAllWindows()
 
 # Función principal para correr el bucle de detección de contornos
-def ejecutar_deteccion_contornos(resolucion=(640, 480), delay=0.5):
+def contornos(resolucion=(640, 480), delay=0.5):
     detector = ContourDetector(resolution=resolucion)
     detector.iniciar_camara()
 

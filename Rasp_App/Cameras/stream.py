@@ -86,9 +86,8 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-
 # Obtenemos la ip
-def obtener_ip_subprocess():
+def get_ip():
     try:
         # Ejecuta el comando ifconfig
         resultado = subprocess.check_output(["ifconfig"], encoding='utf-8')
@@ -106,8 +105,8 @@ def obtener_ip_subprocess():
     except subprocess.CalledProcessError as e:
         return f"Error al ejecutar el comando: {e}"
     
-def iniciar_camara_streaming(puerto=8000, resolucion=(640, 480)):
-    ip = obtener_ip_subprocess()
+def camera_stream(puerto=8000, resolucion=(640, 480)):
+    ip = get_ip()
     # Configuración de la cámara con Picamera2
     picam2 = Picamera2()
     video_config = picam2.create_video_configuration(main={"size": resolucion})
