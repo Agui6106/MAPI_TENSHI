@@ -11,29 +11,11 @@ import time
 camera = Picamera2
 
 class CameraControl:
+    # Inicializar la cámara
     def __init__(self, resolution=(640, 480)):
-        # Inicializar la cámara
         self.picam2 = Picamera2()
         camera_config = self.picam2.create_video_configuration(main={"size": resolution})
         self.picam2.configure(camera_config)
-    
-    def get_ip():
-        try:
-            # Ejecuta el comando ifconfig
-            resultado = subprocess.check_output(["ifconfig"], encoding='utf-8')
-            
-            # Usamos una expresión regular para buscar la IP local (IPv4)
-            ip_local = re.findall(r'inet (\d+\.\d+\.\d+\.\d+)', resultado)
-            
-            # Filtramos la IP local que no sea la de loopback (127.0.0.1)
-            ip_local = [ip for ip in ip_local if ip != "127.0.0.1"]
-            
-            if ip_local:
-                return ip_local[0]
-            else:
-                return "No se pudo encontrar la IP local."
-        except subprocess.CalledProcessError as e:
-            return f"Error al ejecutar el comando: {e}"
     
     # Iniciamos vista previa de la camara
     def prev(self):
@@ -41,7 +23,7 @@ class CameraControl:
         self.picam2.configure(camera_config)
         self.picam2.start_preview(Preview.QTGL)
         self.picam2.start()
-        time.sleep(5)
+        time.sleep(2)
         self.picam2.stop()
         
     # Iniciar la cámara
@@ -52,9 +34,11 @@ class CameraControl:
     def detener_camara(self):
         self.picam2.stop()
     
+    # Iniciar encoder
     def encoders(self,encode,output):
         self.picam2.start_encoder(encoder=encode,output=output)
         
+    # Detener encoder
     def stop_encoder(self):
         self.picam2.stop_encoder()
 
