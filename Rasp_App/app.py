@@ -7,6 +7,8 @@ import re
 import signal
 import os
 
+#print(utils)
+
 # -- FUNCIONES DE CONTROL-- #
 # Función para obtener la IP local
 def get_ip():
@@ -67,6 +69,7 @@ if __name__ == "__main__":
     ip = get_ip()
     print(f"IP actual: {ip}")
 
+    #connect_serial_device()
     # Iniciar los procesos
     transmision_proc = iniciar_transmision()
     mqtt_proc = "MQTT stopped"
@@ -77,7 +80,7 @@ if __name__ == "__main__":
     
     # Interfaz de consola
     while True:
-        comando = input("Input command : ")
+        comando = input("Input command: ")
 
         if comando == 'stop stream':
             detener_proceso(transmision_proc)
