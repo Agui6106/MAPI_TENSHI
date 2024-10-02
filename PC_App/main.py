@@ -15,6 +15,8 @@ from tkinter import Entry
 from tkinter.ttk import Combobox
 from tkinter.ttk import Notebook
 
+from MQTT_con.MQTT_ex import get_ip_Windows
+
 """
     Nota: En teoria ya no es encesario entrar a App.
     Puesto que todo se esta modificando dentro de 
@@ -23,7 +25,7 @@ from tkinter.ttk import Notebook
 # -- VARIABLES GLOBALES -- #
 ip_rasp = ''
 ip_esp = ''
-cmd_topic = ''
+ip = get_ip_Windows()
 
 
 # - Clase Principal Aplicacion - #
@@ -346,34 +348,116 @@ class FrameOptions(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
+        
+        espi = ''
+        raspi = ''
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
-        self.content: Label = self._content()
+        
+        self.content: Label = self._Ip_Opt_Label()
+        self.HIP_label: Label = self._hostIP_Label()
+        self.EsIP_label: Label = self._espIP_Label()
+        self.RasIP_label: Label = self._raspIP_Label()
+        
+        self.host_ip: Label = self._ip_host()
+        self.esp_ip: Label = self._ip_esp_in()
+        self.rasp_ip: Label = self._ip_rasp_in()
+        
+        self.esp_ok: Button = self._ok_button_esp()
+        self.rasp_ok: Button = self._ok_button_ras()
         
         # Creamos los objetos
         self.init_gui()
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2, padx=40)
-        
-        # Añadimos un Label en FrameOne usando grid()
+        self.title.grid(row=0, column=0, columnspan=2)
+
+        # - TItulos - #
         self.content.grid(row=1, column=0)
+        self.HIP_label.grid(row=2, column=0)
+        self.EsIP_label.grid(row=3, column=0)
+        self.RasIP_label.grid(row=4, column=0)
+        
+        # - Labels - #
+        self.host_ip.grid(row=2,column=1)
+        self.esp_ip.grid(row=3,column=1)
+        self.rasp_ip.grid(row=4,column=1)
+        
+        # - Butons - #
+        self.esp_ok.grid(row=3,column=2)
+        self.rasp_ok.grid(row=4,column=2)
+        
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
     def _Create_title(self) -> Label:
         return Label(
             master=self,
-            text='Titulo Ventana Opciones',
+            text='Opciones',
             foreground='black',
-            font=("Z003", 20, "bold")
+            font=("Magneto", 20, "bold")
         )
     
-    def _content(self) -> Label:
-        return Label(self, text="Contenido de la Pestaña 3")
+    # - ELEMENTOS VISUALES - #
+    def _Ip_Opt_Label(self) -> Label:
+        return Label(self, text="Ip Options", font=("Z003", 15, "bold"))
     
+    def _hostIP_Label(self) -> Label:
+        return Label(self, 
+                     text="        Host Ip: ", 
+                     font=("Z003", 15))
+
+    def _espIP_Label(self) -> Label:
+        return Label(self, 
+                     text="     ESP32 Ip: ", 
+                     font=("Z003", 15))
+    
+    def _raspIP_Label(self) -> Label:
+        return Label(self, 
+                     text="Raspberry Ip: ", 
+                     font=("Z003", 15))
+    
+    # - Mostrar Ips correspondientes -#
+    def _ip_host(self) -> Label:
+        return Label(self, 
+                     text=ip,
+                     justify='left',
+                     font=("Z003", 15))
+                     
+    def _ip_esp_in(self) -> Entry:
+        return Entry(self,
+                     font=('Z003', 15),
+                     width=30)
+    
+    def _ip_rasp_in(self) -> Entry:
+        return Entry(self,
+                     font=('Z003', 15),
+                     width=30)
+
+    def _ok_button_esp(self) -> Button:
+        return Button(self,
+                      text='Save',
+                      font=('Z003', 15),
+                      command= self.get_esp_ip()
+                      )
+    
+    def _ok_button_ras(self) -> Button:
+        return Button(self,
+                      text='Save',
+                      font=('Z003', 15),
+                      command= self.get_rasp_ip()
+                      )
+    
+    # - ELEMENTOS OPERATIVOS - #
+    def get_esp_ip(self) -> None:
+        return self.esp_ip.get()
+        
+    def get_rasp_ip(self) -> None:
+        return self.rasp_ip.get()
+
+        
 # ---- Clase ventana de WebControl ---- #
 class FrameWebControl(Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -407,7 +491,7 @@ class FrameWebControl(Frame):
     def _content(self) -> Label:
         return Label(self, text="Contenido de la Pestaña 4 (Aqui se abrirar un dcontrol directo MQTT)")
     
-# ---- Clase ventana de WebControl ---- #
+# ---- Clase ventana de About ---- #
 class FrameAbout(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)

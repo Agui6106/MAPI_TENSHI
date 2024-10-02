@@ -1,43 +1,66 @@
 import paho.mqtt.client as mqtt
+import socket
 
+    # Obtener la IP en Windows
+@staticmethod
+def get_ip_Windows():
+        hostname = socket.gethostname()  # Obtiene el nombre del dispositivo
+        ipv4 = socket.gethostbyname(hostname)  # Obtiene la dirección IPv4
+        return ipv4
+    
+class mqtt_coms:
+    def __init__(self, broker_ip, broker_port, topic_sub, topic_pub):
+        self.broker_ip = broker_ip
+        self.broker_port = broker_port
+        self.topic_sub = topic_sub
+        self.topic_pub = topic_pub
 
-# Función que se ejecuta cuando te conectas al broker MQTT
-def on_connect(client, userdata, flags, reasonCode, properties=None):
-    print(f"Conectado con código de resultado {reasonCode}")
-    client.subscribe("laptop/Sebastian")
+        # Crear el cliente MQTT
+        self.client = mqtt.Client()
 
+        # Asignar callbacks
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
 
-# Función que se ejecuta cuando se recibe un mensaje en un tópico suscrito
-def on_message(client, userdata, msg):
-    print(f"Mensaje recibido en {msg.topic}: {msg.payload.decode()}")
+        # Conectarse al broker
+        self.client.connect(self.broker_ip, self.broker_port, 60)
 
+    # Función que se ejecuta cuando se conecta al broker MQTT
+    def on_connect(self, client, userdata, flags, reasonCode, properties=None):
+        print(f"Conectado con código de resultado {reasonCode}")
+        client.subscribe(self.topic_sub)
 
-# Configuración del cliente MQTT
-client = mqtt.Client()
+    # Función que se ejecuta cuando se recibe un mensaje
+    def on_message(self, client, userdata, msg):
+        print(f"Mensaje recibido en {msg.topic}: {msg.payload.decode()}")
 
-# Asignación de funciones de callback
-client.on_connect = on_connect
-client.on_message = on_message
+    # Método para iniciar el bucle del cliente MQTT
+    def start(self):
+        self.client.loop_start()
 
-# Conexión al broker MQTT (puedes cambiar el host y puerto si es necesario)
-#               HOST, PORT, KEEPALIVE (Tiempo de espera a respeusta)
-client.connect("10.25.76.97", 1883, 60)
+    # Método para publicar mensajes
+    def publish_message(self, message):
+        self.client.publish(self.topic_pub, message)
 
-# Inicio de un hilo para manejar la red y las callbacks
-client.loop_start()
+    # Método para detener el loop
+    def stop(self):
+        self.client.loop_stop()
+        self.client.disconnect()
 
-# Bucle principal para enviar mensajes desde la consola
-try:
-    while True:
-        # Leer texto desde la consola
-        mensaje = input("Ingresa un mensaje para publicar en 'laptop/josue': ")
+# Ejemplo de uso de la clase
+if __name__ == "__main__":
+    broker_ip = get_ip_Windows()
+    broker_port = 1883
+    topic_sub = "Rasp/CmdOut"
+    topic_pub = "Rasp/CmdIn"
 
-        # Publicar el mensaje en el tópico 'laptop/josue'
-        client.publish("laptop/josue", mensaje)
+    mqtt_client = mqtt_coms(broker_ip, broker_port, topic_sub, topic_pub)
+    mqtt_client.start()
 
-except KeyboardInterrupt:
-    print("Desconectando...")
-
-# Finaliza el hilo loop
-client.loop_stop()
-client.disconnect()
+    try:
+        while True:
+            mensaje = input("Ingresa un mensaje para publicar en 'Rasp/CmdIn': ")
+            mqtt_client.publish_message(mensaje)
+    except KeyboardInterrupt:
+        print("Desconectando...")
+        mqtt_client.stop()
