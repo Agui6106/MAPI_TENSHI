@@ -1,5 +1,19 @@
-from tkinter import *
-from tkinter.ttk import *
+from tkinter import BOTH
+from tkinter import RIGHT
+from tkinter import LEFT
+from tkinter import BOTTOM
+from tkinter import X
+from tkinter import Button
+from tkinter import Frame
+from tkinter import Label
+from tkinter import messagebox
+from tkinter import Tk
+from tkinter import Canvas
+from tkinter import PhotoImage
+from tkinter import Entry
+
+from tkinter.ttk import Combobox
+from tkinter.ttk import Notebook
 
 """
     Nota: En teoria ya no es encesario entrar a App.
@@ -54,15 +68,16 @@ class App(Frame):
         
         # - Atributos y elementos de aplicacion - #
         # - TITULO - #
-        Label(tab1, text="Contenido de la Pestaña 1",
+        Label(tab1, text="Control Panel. Robot 01",
               foreground='black',
-              font=("Z003", 20, "bold")).grid(row=1, column=0)
+              font=("Magneto", 20, "bold")).grid(row=1, column=0, columnspan=2)
         """
         Interfaz Esperada:
         
             |   0    |      1        |
             --------------------------
           0 | mqtt   |   Raw Cam     |
+            --------------------------
           1 | CMD    |   Pos Cam     |
             --------------------------
         """
@@ -81,6 +96,7 @@ class App(Frame):
         # Command Prompt
         frame_CMD_promt = Frame_CMD(tab1)
         frame_CMD_promt.grid(row=4,column=0)
+        frame_CMD_promt.config(bg='black')
         
         
         return notebook
@@ -196,30 +212,87 @@ class Frame_CMD(Frame):
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
-        self.content: Label = self._content()
+        self.content: Label = self._In_label()
+        self.command: Label = self._commands()
+        self.send: Button = self._comman_send_button()
+        self.out: Label = self._out_label()
+        self.cmd_out: Entry = self._command_output()
         
         # Creamos los objetos
         self.init_gui()
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2, padx=40)
+        self.title.grid(column=1,row=0,columnspan=3)
         
-        # Añadimos un Label en FrameOne usando grid()
-        self.content.grid(row=1, column=0)
+        # - Envio de comandos - #
+        self.content.grid(column=1,row=1)
+        self.command.grid(column=2,row=1)
+        self.send.grid(column=3,row=1,padx=5, rowspan=2)
+        
+        # - Recepcion de comandos - # 
+        self.out.grid(column=1,row=2)
+        self.cmd_out.grid(column=2,row=2)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
     def _Create_title(self) -> Label:
         return Label(
             master=self,
-            text='Envio de comandos',
-            foreground='black',
+            text='Command Prompt',
+            foreground='green',
+            background='black',
             font=("Z003", 20, "bold")
         )
     
-    def _content(self) -> Label:
-        return Label(self, text="Input a valid command: ")
+    # --- ENVIO DE COMANDOS --- #
+    # - Visual - #
+    def _In_label(self) -> Label:
+        return Label(self, 
+                     foreground='white',
+                     bg = 'black',
+                     font=('consolas', 14),            
+                     text="Input command: ")
+    
+    def _commands(self) -> Entry:
+        return Entry(self,
+                     background='black',
+                     foreground='white',
+                     font=('consolas', 14),
+                     width=70)
+        
+    def _comman_send_button(self) -> Button:
+        return Button(self,
+                      width=10,
+                      background='black',
+                      foreground='green',
+                      borderwidth=1,
+                      
+                      text='Send',
+                      font=('Magneto',15))
+    
+    # - Operativo - #
+    
+    # --- RECEPCION DE COMANDOS --- #
+    # - Visual - #
+    def _out_label(self) -> Label:
+        return Label(self, 
+                     foreground='white',
+                     bg = 'black',
+                     font=('consolas', 14),    
+                     justify='left',        
+                     text="       Output: ")
+            
+    def _command_output(self) -> Entry:
+        return Entry(self, 
+                     foreground='white',
+                     bg = 'black',
+                     font=('consolas', 14),  
+                     justify='left',
+                     state='readonly',
+                     width=70)
+    
+    # - Operativo - #
 
 # ----------------------------------- #
 # -------- Frames de control -------- #
@@ -366,3 +439,4 @@ if __name__ == '__main__':
     # Inicio de app
     ex = App(root)
     root.mainloop()
+    
