@@ -73,7 +73,11 @@ def detener_proceso(proc):
 def help():
     print(f"stop stream - Detiene el stream de la camara \n")
     print(f"stop example - Detiene la funcion example \n")
+    print(f"ping - Prueba de conexion \n")
     print(f"exit - Detiene por compelto la aplicacion \n")
+    
+def pong(ip):
+    print(f"Pong at: {ip} by (Ip q lo solicito)")
 
 # - Aplicacion principal basada en comandos -#
 if __name__ == "__main__":
@@ -104,6 +108,8 @@ if __name__ == "__main__":
         # - Comandos auxilaires - #
         elif comando == "help":
             help()
+        elif comando == "pong":
+            pong(ip)
         
         # - Comando de salida - #
         elif comando == 'exit':
