@@ -20,6 +20,11 @@ from tkinter.ttk import Notebook
     Puesto que todo se esta modificando dentro de 
     los respecitvos frames
 """
+# -- VARIABLES GLOBALES -- #
+ip_rasp = ''
+ip_esp = ''
+cmd_topic = ''
+
 
 # - Clase Principal Aplicacion - #
 class App(Frame):
@@ -267,11 +272,14 @@ class Frame_CMD(Frame):
                       background='black',
                       foreground='green',
                       borderwidth=1,
-                      
+                      command=self.send_command,
                       text='Send',
                       font=('Magneto',15))
     
     # - Operativo - #
+    def send_command(self):
+        x = self.command.get()
+        # enviar variable x
     
     # --- RECEPCION DE COMANDOS --- #
     # - Visual - #
@@ -293,6 +301,8 @@ class Frame_CMD(Frame):
                      width=70)
     
     # - Operativo - #
+    def get_response(self):
+        self.command.insert(0, 'xd')
 
 # ----------------------------------- #
 # -------- Frames de control -------- #
