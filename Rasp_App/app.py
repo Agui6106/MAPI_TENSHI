@@ -7,6 +7,8 @@ import re
 import signal
 import os
 
+import mqtt
+
 # -- FUNCIONES DE PROTOCOLO DE INICIO-- #
 """
     SECUENCIA DE INICIALZIACION 
@@ -16,6 +18,9 @@ import os
     * 4) Iniciar servidor de camara
     * S) Ya que el usuario lo ordene por MQTT - PARAR
 """
+
+ip_host = ''
+ip_esp = ''
 
 # 1) Función para obtener la IP local
 def get_ip():
@@ -32,13 +37,11 @@ def get_ip():
     
 # 2) Función para iniciar el proceso de comunicacion MQTT
 def iniciar_Mqtt():
-    print("Starting Mqtt protocol...")
-    try:
-        proc = subprocess.Popen(["python3", "./mqtt.py"])
-        return proc
-    except Exception as e:
-        print(f'Failed to start MQTT protocol due to: {str(e)}')
-        return None
+    print(f"Starting Mqtt protocol...")
+    # - Solicitar ips - #
+    ip_host = input("\nInsert Host IP: ") 
+    ip_esp =  input("\nInsert ESP IP: ") 
+    return ip_host, ip_esp
     
 # 3)  Conexion serial a ESP32 por puerto USB 
 def iniciar_Serial():
@@ -76,8 +79,18 @@ def help():
     print(f"ping - Prueba de conexion \n")
     print(f"exit - Detiene por compelto la aplicacion \n")
     
-def pong(ip):
-    print(f"Pong at: {ip} by (Ip q lo solicito)")
+def pong(ip, ip_host):
+    x = f"Ping Pong at: {ip} by host {ip_host}"
+    return x
+    
+# -- Funciones vitales -- #
+def send_response(cmd_in):
+    if cmd_in:
+        try:
+            mqtt_client.publish_message(cmd_in)  # Envía el comando por MQTT
+        except Exception as e:
+                print("MQTT Error", f"Failed to send command: {e}")
+
 
 # - Aplicacion principal basada en comandos -#
 if __name__ == "__main__":
@@ -86,39 +99,63 @@ if __name__ == "__main__":
     ip = get_ip()
     print(f"Actual IP: {ip}")
 
-    # -- SECUENCIA DE INICIALZIACION -- #
-    mqtt_proc = iniciar_Mqtt()
+    # -- SECUENCIA DE INICIALZIACION -- #  
+    # - MQTT - #
+    ip_host, ip_esp = iniciar_Mqtt()
+    mqtt_client = mqtt.mqtt_coms(ip_host, 1883, "Rasp/CmdIn", "Rasp/CmdOut")
+    mqtt_client.start()
+    # - Serial - #
     serial_proc = iniciar_Serial()
-    transmision_proc = iniciar_transmision()
+    # - Stream - #
+    #transmision_proc = iniciar_transmision()
 
     print(f"Video stream available in url: http://{ip}:8000/index.html\n")
     
+    last_processed_command = ''
     # - Interfaz de consola - #
     while True:
-        comando = input("Input command: ")
+        comando = mqtt_client.last_message
 
-        # - Comandos principales - #
-        if comando == 'stop MQTT':
-            detener_proceso(mqtt_proc)
-        elif comando == 'stop serial':
-            detener_proceso(serial_proc)
-        elif comando == 'stop transmision':
-            detener_proceso(transmision_proc)
+        if comando != last_processed_command:
+            # Verifcamos si el comadno es el mismo 
+            last_processed_command = comando
             
-        # - Comandos auxilaires - #
-        elif comando == "help":
-            help()
-        elif comando == "pong":
-            pong(ip)
-        
-        # - Comando de salida - #
-        elif comando == 'exit':
-            print("Leaving program...")
-            detener_proceso(mqtt_proc)
-            detener_proceso(serial_proc)
-            detener_proceso(transmision_proc)
-        
-            print("\nThanks for choosing MAPI software.inc")
-            break
+            # - Comandos principales - #
+            if comando == 'stop.MQTT':
+                mqtt_client.stop() 
+                send_response('Mqtt Stopped')
+
+            elif comando == 'stop.serial':
+                detener_proceso(serial_proc)
+                send_response('Serial Stopped')
+
+            elif comando == 'stop.transmision':
+                #detener_proceso(transmision_proc)
+                send_response('Transmission Stopped')
+
+            # - Comandos auxilaires - #
+            elif comando == "help":
+                help()
+            elif comando == "ping":
+                send_response(pong(ip, ip_host))
+            
+            elif comando == "info":
+                send_response('MAPI-Tenshi R01 - Queretaro. Mex')
+
+            # - Comando de salida - #
+            elif comando == 'exit':
+                print("Leaving program...")
+                #detener_proceso(mqtt_proc)
+                detener_proceso(serial_proc)
+                #detener_proceso(transmision_proc)
+                send_response('Leaving program...')
+
+                print("\nThanks for choosing MAPI software.inc")
+                break
+            else:
+                send_response('Command not found')
+                print(f"Command not found. Use help to list all commands.\n")
+            
         else:
-            print(f"Command not found. Use help to list all commands.\n")
+            time.sleep(0.5)
+            
