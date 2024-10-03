@@ -24,6 +24,8 @@ class mqtt_coms:
 
         # Conectarse al broker
         self.client.connect(self.broker_ip, self.broker_port, 60)
+        
+        self.last_message = None
 
     # Función que se ejecuta cuando se conecta al broker MQTT
     def on_connect(self, client, userdata, flags, reasonCode, properties=None):
@@ -32,7 +34,9 @@ class mqtt_coms:
 
     # Función que se ejecuta cuando se recibe un mensaje
     def on_message(self, client, userdata, msg):
-        print(f"Mensaje recibido en {msg.topic}: {msg.payload.decode()}")
+        self.last_message = msg.payload.decode()
+        print(f"Mensaje recibido en {msg.topic}: {self.last_message}")
+        
 
     # Método para iniciar el bucle del cliente MQTT
     def start(self):

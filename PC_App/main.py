@@ -227,9 +227,11 @@ class Frame_CMD(Frame):
         self.content: Label = self._In_label()
         self.command: Label = self._commands()
         self.send: Button = self._comman_send_button()
-        self.stop: Button = self._stop_mqtt_button()
         self.out: Label = self._out_label()
         self.cmd_out: Entry = self._command_output()
+        
+        # - Actualizamos la respuesta - #
+        self.update_cmd_output()
         
         # Creamos los objetos
         self.init_gui()
@@ -241,8 +243,7 @@ class Frame_CMD(Frame):
         # - Envio de comandos - #
         self.content.grid(column=1,row=1)
         self.command.grid(column=2,row=1)
-        self.send.grid(column=3,row=1,padx=5)
-        self.stop.grid(column=3,row=2)
+        self.send.grid(column=3,row=1,padx=5, rowspan=2)
         
         # - Recepcion de comandos - # 
         self.out.grid(column=1,row=2)
@@ -283,26 +284,19 @@ class Frame_CMD(Frame):
                       borderwidth=1,
                       command=self.send_command,
                       text='Send',
-                      font=('Magneto', 10))
-    
-    def _stop_mqtt_button(self) -> Button:
-        return Button(self,
-                      width=10,
-                      background='black',
-                      foreground='green',
-                      borderwidth=1,
-                      command=mqtt_client.stop(),
-                      text='Stop',
-                      font=('Magneto',10))
+                      font=('Magneto', 15))
     
     # - Operativo - #
     def send_command(self):
-        x = self.command.get()
-        try:
-            mqtt_client.publish_message(x)
-        except KeyboardInterrupt:
-            print("Interrumping...")
-
+        cmd_in = self.command.get()
+        # - Envio - #
+        if cmd_in:
+            try:
+                mqtt_client.publish_message(cmd_in)  # Envía el comando por MQTT
+            except Exception as e:
+                messagebox.showerror("MQTT Error", f"Failed to send command: {e}")
+        else:
+                messagebox.showwarning("Input Error", "Please enter a command.")
     
     # --- RECEPCION DE COMANDOS --- #
     # - Visual - #
@@ -316,7 +310,7 @@ class Frame_CMD(Frame):
             
     def _command_output(self) -> Entry:
         return Entry(self, 
-                     foreground='white',
+                     foreground='black',
                      bg = 'black',
                      font=('consolas', 14),  
                      justify='left',
@@ -324,8 +318,18 @@ class Frame_CMD(Frame):
                      width=70)
     
     # - Operativo - #
-    def get_response(self):
-        self.command.insert(0, 'xd')
+    def update_cmd_output(self):
+        self.mensaje = mqtt_client.last_message
+        self.cmd_out.config(state='normal')
+
+        # Insertar el mensaje en el Entry
+        if self.mensaje:
+            self.cmd_out.delete(0, 'end')  # Borrar el contenido anterior
+            self.cmd_out.insert(0, self.mensaje)  # Insertar el nuevo mensaje
+
+        # Volver a hacer el Entry de solo lectura
+        self.cmd_out.config(state='readonly')
+        self.parent.after(1000, self.update_cmd_output)
 
 # ----------------------------------- #
 # -------- Frames de control -------- #
