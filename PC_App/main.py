@@ -16,6 +16,7 @@ from tkinter.ttk import Combobox
 from tkinter.ttk import Notebook
 
 from MQTT_con.MQTT_ex import get_ip_Windows
+from MQTT_con.MQTT_ex import mqtt_coms
 
 """
     Nota: En teoria ya no es encesario entrar a App.
@@ -23,10 +24,14 @@ from MQTT_con.MQTT_ex import get_ip_Windows
     los respecitvos frames
 """
 # -- VARIABLES GLOBALES -- #
+# Ips
 ip_rasp = ''
 ip_esp = ''
 ip = get_ip_Windows()
 
+# Mqtt client
+mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
+mqtt_client.start()
 
 # - Clase Principal Aplicacion - #
 class App(Frame):
@@ -222,6 +227,7 @@ class Frame_CMD(Frame):
         self.content: Label = self._In_label()
         self.command: Label = self._commands()
         self.send: Button = self._comman_send_button()
+        self.stop: Button = self._stop_mqtt_button()
         self.out: Label = self._out_label()
         self.cmd_out: Entry = self._command_output()
         
@@ -235,7 +241,8 @@ class Frame_CMD(Frame):
         # - Envio de comandos - #
         self.content.grid(column=1,row=1)
         self.command.grid(column=2,row=1)
-        self.send.grid(column=3,row=1,padx=5, rowspan=2)
+        self.send.grid(column=3,row=1,padx=5)
+        self.stop.grid(column=3,row=2)
         
         # - Recepcion de comandos - # 
         self.out.grid(column=1,row=2)
@@ -276,12 +283,26 @@ class Frame_CMD(Frame):
                       borderwidth=1,
                       command=self.send_command,
                       text='Send',
-                      font=('Magneto',15))
+                      font=('Magneto', 10))
+    
+    def _stop_mqtt_button(self) -> Button:
+        return Button(self,
+                      width=10,
+                      background='black',
+                      foreground='green',
+                      borderwidth=1,
+                      command=mqtt_client.stop(),
+                      text='Stop',
+                      font=('Magneto',10))
     
     # - Operativo - #
     def send_command(self):
         x = self.command.get()
-        # enviar variable x
+        try:
+            mqtt_client.publish_message(x)
+        except KeyboardInterrupt:
+            print("Interrumping...")
+
     
     # --- RECEPCION DE COMANDOS --- #
     # - Visual - #
