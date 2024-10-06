@@ -107,7 +107,7 @@ if __name__ == "__main__":
     # - Serial - #
     serial_proc = iniciar_Serial()
     # - Stream - #
-    #transmision_proc = iniciar_transmision()
+    transmision_proc = iniciar_transmision()
 
     print(f"Video stream available in url: http://{ip}:8000/index.html\n")
     
@@ -130,7 +130,7 @@ if __name__ == "__main__":
                 send_response('Serial Stopped')
 
             elif comando == 'stop.transmision':
-                #detener_proceso(transmision_proc)
+                detener_proceso(transmision_proc)
                 send_response('Transmission Stopped')
 
             # - Comandos auxilaires - #
@@ -147,7 +147,7 @@ if __name__ == "__main__":
                 print("Leaving program...")
                 #detener_proceso(mqtt_proc)
                 detener_proceso(serial_proc)
-                #detener_proceso(transmision_proc)
+                detener_proceso(transmision_proc)
                 send_response('Leaving program...')
 
                 print("\nThanks for choosing MAPI software.inc")
