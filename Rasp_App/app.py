@@ -132,6 +132,9 @@ if __name__ == "__main__":
             elif comando == 'stop.transmision':
                 detener_proceso(transmision_proc)
                 send_response('Transmission Stopped')
+                
+            elif comando == 'info.stream':
+                send_response(f'http://{ip}:8000/index.html')
 
             # - Comandos auxilaires - #
             elif comando == "help":
