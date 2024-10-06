@@ -15,9 +15,11 @@ from tkinter import Entry
 from tkinter.ttk import Combobox
 from tkinter.ttk import Notebook
 
-import requests
+import os
+
+import cv2
+import numpy as np
 from PIL import Image, ImageTk
-from io import BytesIO
 
 from MQTT_con.MQTT_ex import get_ip_Windows
 from MQTT_con.MQTT_ex import mqtt_coms
@@ -32,6 +34,9 @@ from MQTT_con.MQTT_ex import mqtt_coms
 ip_rasp = ''
 ip_esp = ''
 ip = get_ip_Windows()
+
+# Link servidor
+server_stream = ''
 
 # Mqtt client
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
@@ -82,6 +87,11 @@ class App(Frame):
         notebook.add(tab4, text='Web Control')
         notebook.add(tab5, text='About')
         
+        """# - Guardamos las ips - #
+        ip_rasp = FrameOptions(notebook).get_rasp_ip()
+        print(ip_rasp)
+        #ip_esp = FrameOptions.get_esp_ip()"""
+        
         # - Atributos y elementos de aplicacion - #
         # - TITULO - #
         Label(tab1, text="Control Panel. Robot 01",
@@ -113,7 +123,6 @@ class App(Frame):
         frame_CMD_promt = Frame_CMD(tab1)
         frame_CMD_promt.grid(row=4,column=0)
         frame_CMD_promt.config(bg='black')
-        
         
         return notebook
 
@@ -159,7 +168,12 @@ class Frame_Main_Raw_Camera(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-        self.stream_url = "http://192.168.252.18:8000"
+        
+        # Imagen si no se encunetra stream
+        nocamav = os.path.join(os.path.dirname(__file__), 'novideo_finall.png')
+        self.novidcam = PhotoImage(file=nocamav)
+        
+        self.stream_url = "http://192.168.252.18:8000/stream.mjpg"
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -168,8 +182,13 @@ class Frame_Main_Raw_Camera(Frame):
         # Creamos los objetos
         self.init_gui()
         
-        # Iniciamos stream
-        self.update_frame()
+        # Iniciamos stream y verifcamos
+        self.cap = cv2.VideoCapture(self.stream_url)
+        if not self.cap.isOpened():
+            self.camera.create_image((0,0),image=self.novidcam, anchor='nw')
+            print(f"Error: No se pudo abrir el stream en {self.stream_url}")
+        else:
+            self.update_frame()  # Iniciar actualización de frames
         
         
     # - Colocamos los elementos visuales - #
@@ -178,6 +197,7 @@ class Frame_Main_Raw_Camera(Frame):
         self.camera.grid()
         
     # - Atributos y elementos de aplicacion - #
+    # - ELEMENTOS VISUALES - # 
     # - TITULO - #
     def _Create_title(self) -> Label:
         return Label(
@@ -187,31 +207,29 @@ class Frame_Main_Raw_Camera(Frame):
             font=("Z003", 20, "bold")
         )
     
-    # - ELEMENTOS VISUALES - # 
+    # - CAMARA VISUAL - #
     def _Camera_canva_(self) -> Canvas:
-        return Canvas(self, width=640, height=480, bg='black')
+        return Canvas(self, width=640, height=480,bg='black')
     
     # - OPERATIVO - #
     def update_frame(self):
-        try:
-            # Obtener la imagen del stream
-            response = requests.get(self.stream_url, stream=True)
-            img_data = response.raw.read()
-            img = Image.open(BytesIO(img_data))
+        ret, frame = self.cap.read()  # Leer el frame del stream
 
-            # Redimensionar la imagen para que encaje en el canvas
-            img = img.resize((640, 480), Image.ANTIALIAS)
+        if ret:
+            # Convertir de BGR a RGB
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            # Convertir el frame a imagen PIL
+            img = Image.fromarray(frame_rgb)
+            img = img.resize((640, 480), Image.Resampling.LANCZOS)  # Redimensionar
             img_tk = ImageTk.PhotoImage(img)
 
-            # Limpiar el canvas y mostrar el nuevo frame
-            self.camera.create_image(0, 0, anchor=self.NW, image=img_tk)
-            self.camera.image = img_tk  # Mantener referencia a la imagen
-
-        except Exception as e:
-            print(f"Error al actualizar el frame: {e}")
+            # Mostrar la imagen en el canvas
+            self.camera.create_image(0, 0, anchor="nw",  image=img_tk)
+            self.camera.image = img_tk  # Mantener referencia de la imagen
 
         # Volver a llamar la función después de un intervalo de tiempo
-        self.after(50, self.update_frame)
+        self.after(10, self.update_frame)
 
 
 # -- Camara procesada -- #
@@ -404,24 +422,29 @@ class FrameOptions(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-        
-        espi = ''
-        raspi = ''
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
         
+        # - IPs - #
         self.content: Label = self._Ip_Opt_Label()
         self.HIP_label: Label = self._hostIP_Label()
         self.EsIP_label: Label = self._espIP_Label()
         self.RasIP_label: Label = self._raspIP_Label()
         
         self.host_ip: Label = self._ip_host()
-        self.esp_ip: Label = self._ip_esp_in()
-        self.rasp_ip: Label = self._ip_rasp_in()
+        self.esp_ip: Entry = self._ip_esp_in()
+        self.rasp_ip: Entry = self._ip_rasp_in()
         
         self.esp_ok: Button = self._ok_button_esp()
         self.rasp_ok: Button = self._ok_button_ras()
+        
+        # - SERVER -#
+        self.title_server: Label = self._Server_title()
+        self.server_label: Label = self._Server_tag()
+        self.server_URL: Entry = self._server_url()
+        self.ok_but: Button = self._ok_button_server()
+        self.print_stuff: Button = self._ok_Prints()
         
         # Creamos los objetos
         self.init_gui()
@@ -429,21 +452,30 @@ class FrameOptions(Frame):
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
         self.title.grid(row=0, column=0, columnspan=2)
-
+        
+        # - IP - #
         # - TItulos - #
         self.content.grid(row=1, column=0)
         self.HIP_label.grid(row=2, column=0)
         self.EsIP_label.grid(row=3, column=0)
         self.RasIP_label.grid(row=4, column=0)
         
-        # - Labels - #
+        # - Entrys - #
         self.host_ip.grid(row=2,column=1)
         self.esp_ip.grid(row=3,column=1)
         self.rasp_ip.grid(row=4,column=1)
         
         # - Butons - #
-        self.esp_ok.grid(row=3,column=2)
-        self.rasp_ok.grid(row=4,column=2)
+        self.esp_ok.grid(row=3,column=2, padx=5)
+        self.rasp_ok.grid(row=4,column=2, padx=5)
+        
+        # - SERVER - #
+        self.title_server.grid(row=1,column=3)
+        self.server_label.grid(row=2,column=3)
+        self.server_URL.grid(row=2,column=4)
+        
+        self.ok_but.grid(row=2,column=5)
+        self.print_stuff.grid(row=3,column=5)
         
         
     # - Atributos y elementos de aplicacion - #
@@ -456,7 +488,7 @@ class FrameOptions(Frame):
             font=("Magneto", 20, "bold")
         )
     
-    # - ELEMENTOS VISUALES - #
+    # - ELEMENTOS VISUALES IPS - #
     def _Ip_Opt_Label(self) -> Label:
         return Label(self, text="Ip Options", font=("Z003", 15, "bold"))
     
@@ -473,7 +505,7 @@ class FrameOptions(Frame):
     def _raspIP_Label(self) -> Label:
         return Label(self, 
                      text="Raspberry Ip: ", 
-                     font=("Z003", 15))
+                     font=("Z003", 15))    
     
     # - Mostrar Ips correspondientes -#
     def _ip_host(self) -> Label:
@@ -506,12 +538,50 @@ class FrameOptions(Frame):
                       command= self.get_rasp_ip()
                       )
     
+    
+    # - ELEMENTOS VISUALES SERVIDOR - #
+    def _Server_title(self) -> Label:
+        return Label(self, text="Servidor", font=("Z003", 15, "bold"))
+    
+    def _Server_tag(self) -> Label:
+        return Label(self, 
+                     text="URL stream: ", 
+                     font=("Z003", 15))
+    
+    def _server_url(self) -> Entry:
+        return Entry(self, 
+                     justify='left',
+                     font=("Z003", 15),
+                     width=30)
+    
+    def _ok_button_server(self) -> Button:
+        return Button(self,
+                      text='Save',
+                      font=('Z003', 15),
+                      command= self.get_esp_ip()
+                      )
+    
+    def _ok_Prints(self) -> Button:
+        return Button(self,
+                      text='Print',
+                      font=('Z003', 15),
+                      command= self.prints_configs()
+                      )
+    
+    def get_URL(self) -> None:
+        server_stream = self.esp_ip.get()
+
     # - ELEMENTOS OPERATIVOS - #
     def get_esp_ip(self) -> None:
-        return self.esp_ip.get()
+        ip_esp = self.esp_ip.get()
         
     def get_rasp_ip(self) -> None:
-        return self.rasp_ip.get()
+        ip_rasp = self.rasp_ip.get()
+        
+    def prints_configs(self) -> None:
+        print(f'rasp: {ip_rasp}\n')
+        print(f'esp: {ip_esp}\n')
+        print(f'Server: {server_stream}')
 
         
 # ---- Clase ventana de WebControl ---- #
