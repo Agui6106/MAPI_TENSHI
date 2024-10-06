@@ -15,6 +15,10 @@ from tkinter import Entry
 from tkinter.ttk import Combobox
 from tkinter.ttk import Notebook
 
+import requests
+from PIL import Image, ImageTk
+from io import BytesIO
+
 from MQTT_con.MQTT_ex import get_ip_Windows
 from MQTT_con.MQTT_ex import mqtt_coms
 
@@ -155,33 +159,60 @@ class Frame_Main_Raw_Camera(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
+        self.stream_url = "http://192.168.252.18:8000"
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
-        self.content: Label = self._content()
+        self.camera: Canvas = self._Camera_canva_()
         
         # Creamos los objetos
         self.init_gui()
         
+        # Iniciamos stream
+        self.update_frame()
+        
+        
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2, padx=40)
-        
-        # Añadimos un Label en FrameOne usando grid()
-        self.content.grid(row=1, column=0)
+        self.title.grid(row=0, column=0, columnspan=2)
+        self.camera.grid()
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
     def _Create_title(self) -> Label:
         return Label(
             master=self,
-            text='Camara sin procesar',
+            text='Camara View',
             foreground='black',
             font=("Z003", 20, "bold")
         )
     
-    def _content(self) -> Label:
-        return Label(self, text="Enviada desde el bot")
+    # - ELEMENTOS VISUALES - # 
+    def _Camera_canva_(self) -> Canvas:
+        return Canvas(self, width=640, height=480, bg='black')
+    
+    # - OPERATIVO - #
+    def update_frame(self):
+        try:
+            # Obtener la imagen del stream
+            response = requests.get(self.stream_url, stream=True)
+            img_data = response.raw.read()
+            img = Image.open(BytesIO(img_data))
+
+            # Redimensionar la imagen para que encaje en el canvas
+            img = img.resize((640, 480), Image.ANTIALIAS)
+            img_tk = ImageTk.PhotoImage(img)
+
+            # Limpiar el canvas y mostrar el nuevo frame
+            self.camera.create_image(0, 0, anchor=self.NW, image=img_tk)
+            self.camera.image = img_tk  # Mantener referencia a la imagen
+
+        except Exception as e:
+            print(f"Error al actualizar el frame: {e}")
+
+        # Volver a llamar la función después de un intervalo de tiempo
+        self.after(50, self.update_frame)
+
 
 # -- Camara procesada -- #
 class Frame_Main_Pros_Camera(Frame):
@@ -208,7 +239,7 @@ class Frame_Main_Pros_Camera(Frame):
     def _Create_title(self) -> Label:
         return Label(
             master=self,
-            text='Camara Procesada',
+            text='Opciones de Camara',
             foreground='black',
             font=("Z003", 20, "bold")
         )
@@ -238,7 +269,7 @@ class Frame_CMD(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
-        self.title.grid(column=1,row=0,columnspan=3)
+        self.title.grid(column=0,row=0,columnspan=2)
         
         # - Envio de comandos - #
         self.content.grid(column=1,row=1)
@@ -274,7 +305,7 @@ class Frame_CMD(Frame):
                      background='black',
                      foreground='white',
                      font=('consolas', 14),
-                     width=70)
+                     width=40)
         
     def _comman_send_button(self) -> Button:
         return Button(self,
@@ -315,7 +346,7 @@ class Frame_CMD(Frame):
                      font=('consolas', 14),  
                      justify='left',
                      state='readonly',
-                     width=70)
+                     width=40)
     
     # - Operativo - #
     def update_cmd_output(self):
