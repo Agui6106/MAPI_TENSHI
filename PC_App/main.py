@@ -36,7 +36,7 @@ ip_esp = ''
 ip = get_ip_Windows()
 
 # Link servidor
-server_stream = ''
+server_stream = "http://192.168.252.18:8000/stream.mjpg"
 
 # Mqtt client
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
@@ -50,6 +50,7 @@ class App(Frame):
         
         # - Creacion de Notebook (pestañas) - #
         self.notebook = self._Create_notebook()
+        self.load = self._ok_but()
         
         # - Creacion de los objetos - #
         self.init_gui()
@@ -69,32 +70,41 @@ class App(Frame):
 
         # Colocamos el Notebook en la ventana
         self.notebook.pack(fill=BOTH, expand=True)
+        self.load.pack()
+    
+    def _ok_but(self) -> Button:
+        return Button(self,
+                      width=10,
+                      borderwidth=1,
+                      command=self.load_configuration,
+                      text='Send',
+                      font=('Magneto', 15))
+    
+    def load_configuration(self):
+        ip_rasp = self.tab3.get_rasp_ip()
+        ip_esp = self.tab3.get_esp_ip()
+        server_stream = self.tab3.get_URL()
         
     # - Creacion del Notebook con pestañas - #
     def _Create_notebook(self) -> Notebook:
         notebook = Notebook(self)
         
         # Creamos un frame simple para Tab 1
-        tab1 = Frame(notebook)
-        tab2 = FrameFiles(notebook)
-        tab3 = FrameOptions(notebook)
-        tab4 = FrameWebControl(notebook)
-        tab5 = FrameAbout(notebook)
+        self.tab1 = Frame(notebook)
+        self.tab2 = FrameFiles(notebook)
+        self.tab3 = FrameOptions(notebook)
+        self.tab4 = FrameWebControl(notebook)
+        self.tab5 = FrameAbout(notebook)
         # Agregamos las pestañas al Notebook
-        notebook.add(tab1, text='Main')
-        notebook.add(tab2, text='File')
-        notebook.add(tab3, text='Options')
-        notebook.add(tab4, text='Web Control')
-        notebook.add(tab5, text='About')
-        
-        """# - Guardamos las ips - #
-        ip_rasp = FrameOptions(notebook).get_rasp_ip()
-        print(ip_rasp)
-        #ip_esp = FrameOptions.get_esp_ip()"""
-        
+        notebook.add(self.tab1, text='Main')
+        notebook.add(self.tab2, text='File')
+        notebook.add(self.tab3, text='Options')
+        notebook.add(self.tab4, text='Web Control')
+        notebook.add(self.tab5, text='About')
+
         # - Atributos y elementos de aplicacion - #
         # - TITULO - #
-        Label(tab1, text="Control Panel. Robot 01",
+        Label(self.tab1, text="Control Panel. Robot 01",
               foreground='black',
               font=("Magneto", 20, "bold")).grid(row=1, column=0, columnspan=2)
         """
@@ -108,19 +118,19 @@ class App(Frame):
             --------------------------
         """
         # Control MQTT
-        frame_mqtt_control = Frame_Main_MQTT_Control(tab1)  # Instanciar el frame aquí
+        frame_mqtt_control = Frame_Main_MQTT_Control(self.tab1)  # Instanciar el frame aquí
         frame_mqtt_control.grid(row=2, column=0)
 
         # Camara sin proceso
-        frame_Raw_camera = Frame_Main_Raw_Camera(tab1)  # Instanciar el frame aquí
+        frame_Raw_camera = Frame_Main_Raw_Camera(self.tab1)  # Instanciar el frame aquí
         frame_Raw_camera.grid(row=2, column=1)
         
         # Camara procesada
-        frame_pros_camera = Frame_Main_Pros_Camera(tab1)
+        frame_pros_camera = Frame_Main_Pros_Camera(self.tab1)
         frame_pros_camera.grid(row=3, column=1)
         
         # Command Prompt
-        frame_CMD_promt = Frame_CMD(tab1)
+        frame_CMD_promt = Frame_CMD(self.tab1)
         frame_CMD_promt.grid(row=4,column=0)
         frame_CMD_promt.config(bg='black')
         
@@ -173,7 +183,7 @@ class Frame_Main_Raw_Camera(Frame):
         nocamav = os.path.join(os.path.dirname(__file__), 'novideo_finall.png')
         self.novidcam = PhotoImage(file=nocamav)
         
-        self.stream_url = "http://192.168.252.18:8000/stream.mjpg"
+        self.stream_url = server_stream
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -436,15 +446,10 @@ class FrameOptions(Frame):
         self.esp_ip: Entry = self._ip_esp_in()
         self.rasp_ip: Entry = self._ip_rasp_in()
         
-        self.esp_ok: Button = self._ok_button_esp()
-        self.rasp_ok: Button = self._ok_button_ras()
-        
         # - SERVER -#
         self.title_server: Label = self._Server_title()
         self.server_label: Label = self._Server_tag()
         self.server_URL: Entry = self._server_url()
-        self.ok_but: Button = self._ok_button_server()
-        self.print_stuff: Button = self._ok_Prints()
         
         # Creamos los objetos
         self.init_gui()
@@ -465,18 +470,11 @@ class FrameOptions(Frame):
         self.esp_ip.grid(row=3,column=1)
         self.rasp_ip.grid(row=4,column=1)
         
-        # - Butons - #
-        self.esp_ok.grid(row=3,column=2, padx=5)
-        self.rasp_ok.grid(row=4,column=2, padx=5)
-        
         # - SERVER - #
         self.title_server.grid(row=1,column=3)
         self.server_label.grid(row=2,column=3)
         self.server_URL.grid(row=2,column=4)
-        
-        self.ok_but.grid(row=2,column=5)
-        self.print_stuff.grid(row=3,column=5)
-        
+
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
@@ -524,21 +522,6 @@ class FrameOptions(Frame):
                      font=('Z003', 15),
                      width=30)
 
-    def _ok_button_esp(self) -> Button:
-        return Button(self,
-                      text='Save',
-                      font=('Z003', 15),
-                      command= self.get_esp_ip()
-                      )
-    
-    def _ok_button_ras(self) -> Button:
-        return Button(self,
-                      text='Save',
-                      font=('Z003', 15),
-                      command= self.get_rasp_ip()
-                      )
-    
-    
     # - ELEMENTOS VISUALES SERVIDOR - #
     def _Server_title(self) -> Label:
         return Label(self, text="Servidor", font=("Z003", 15, "bold"))
@@ -554,34 +537,16 @@ class FrameOptions(Frame):
                      font=("Z003", 15),
                      width=30)
     
-    def _ok_button_server(self) -> Button:
-        return Button(self,
-                      text='Save',
-                      font=('Z003', 15),
-                      command= self.get_esp_ip()
-                      )
     
-    def _ok_Prints(self) -> Button:
-        return Button(self,
-                      text='Print',
-                      font=('Z003', 15),
-                      command= self.prints_configs()
-                      )
-    
-    def get_URL(self) -> None:
-        server_stream = self.esp_ip.get()
+    # - ELEMENTOS OPERATIVOS - #        
+    def get_URL(self):
+        return self.esp_ip.get()
 
-    # - ELEMENTOS OPERATIVOS - #
-    def get_esp_ip(self) -> None:
-        ip_esp = self.esp_ip.get()
+    def get_esp_ip(self):
+        return self.esp_ip.get()
         
-    def get_rasp_ip(self) -> None:
-        ip_rasp = self.rasp_ip.get()
-        
-    def prints_configs(self) -> None:
-        print(f'rasp: {ip_rasp}\n')
-        print(f'esp: {ip_esp}\n')
-        print(f'Server: {server_stream}')
+    def get_rasp_ip(self):
+        return self.rasp_ip.get()
 
         
 # ---- Clase ventana de WebControl ---- #
