@@ -50,7 +50,6 @@ class App(Frame):
         
         # - Creacion de Notebook (pestañas) - #
         self.notebook = self._Create_notebook()
-        self.load = self._ok_but()
         
         # - Creacion de los objetos - #
         self.init_gui()
@@ -70,15 +69,6 @@ class App(Frame):
 
         # Colocamos el Notebook en la ventana
         self.notebook.pack(fill=BOTH, expand=True)
-        self.load.pack()
-    
-    def _ok_but(self) -> Button:
-        return Button(self,
-                      width=10,
-                      borderwidth=1,
-                      command=self.load_configuration,
-                      text='Send',
-                      font=('Magneto', 15))
     
     def load_configuration(self):
         ip_rasp = self.tab3.get_rasp_ip()
@@ -297,7 +287,7 @@ class Frame_CMD(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
-        self.title.grid(column=0,row=0,columnspan=2)
+        self.title.grid(column=0,row=0,columnspan=3)
         
         # - Envio de comandos - #
         self.content.grid(column=1,row=1)
@@ -333,7 +323,7 @@ class Frame_CMD(Frame):
                      background='black',
                      foreground='white',
                      font=('consolas', 14),
-                     width=40)
+                     width=50)
         
     def _comman_send_button(self) -> Button:
         return Button(self,
@@ -374,7 +364,7 @@ class Frame_CMD(Frame):
                      font=('consolas', 14),  
                      justify='left',
                      state='readonly',
-                     width=40)
+                     width=50)
     
     # - Operativo - #
     def update_cmd_output(self):
