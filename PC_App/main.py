@@ -237,20 +237,28 @@ class Frame_Main_Pros_Camera(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
+        
+        self.stream_url = server_stream
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
-        self.content: Label = self._content()
+        
+        # Botones para las funciones
+        self.but_colors: Button = self._but_colors()
+        self.but_contours: Button = self._but_contors()
+        self.but_objects: Button = self._but_objects()
         
         # Creamos los objetos
         self.init_gui()
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2, padx=40)
+        self.title.grid(row=0, column=0, columnspan=3)
         
-        # Añadimos un Label en FrameOne usando grid()
-        self.content.grid(row=1, column=0)
+        # Colocamos los botones
+        self.but_colors.grid(row=2, column=0, padx=10, pady=10)
+        self.but_contours.grid(row=2, column=1, padx=10, pady=10)
+        self.but_objects.grid(row=2, column=2, padx=10, pady=10)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
@@ -261,9 +269,111 @@ class Frame_Main_Pros_Camera(Frame):
             foreground='black',
             font=("Z003", 20, "bold")
         )
+
+    # - Botones - #
+    def _but_colors(self) -> Button:
+        return Button(self,
+                      width=10,
+                      borderwidth=1,
+                      command=self.detect_colors,
+                      text='Colors',
+                      font=('Magneto', 15))
     
-    def _content(self) -> Label:
-        return Label(self, text="La procesamos localemtne")
+    def _but_contors(self) -> Button:
+        return Button(self,
+                      width=10,
+                      borderwidth=1,
+                      command=self.detect_contorns,
+                      text='Contorns',
+                      font=('Magneto', 15))
+    
+    def _but_objects(self) -> Button:
+        return Button(self,
+                      width=10,
+                      borderwidth=1,
+                      command=self.detect_colors,
+                      text='Objects',
+                      font=('Magneto', 15))
+        
+    # -- OPERATIVO -- #
+    # Colores 
+    def detect_colors(self):
+        cap = cv2.VideoCapture(self.stream_url)
+
+        # Crear ventana de OpenCV
+        cv2.namedWindow('Deteccion de colores')
+
+        # Crear trackbars para ajustar los valores de HSV
+        def nothing(x):
+            pass
+        
+        # Trackbars para los rangos de color
+        cv2.createTrackbar('Hue Min', 'Deteccion de colores', 0, 179, nothing)
+        cv2.createTrackbar('Hue Max', 'Deteccion de colores', 179, 179, nothing)
+        cv2.createTrackbar('Sat Min', 'Deteccion de colores', 0, 255, nothing)
+        cv2.createTrackbar('Sat Max', 'Deteccion de colores', 255, 255, nothing)
+        cv2.createTrackbar('Val Min', 'Deteccion de colores', 0, 255, nothing)
+        cv2.createTrackbar('Val Max', 'Deteccion de colores', 255, 255, nothing)
+
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            # Convertir imagen a HSV
+            hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+            # Leer los valores de los trackbars
+            hue_min = cv2.getTrackbarPos('Hue Min', 'Deteccion de colores')
+            hue_max = cv2.getTrackbarPos('Hue Max', 'Deteccion de colores')
+            sat_min = cv2.getTrackbarPos('Sat Min', 'Deteccion de colores')
+            sat_max = cv2.getTrackbarPos('Sat Max', 'Deteccion de colores')
+            val_min = cv2.getTrackbarPos('Val Min', 'Deteccion de colores')
+            val_max = cv2.getTrackbarPos('Val Max', 'Deteccion de colores')
+
+            # Definir el rango de color a detectar usando los valores de los trackbars
+            lower_color = np.array([hue_min, sat_min, val_min])
+            upper_color = np.array([hue_max, sat_max, val_max])
+
+            # Crear la máscara para el color
+            mask = cv2.inRange(hsv, lower_color, upper_color)
+            result = cv2.bitwise_and(frame, frame, mask=mask)
+
+            # Mostrar la imagen con los colores seleccionados
+            cv2.imshow('Deteccion de colores', result)
+
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        cap.release()
+        cv2.destroyAllWindows()
+    
+    # Contornos
+    def detect_contorns(self): 
+        cap = cv2.VideoCapture(self.stream_url)
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
+
+            # Convertir imagen a escala de grises
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+            
+            # Detectar contornos
+            edges = cv2.Canny(blurred, 50, 150)
+            contours, _ = cv2.findContours(edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            
+            # Dibujar contornos
+            cv2.drawContours(frame, contours, -1, (0, 255, 0), 2)
+            
+            cv2.imshow('Deteccion de contornos', frame)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+            
+        cap.release()
+        cv2.destroyAllWindows()
+    
     
 # -- Command Promt -- #
 class Frame_CMD(Frame):
@@ -323,11 +433,11 @@ class Frame_CMD(Frame):
                      background='black',
                      foreground='white',
                      font=('consolas', 14),
-                     width=50)
+                     width=57)
         
     def _comman_send_button(self) -> Button:
         return Button(self,
-                      width=10,
+                      width=7,
                       background='black',
                       foreground='green',
                       borderwidth=1,
@@ -338,8 +448,28 @@ class Frame_CMD(Frame):
     # - Operativo - #
     def send_command(self):
         cmd_in = self.command.get()
+        # - Comands Internos - #
+        if cmd_in == 'help.green':
+            self.cmd_out.config(state='normal')
+            self.cmd_out.delete(0, 'end')  # Borrar el contenido anterior
+            self.cmd_out.insert(0, 'Hmin: 35 Hmax: 85 Smin: 100 Smax: 255 Vmin: 50 Vmax: 255')  # Insertar el nuevo mensaje
+            self.cmd_out.config(state='readonly')
+            
+        elif cmd_in == 'help.red':
+            self.cmd_out.config(state='normal')
+            self.cmd_out.delete(0, 'end')  # Borrar el contenido anterior
+            self.cmd_out.insert(0, 'Hmin: 100 Hmax: 130 Smin: 100 Smax: 255 Vmin: 50 Vmax: 255')  # Insertar el nuevo mensaje
+            self.cmd_out.config(state='readonly')
+        
+        elif cmd_in == 'help.blue':
+            self.cmd_out.config(state='normal')
+            self.cmd_out.delete(0, 'end')  # Borrar el contenido anterior 0, 10, 100, 255, 100, 255
+            self.cmd_out.insert(0, 'Hmin: 0 Hmax: 10 Smin: 100 Smax: 255 Vmin: 100 Vmax: 255')  # Insertar el nuevo mensaje
+            self.cmd_out.config(state='readonly')
+            
+            
         # - Envio - #
-        if cmd_in:
+        if cmd_in or cmd_in != 'help.green' or cmd_in != 'help.red' or cmd_in != 'help.blue':
             try:
                 mqtt_client.publish_message(cmd_in)  # Envía el comando por MQTT
             except Exception as e:
@@ -364,7 +494,7 @@ class Frame_CMD(Frame):
                      font=('consolas', 14),  
                      justify='left',
                      state='readonly',
-                     width=50)
+                     width=57)
     
     # - Operativo - #
     def update_cmd_output(self):
@@ -433,8 +563,8 @@ class FrameOptions(Frame):
         self.RasIP_label: Label = self._raspIP_Label()
         
         self.host_ip: Label = self._ip_host()
-        self.esp_ip: Entry = self._ip_esp_in()
-        self.rasp_ip: Entry = self._ip_rasp_in()
+        self.esp_ip: Label = self._ip_esp_in()
+        self.rasp_ip: Label = self._ip_rasp_in()
         
         # - SERVER -#
         self.title_server: Label = self._Server_title()
@@ -502,13 +632,15 @@ class FrameOptions(Frame):
                      justify='left',
                      font=("Z003", 15))
                      
-    def _ip_esp_in(self) -> Entry:
-        return Entry(self,
+    def _ip_esp_in(self) -> Label:
+        return Label(self,
+                     text='',
                      font=('Z003', 15),
                      width=30)
     
-    def _ip_rasp_in(self) -> Entry:
-        return Entry(self,
+    def _ip_rasp_in(self) -> Label:
+        return Label(self,
+                     text='',
                      font=('Z003', 15),
                      width=30)
 
@@ -609,8 +741,9 @@ class FrameAbout(Frame):
 # -------------- Inicializacion de la app -------------- #
 # ------------------------------------------------------ #
 root = Tk()
-
+# http://192.168.252.18:8000/stream.mjpg
 if __name__ == '__main__':
+    #server_stream = input(f'Inserte link de stream')
     # Inicio de app
     ex = App(root)
     root.mainloop()
