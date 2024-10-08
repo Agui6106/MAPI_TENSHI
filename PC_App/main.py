@@ -389,6 +389,13 @@ class Frame_CMD(Frame):
         self.out: Label = self._out_label()
         self.cmd_out: Entry = self._command_output()
         
+        # - Diccionario de comandos internos - #
+        self.internal_commands = {
+            'help.green': 'Hmin: 35 Hmax: 85 Smin: 100 Smax: 255 Vmin: 50 Vmax: 255',
+            'help.red': 'Hmin: 100 Hmax: 130 Smin: 100 Smax: 255 Vmin: 50 Vmax: 255',
+            'help.blue': 'Hmin: 0 Hmax: 10 Smin: 100 Smax: 255 Vmin: 100 Vmax: 255'
+        }
+        
         # - Actualizamos la respuesta - #
         self.update_cmd_output()
         
@@ -447,34 +454,23 @@ class Frame_CMD(Frame):
     
     # - Operativo - #
     def send_command(self):
-        cmd_in = self.command.get()
-        # - Comands Internos - #
-        if cmd_in == 'help.green':
+        cmd_in = self.command.get().strip()
+
+        # Verificar si el comando es interno
+        if cmd_in in self.internal_commands:
+            # Mostrar el mensaje correspondiente en la salida
             self.cmd_out.config(state='normal')
             self.cmd_out.delete(0, 'end')  # Borrar el contenido anterior
-            self.cmd_out.insert(0, 'Hmin: 35 Hmax: 85 Smin: 100 Smax: 255 Vmin: 50 Vmax: 255')  # Insertar el nuevo mensaje
+            self.cmd_out.insert(0, self.internal_commands[cmd_in])  # Insertar el mensaje
             self.cmd_out.config(state='readonly')
-            
-        elif cmd_in == 'help.red':
-            self.cmd_out.config(state='normal')
-            self.cmd_out.delete(0, 'end')  # Borrar el contenido anterior
-            self.cmd_out.insert(0, 'Hmin: 100 Hmax: 130 Smin: 100 Smax: 255 Vmin: 50 Vmax: 255')  # Insertar el nuevo mensaje
-            self.cmd_out.config(state='readonly')
-        
-        elif cmd_in == 'help.blue':
-            self.cmd_out.config(state='normal')
-            self.cmd_out.delete(0, 'end')  # Borrar el contenido anterior 0, 10, 100, 255, 100, 255
-            self.cmd_out.insert(0, 'Hmin: 0 Hmax: 10 Smin: 100 Smax: 255 Vmin: 100 Vmax: 255')  # Insertar el nuevo mensaje
-            self.cmd_out.config(state='readonly')
-            
-            
-        # - Envio - #
-        if cmd_in or cmd_in != 'help.green' or cmd_in != 'help.red' or cmd_in != 'help.blue':
-            try:
-                mqtt_client.publish_message(cmd_in)  # Envía el comando por MQTT
-            except Exception as e:
-                messagebox.showerror("MQTT Error", f"Failed to send command: {e}")
         else:
+            # Enviar el comando por MQTT si no es un comando interno
+            if cmd_in:
+                try:
+                    mqtt_client.publish_message(cmd_in)  # Envía el comando por MQTT
+                except Exception as e:
+                    messagebox.showerror("MQTT Error", f"Failed to send command: {e}")
+            else:
                 messagebox.showwarning("Input Error", "Please enter a command.")
     
     # --- RECEPCION DE COMANDOS --- #
