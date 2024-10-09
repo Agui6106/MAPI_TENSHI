@@ -403,7 +403,7 @@ class Frame_Main_Pros_Camera(Frame):
             if file_path:
                 # Guardar la imagen
                 cv2.imwrite(file_path, frame)
-                messagebox.showinfo("Saved!",f'Saved image: image_{day}_{month}_{year}_at_{hour}:{minute}.png')
+                messagebox.showinfo("Saved!",f'Image saved successfully at:\n{file_path}')
                 print(f"Foto guardada en {file_path}")
             else:
                 messagebox.showwarning("Cancel", "Saved cancel")
