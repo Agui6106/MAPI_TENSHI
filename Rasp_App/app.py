@@ -9,6 +9,13 @@ import os
 
 import mqtt
 
+import tkinter as tk
+from tkinter import filedialog
+
+import datetime as dt
+
+import cv2
+
 # -- FUNCIONES DE PROTOCOLO DE INICIO-- #
 """
     SECUENCIA DE INICIALZIACION 
@@ -18,9 +25,20 @@ import mqtt
     * 4) Iniciar servidor de camara
     * S) Ya que el usuario lo ordene por MQTT - PARAR
 """
-
+# - GLOBAL - #
 ip_host = ''
 ip_esp = ''
+
+# Fecha de hoy
+date = dt.datetime.now()
+        
+year = date.year
+month = date.month
+day = date.day
+
+hour = date.hour
+minute = date.minute
+segs = date.second
 
 # 1) Función para obtener la IP local
 def get_ip():
@@ -82,6 +100,32 @@ def help():
 def pong(ip, ip_host):
     x = f"Ping Pong at: {ip} by host {ip_host}"
     return x
+
+def save_cam(url):
+    
+    cap = cv2.VideoCapture(url)
+    
+    ret, frame = cap.read()
+    
+    if ret:
+        save_dir = "/home/Azuki/Pictures"
+        
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        # Definir la ruta del archivo automáticamente
+        file_name = f'image_{day}_{month}_{year}_at_{hour}_{minute}.png'
+        file_path = os.path.join(save_dir, file_name)
+
+        # Guardar la imagen
+        cv2.imwrite(file_path, frame)
+        print(f"Foto guardada en {file_path}")
+    else:
+        print("Error al capturar el fotograma.")
+
+    cap.release()
+
+    
     
 # -- Funciones vitales -- #
 def send_response(cmd_in):
@@ -98,6 +142,7 @@ if __name__ == "__main__":
     print(f"MAPI-Tenshi Robot. Software Version 1.0\nDesarrollado en Santiago de Queretaro, México. 2024\n")
     ip = get_ip()
     print(f"Actual IP: {ip}")
+    url_stream = f"http://{ip}:8000/stream.mjpg"
 
     # -- SECUENCIA DE INICIALZIACION -- #  
     # - MQTT - #
@@ -109,7 +154,8 @@ if __name__ == "__main__":
     # - Stream - #
     transmision_proc = iniciar_transmision()
 
-    print(f"Video stream available in url: http://{ip}:8000/index.html\n")
+    #print(f"Video stream available in url: http://{ip}:8000/index.html\n")
+    print(f"Video stream available in url: {url_stream}\n")
     
     last_processed_command = ''
     # - Interfaz de consola - #
@@ -134,16 +180,20 @@ if __name__ == "__main__":
                 send_response('Transmission Stopped')
                 
             elif comando == 'info.stream':
-                send_response(f'http://{ip}:8000/stream.mjpg')
+                send_response(url_stream)
 
             # - Comandos auxilaires - #
-            elif comando == "help":
+            elif comando == 'help':
                 help()
-            elif comando == "ping":
+            elif comando == 'ping':
                 send_response(pong(ip, ip_host))
             
-            elif comando == "info":
-                send_response('MAPI-Tenshi R01 - Queretaro. Mex')
+            elif comando == 'info':
+                send_response('MAPI-Tenshi R01 - Run Stable V1.0')
+                
+            elif comando == 'save.local':
+                save_cam(url_stream)
+                send_response('Image saved locally in: /home/Azuki/Pictures')
 
             # - Comando de salida - #
             elif comando == 'exit':
