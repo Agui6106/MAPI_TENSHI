@@ -17,7 +17,7 @@ const char* mqttServer = "192.168.117.58"; //Nuestra IP del PC es la que ponemos
 const int mqttPort = 1883;
 
 //  - Configuracion DHT11 - //
-int SENSOR = 23;     // pin DATA de DHT11 a pin 22
+int SENSOR = 23;     // pin DATA de DHT11 a pin 23
 // Variables de sensado
 float t;
 float h;
@@ -36,6 +36,23 @@ int ENB = 15;
 // Configuracion Servo
 Servo myServo;
 
+// Configuración Sensor Ultrasónico
+int trigPin = 16;    // Pin de Trigger
+int echoPin = 17;    // Pin de Echo
+long duration;
+float distance;
+
+// Configuración Sensor Ultrasónico 2
+int trigPin2 = 26;    // Pin de Trigger
+int echoPin2 = 27;    // Pin de Echo
+long duration2;
+float distance2;
+
+// Coniguración Sensor Infrarrojo 1
+int infrarojo1 = 5;
+
+// Configuración Sensor Infrarrojo 2
+int infrarojo2 = 25;
 
 // ==================================================================== //
 
@@ -131,6 +148,20 @@ void setup() {
     pinMode(IN3, OUTPUT);  
     pinMode(ENB, OUTPUT);
 
+    // - Inicializacion de Sensor Ultrasónico - //
+    pinMode(trigPin, OUTPUT);
+    pinMode(echoPin, INPUT);
+
+    // - Inicializacion de Sensor Ultrasónico 2 - //
+    pinMode(trigPin2, OUTPUT);
+    pinMode(echoPin2, INPUT);
+
+    // - Inicializacion del Sensor Infrarojo 1 - //
+    pinMode(infrarojo1, INPUT);
+    // - Inicializacion del Sensor Infrarojo 2 - //
+    pinMode(infrarojo2, INPUT);
+
+
     // Conectar a la red Wi-Fi
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
@@ -158,6 +189,34 @@ void loop() {
     mqttClient.publish("ESP/Humedad", hum.c_str());
     Serial.print(" Humedad: ");
     Serial.println(h);
+    delay(2000);
+
+    // -- ENVIO DISTANCIA SENSOR ULTRASONICO 1 -- //
+    String dist = String(distance);
+    mqttClient.publish("ESP/Ultra-Distancias1", dist.c_str());
+    Serial.print("Distancia: ");
+    Serial.println(distance);
+    delay(2000);
+
+    // -- ENVIO DISTANCIA SENSOR ULTRASONICO 2 -- //
+    String dist2 = String(distance2);
+    mqttClient.publish("ESP/Ultra-Distancias2", dist2.c_str());
+    Serial.print("Distancia2: ");
+    Serial.println(distance2);
+    delay(2000);
+
+    // -- ENVIO VALOR SENSOR INFRAROJO 1 -- //
+    String infra1 = String(infrarojo1);
+    mqttClient.publish("ESP/Infra-Distancias1", infra1.c_str());
+    Serial.print("Infrarojo 1: ");
+    Serial.println(infrarojo1);
+    delay(2000);
+
+  // -- ENVIO VALOR SENSOR INFRAROJO 2 -- //
+    String infra2 = String(infrarojo2);
+    mqttClient.publish("ESP/Infra-Distancias2", infra2.c_str());
+    Serial.print("Infrarojo 2: ");
+    Serial.println(infrarojo2);
     delay(2000);
   
     if (!mqttClient.connected()) {
