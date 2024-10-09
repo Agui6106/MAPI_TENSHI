@@ -11,9 +11,12 @@ from tkinter import Tk
 from tkinter import Canvas
 from tkinter import PhotoImage
 from tkinter import Entry
+from tkinter import filedialog
 
 from tkinter.ttk import Combobox
 from tkinter.ttk import Notebook
+
+import datetime as dt
 
 import os
 
@@ -41,6 +44,17 @@ server_stream = "http://192.168.252.18:8000/stream.mjpg"
 # Mqtt client
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
 mqtt_client.start()
+
+# Fecha de hoy
+date = dt.datetime.now()
+        
+year = date.year
+month = date.month
+day = date.day
+
+hour = date.hour
+minute = date.minute
+segs = date.second
 
 # - Clase Principal Aplicacion - #
 class App(Frame):
@@ -196,13 +210,12 @@ class Frame_Main_Raw_Camera(Frame):
         self.title.grid(row=0, column=0, columnspan=2)
         self.camera.grid()
         
-    # - Atributos y elementos de aplicacion - #
     # - ELEMENTOS VISUALES - # 
     # - TITULO - #
     def _Create_title(self) -> Label:
         return Label(
             master=self,
-            text='Camara View',
+            text=f'Camara View {day}-{month}-{year}',
             foreground='black',
             font=("Z003", 20, "bold")
         )
@@ -231,7 +244,6 @@ class Frame_Main_Raw_Camera(Frame):
         # Volver a llamar la función después de un intervalo de tiempo
         self.after(10, self.update_frame)
 
-
 # -- Camara procesada -- #
 class Frame_Main_Pros_Camera(Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -246,7 +258,7 @@ class Frame_Main_Pros_Camera(Frame):
         # Botones para las funciones
         self.but_colors: Button = self._but_colors()
         self.but_contours: Button = self._but_contors()
-        self.but_objects: Button = self._but_objects()
+        self.but_objects: Button = self._but_save()
         
         # Creamos los objetos
         self.init_gui()
@@ -287,12 +299,12 @@ class Frame_Main_Pros_Camera(Frame):
                       text='Contorns',
                       font=('Magneto', 15))
     
-    def _but_objects(self) -> Button:
+    def _but_save(self) -> Button:
         return Button(self,
                       width=10,
                       borderwidth=1,
-                      command=self.detect_colors,
-                      text='Objects',
+                      command=self.save_photo,
+                      text='Save',
                       font=('Magneto', 15))
         
     # -- OPERATIVO -- #
@@ -373,6 +385,34 @@ class Frame_Main_Pros_Camera(Frame):
             
         cap.release()
         cv2.destroyAllWindows()
+    
+    def save_photo(self):
+        cap = cv2.VideoCapture(self.stream_url)
+    
+        # Leer un solo frame
+        ret, frame = cap.read()
+    
+        if ret:
+            # Usar un cuadro de diálogo para seleccionar la ubicación y nombre del archivo
+            file_path = filedialog.asksaveasfilename(defaultextension=".png",
+                                                     initialfile=f'image_{day}_{month}_{year}_at_{hour}_{minute}.png',
+                                                     filetypes=[("PNG files", "*.png"),
+                                                                ("JPEG files", "*.jpg"),
+                                                                ("All files", "*.*")])
+            
+            if file_path:
+                # Guardar la imagen
+                cv2.imwrite(file_path, frame)
+                messagebox.showinfo("Saved!",f'Saved image: image_{day}_{month}_{year}_at_{hour}:{minute}.png')
+                print(f"Foto guardada en {file_path}")
+            else:
+                messagebox.showwarning("Cancel", "Saved cancel")
+                print("Guardado cancelado.")
+        else:
+            messagebox.showerror('Error at save', 'Error saving image')
+            print("Error al capturar el fotograma.")
+
+        cap.release()
     
     
 # -- Command Promt -- #
@@ -458,7 +498,6 @@ class Frame_CMD(Frame):
 
         # Verificar si el comando es interno
         if cmd_in in self.internal_commands:
-            # Mostrar el mensaje correspondiente en la salida
             self.cmd_out.config(state='normal')
             self.cmd_out.delete(0, 'end')  # Borrar el contenido anterior
             self.cmd_out.insert(0, self.internal_commands[cmd_in])  # Insertar el mensaje
