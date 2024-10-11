@@ -26,6 +26,7 @@ from MQTT_con.MQTT_ex import mqtt_coms
 
 # - PS4 CONTROLLER - #
 import controls.ps4_control as ps4
+
 """
     Nota: En teoria ya no es encesario entrar a App.
     Puesto que todo se esta modificando dentro de 
@@ -67,6 +68,12 @@ class App(Frame):
         # - Creacion de los objetos - #
         self.init_gui()
     
+    def global_configs(self):
+        ip_rasp = self.tab3.get_rasp_ip()
+        ip_esp = self.tab3.get_esp_ip()
+        server_stream = self.tab3.get_URL()
+        return ip_rasp, ip_esp, server_stream
+    
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
         # -- Propiedades de la App principal -- #
@@ -83,11 +90,6 @@ class App(Frame):
         # Colocamos el Notebook en la ventana
         self.notebook.pack(fill=BOTH, expand=True)
     
-    def load_configuration(self):
-        ip_rasp = self.tab3.get_rasp_ip()
-        ip_esp = self.tab3.get_esp_ip()
-        server_stream = self.tab3.get_URL()
-        
     # - Creacion del Notebook con pestañas - #
     def _Create_notebook(self) -> Notebook:
         notebook = Notebook(self)
@@ -186,7 +188,8 @@ class Frame_Main_Raw_Camera(Frame):
         nocamav = os.path.join(os.path.dirname(__file__), 'novideo_finall.png')
         self.novidcam = PhotoImage(file=nocamav)
         
-        self.stream_url = server_stream
+        #self.server_stream = self.tab3.get_URL()
+        _,_,self.server_stream = App.global_configs(self)
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -597,8 +600,8 @@ class FrameOptions(Frame):
         self.RasIP_label: Label = self._raspIP_Label()
         
         self.host_ip: Label = self._ip_host()
-        self.esp_ip: Label = self._ip_esp_in()
-        self.rasp_ip: Label = self._ip_rasp_in()
+        self.esp_ip: Entry = self._ip_esp_in()
+        self.rasp_ip: Entry = self._ip_rasp_in()
         
         # - SERVER -#
         self.title_server: Label = self._Server_title()
@@ -666,16 +669,16 @@ class FrameOptions(Frame):
                      justify='left',
                      font=("Z003", 15))
                      
-    def _ip_esp_in(self) -> Label:
-        return Label(self,
-                     text='',
-                     font=('Z003', 15),
+    def _ip_esp_in(self) -> Entry:
+        return Entry(self, 
+                     justify='left',
+                     font=("Z003", 15),
                      width=30)
     
-    def _ip_rasp_in(self) -> Label:
-        return Label(self,
-                     text='',
-                     font=('Z003', 15),
+    def _ip_rasp_in(self) -> Entry:
+        return Entry(self, 
+                     justify='left',
+                     font=("Z003", 15),
                      width=30)
 
     # - ELEMENTOS VISUALES SERVIDOR - #
