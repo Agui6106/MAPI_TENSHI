@@ -1,8 +1,4 @@
 from tkinter import BOTH
-from tkinter import RIGHT
-from tkinter import LEFT
-from tkinter import BOTTOM
-from tkinter import X
 from tkinter import Button
 from tkinter import Frame
 from tkinter import Label
@@ -24,9 +20,12 @@ import cv2
 import numpy as np
 from PIL import Image, ImageTk
 
+# - MQTT - #
 from MQTT_con.MQTT_ex import get_ip_Windows
 from MQTT_con.MQTT_ex import mqtt_coms
 
+# - PS4 CONTROLLER - #
+import controls.ps4_control as ps4
 """
     Nota: En teoria ya no es encesario entrar a App.
     Puesto que todo se esta modificando dentro de 
