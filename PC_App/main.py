@@ -32,14 +32,72 @@ import controls.ps4_control as ps4
     Puesto que todo se esta modificando dentro de 
     los respecitvos frames
 """
-# -- VARIABLES GLOBALES -- #
+
 # Ips
 ip_rasp = ''
 ip_esp = ''
 ip = get_ip_Windows()
-
 # Link servidor
-server_stream = "http://192.168.252.18:8000/stream.mjpg"
+server_stream = ''
+
+# - Ventan de configuracion inicial - #
+def open_config_window():
+    # -- VARIABLES GLOBALES -- #
+    def save_config():
+        global ip_rasp, ip_esp, ip, server_stream
+        ip_rasp = entry_ip_rasp.get()
+        ip_esp = entry_ip_esp.get()
+        server_stream = entry_server_stream.get()
+        config_window.destroy()
+
+    bg_general = 'black'
+    # - Configuracion de ventan inicial - #
+    config_window = Tk()
+    config_window.title("Welcome to MAPI")
+    config_window.geometry('600x300')
+    config_window.resizable(False, False)
+    config_window.configure(bg=bg_general)
+    
+
+    # - VISUAL - #
+    # - IMAGE - #
+    Canvas(width=595, height=110,bg='gray').grid(row=0, column=0, columnspan=2)
+    
+    # - TITULO - #
+    Label(config_window, 
+          text="Welcome", font=('Magneto',20, 'bold'), 
+          bg=bg_general,foreground='white').grid(row=1, column=0, columnspan=2)
+    
+    # - IP RASP - #
+    Label(config_window, 
+          text="IP Raspberry: ", font=('Z003',13, 'bold'), 
+          bg=bg_general,foreground='white').grid(row=2, column=0, pady=2)
+    
+    entry_ip_rasp = Entry(config_window, width=42, font=('consolas', 15))
+    entry_ip_rasp.grid(row=2, column=1, pady=2)
+
+    # - IP ESP - #
+    Label(config_window, text="       IP ESP: ", font=('Z003',13, 'bold'), 
+          bg=bg_general,foreground='white').grid(row=3, column=0, pady=2)
+    
+    entry_ip_esp = Entry(config_window, width=42, font=('consolas', 15))
+    entry_ip_esp.grid(row=3, column=1, pady=2)
+
+    # - URL - #
+    Label(config_window, text="  Stream URL: ", font=('Z003',13, 'bold'), 
+          bg=bg_general,foreground='white').grid(row=4, column=0, pady=2)
+    
+    entry_server_stream = Entry(config_window, width=42, font=('consolas', 15))
+    entry_server_stream.grid(row=4, column=1, pady=2)
+
+    # - BOTON - #
+    Button(config_window, text="Save", width=10,font=('Magneto',14, 'bold'), 
+           bg=bg_general, foreground='white' ,
+           command=save_config).grid(row=5, columnspan=2, pady=5)
+
+    config_window.mainloop()
+
+open_config_window()
 
 # Mqtt client
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
@@ -67,12 +125,6 @@ class App(Frame):
         
         # - Creacion de los objetos - #
         self.init_gui()
-    
-    def global_configs(self):
-        ip_rasp = self.tab3.get_rasp_ip()
-        ip_esp = self.tab3.get_esp_ip()
-        server_stream = self.tab3.get_URL()
-        return ip_rasp, ip_esp, server_stream
     
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
@@ -188,8 +240,7 @@ class Frame_Main_Raw_Camera(Frame):
         nocamav = os.path.join(os.path.dirname(__file__), 'novideo_finall.png')
         self.novidcam = PhotoImage(file=nocamav)
         
-        #self.server_stream = self.tab3.get_URL()
-        _,_,self.server_stream = App.global_configs(self)
+        self.stream_url = server_stream
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -781,6 +832,8 @@ root = Tk()
 # http://192.168.252.18:8000/stream.mjpg
 if __name__ == '__main__':
     #server_stream = input(f'Inserte link de stream')
+    # Ejecutar la ventana de configuración antes de la app principal
+    #open_config_window()
     # Inicio de app
     ex = App(root)
     root.mainloop()
