@@ -11,6 +11,7 @@ from tkinter import filedialog
 
 from tkinter.ttk import Combobox
 from tkinter.ttk import Notebook
+from tkinter.ttk import Separator
 
 import datetime as dt
 
@@ -633,13 +634,28 @@ class FrameOptions(Frame):
         self.rasp_ip: Entry = self._ip_rasp_in()
         
         # - SERVER -#
-        self.title_server: Label = self._Server_title()
         self.server_label: Label = self._Server_tag()
         self.server_URL: Entry = self._server_url()
         
+        # - D-PAD - #
+        self.title_joys: Label = self._controls_title_()
+        
+        self.lable_name: Label = self._joy_name_()
+        self.lable_id: Label = self._joy_pc_id_()
+        self.lable_power: Label = self._joy_power_()
+        self.lable_buttons: Label = self._joy_buttons_()
+        self.lable_axes: Label = self._joy_axes_()
+        
+        self.name: Entry = self.name_label()
+        self.id: Entry = self.id_label()
+        self.power: Entry = self.power_label()
+        self.buttons: Entry = self.buts_label()
+        self.axes: Entry = self.axes_label()
+        
         # Creamos los objetos
         self.init_gui()
-        self.update_configs()
+        self.update_configs_connect()
+        self.get_joy_stats()
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
@@ -648,21 +664,33 @@ class FrameOptions(Frame):
         # - IP - #
         # - TItulos - #
         self.content.grid(row=1, column=0,columnspan=2)
-        self.HIP_label.grid(row=2, column=0)
-        self.EsIP_label.grid(row=3, column=0)
-        self.RasIP_label.grid(row=4, column=0)
-        
-        # - Entrys - #
-        self.host_ip.grid(row=2,column=1)
-        self.esp_ip.grid(row=3,column=1)
-        self.rasp_ip.grid(row=4,column=1)
+        self.HIP_label.grid(row=2, column=0, pady=4)
+        self.EsIP_label.grid(row=3, column=0, pady=4)
+        self.RasIP_label.grid(row=4, column=0, pady=4)
+
+        self.host_ip.grid(row=2,column=1, pady=4)
+        self.esp_ip.grid(row=3,column=1, pady=4)
+        self.rasp_ip.grid(row=4,column=1, pady=4)
         
         # - SERVER - #
-        self.title_server.grid(row=5,column=0, columnspan=2)
-        self.server_label.grid(row=6,column=0)
-        self.server_URL.grid(row=6,column=1)
-
+        self.server_label.grid(row=6,column=0, )
+        self.server_URL.grid(row=6,column=1,)
         
+        # - JOYSTICK - #
+        self.title_joys.grid(row=7,column=0,columnspan=2, pady=15)
+        
+        self.lable_name.grid(row=8,column=0,)
+        self.lable_id.grid(row=9,column=0, pady= 4)
+        self.lable_power.grid(row=10,column=0, pady= 4)
+        self.lable_buttons.grid(row=11,column=0, pady= 4)
+        self.lable_axes.grid(row=12,column=0, pady= 4)
+         
+        self.name.grid(row=8,column=1)
+        self.id.grid(row=9,column=1)
+        self.power.grid(row=10,column=1)
+        self.buttons.grid(row=11,column=1)
+        self.axes.grid(row=12,column=1)
+
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
     def _Create_title(self) -> Label:
@@ -715,9 +743,6 @@ class FrameOptions(Frame):
                      width=40)
 
     # - ELEMENTOS VISUALES SERVIDOR - #
-    def _Server_title(self) -> Label:
-        return Label(self, text="Stream Server", font=("Z003", 15, "bold"))
-    
     def _Server_tag(self) -> Label:
         return Label(self, 
                      text="URL stream: ", 
@@ -731,7 +756,7 @@ class FrameOptions(Frame):
                      width=40)
     
     # - Reinicamos valores - #
-    def update_configs(self):
+    def update_configs_connect(self):
         self.esp_ip.config(state='normal')
         self.rasp_ip.config(state='normal')
         self.server_URL.config(state='normal')
@@ -756,7 +781,126 @@ class FrameOptions(Frame):
         self.server_URL.delete(0, 'end')  # Borrar el contenido anterior
         self.server_URL.insert(0, server_stream)  # Insertar el nuevo mensaje
         self.server_URL.config(state='readonly')
+    
+    # -- CONFIG CONTROLS -- #
+    def _controls_title_(self) -> Label:
+        return Label(
+            master=self,
+            text='Joystick',
+            foreground='black',
+            font=("Magneto", 20, "bold")
+        )
+    
+    # - Etiquetado - #
+    def _joy_name_(self) -> Label:
+        return Label(self, 
+                     text="         Name: ", 
+                     font=("Z003", 15))
+    
+    def _joy_pc_id_(self) -> Label:
+        return Label(self, 
+                     text="     ID on PC: ", 
+                     font=("Z003", 15))
         
+    def _joy_power_(self) -> Label:
+        return Label(self, 
+                     text="       Power: ", 
+                     font=("Z003", 15))
+        
+    def _joy_buttons_(self) -> Label:
+        return Label(self, 
+                     text="Total Buttons: ", 
+                     font=("Z003", 15))
+        
+    def _joy_axes_(self) -> Label:
+        return Label(self, 
+                     text="   Total Axes: ", 
+                     font=("Z003", 15))
+        
+    # - Valores - #
+    def name_label(self) -> Entry:
+        return Entry(self, 
+                     font=('consolas', 14),  
+                     justify='left',
+                     state='readonly',
+                     width=40)
+    
+    def id_label(self) -> Entry:
+        return Entry(self, 
+                     font=('consolas', 14),  
+                     justify='left',
+                     state='readonly',
+                     width=40)
+    
+    def power_label(self) -> Entry:
+        return Entry(self, 
+                     font=('consolas', 14),  
+                     justify='left',
+                     state='readonly',
+                     width=40)
+    
+    def buts_label(self) -> Entry:
+        return Entry(self, 
+                     font=('consolas', 14),  
+                     justify='left',
+                     state='readonly',
+                     width=40)
+        
+    def axes_label(self) -> Entry:
+        return Entry(self, 
+                     font=('consolas', 14),  
+                     justify='left',
+                     state='readonly',
+                     width=40)
+    
+    def get_joy_stats(self):
+        # - Variables - #
+        name = ps4.get_pad_info(0,'name')
+        id = ps4.get_pad_info(0,'id')
+        power = ps4.get_pad_info(0,'power')
+        buttons = ps4.get_pad_info(0,'buttons')
+        axes = ps4.get_pad_info(0,'axes')
+        
+        """
+        self.name: Entry = self.name_label()
+        self.id: Entry = self.id_label()
+        self.power: Entry = self.power_label()
+        self.buttons: Entry = self.buts_label()
+        self.axes: Entry = self.axes_label()
+        
+        """
+        # - Las aplicamos a nuestra app - #
+        self.name.config(state='normal')
+        self.id.config(state='normal')
+        self.power.config(state='normal')
+        self.buttons.config(state='normal')
+        self.axes.config(state='normal')
+        
+        # Insertar Name
+        self.name.delete(0, 'end')  # Borrar el contenido anterior
+        self.name.insert(0, name)  # Insertar el nuevo mensaje
+        self.name.config(state='readonly')
+
+        # Insertar id
+        self.id.delete(0, 'end')  # Borrar el contenido anterior
+        self.id.insert(0, id)  # Insertar el nuevo mensaje
+        self.id.config(state='readonly')
+
+        # Insertar power
+        self.power.delete(0, 'end')  # Borrar el contenido anterior
+        self.power.insert(0, power)  # Insertar el nuevo mensaje
+        self.power.config(state='readonly')
+        
+        # Insertar buttons
+        self.buttons.delete(0, 'end')  # Borrar el contenido anterior
+        self.buttons.insert(0, buttons)  # Insertar el nuevo mensaje
+        self.buttons.config(state='readonly')
+        
+        # Insertar Axes
+        self.axes.delete(0, 'end')  # Borrar el contenido anterior
+        self.axes.insert(0, axes)  # Insertar el nuevo mensaje
+        self.axes.config(state='readonly')
+           
 # ---- Clase ventana de WebControl ---- #
 class FrameWebControl(Frame):
     def __init__(self, parent, *args, **kwargs):
