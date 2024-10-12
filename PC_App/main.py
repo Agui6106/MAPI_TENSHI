@@ -857,11 +857,19 @@ class FrameOptions(Frame):
     
     def get_joy_stats(self):
         # - Variables - #
-        name = ps4.get_pad_info(0,'name')
-        id = ps4.get_pad_info(0,'id')
-        power = ps4.get_pad_info(0,'power')
-        buttons = ps4.get_pad_info(0,'buttons')
-        axes = ps4.get_pad_info(0,'axes')
+        if ps4.get_joys() == False:
+            name = 'No joystick'
+            id = 'No joystick'
+            power = 'No joystick'
+            buttons = 'No joystick'
+            axes = 'No joystick'
+            
+        else:
+            name = ps4.get_pad_info(0,'name')
+            id = ps4.get_pad_info(0,'id')
+            power = ps4.get_pad_info(0,'power')
+            buttons = ps4.get_pad_info(0,'buttons')
+            axes = ps4.get_pad_info(0,'axes')
         
         """
         self.name: Entry = self.name_label()

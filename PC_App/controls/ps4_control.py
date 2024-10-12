@@ -3,7 +3,15 @@ import pygame
 pygame.init()
 pygame.joystick.init()
 
-#joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
+def get_joys():
+    """
+    Hay joysticks disponibles?
+    """
+    joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
+    if joysticks != 0:
+        return False
+    else:
+        return True
 
 # - BOTONES Y JOYSTICKS - #
 def get_buttons():
