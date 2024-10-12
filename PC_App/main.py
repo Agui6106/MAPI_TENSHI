@@ -37,6 +37,7 @@ import controls.ps4_control as ps4
 ip_rasp = ''
 ip_esp = ''
 ip = get_ip_Windows()
+ID_bot = ''
 # Link servidor
 server_stream = ''
 
@@ -44,24 +45,30 @@ server_stream = ''
 def open_config_window():
     # -- VARIABLES GLOBALES -- #
     def save_config():
-        global ip_rasp, ip_esp, ip, server_stream
+        global ip_rasp, ip_esp, ip, server_stream, ID_bot
         ip_rasp = entry_ip_rasp.get()
         ip_esp = entry_ip_esp.get()
         server_stream = entry_server_stream.get()
+        ID_bot = entry_Robot_ID.get()
         config_window.destroy()
 
     bg_general = 'black'
     # - Configuracion de ventan inicial - #
     config_window = Tk()
     config_window.title("Welcome to MAPI")
-    config_window.geometry('600x300')
+    config_window.geometry('600x350')
     config_window.resizable(False, False)
     config_window.configure(bg=bg_general)
     
-
-    # - VISUAL - #
+    # Imagen
+    source_image = os.path.join(os.path.dirname(__file__), 'mapi_tenshi_baner_init.png')
+    photo = PhotoImage(file=source_image)
+    
+    # - VISUAL - #.grid(row=0, column=0, columnspan=2)
     # - IMAGE - #
-    Canvas(width=595, height=110,bg='gray').grid(row=0, column=0, columnspan=2)
+    x = Canvas(width=600, height=110, bg='black', highlightthickness=0)
+    x.create_image((15,0),image=photo, anchor='nw')
+    x.grid(row=0, column=0, columnspan=2)
     
     # - TITULO - #
     Label(config_window, 
@@ -70,30 +77,37 @@ def open_config_window():
     
     # - IP RASP - #
     Label(config_window, 
-          text="IP Raspberry: ", font=('Z003',13, 'bold'), 
-          bg=bg_general,foreground='white').grid(row=2, column=0, pady=2)
+          text="IP Raspberry:", font=('Z003',13, 'bold'), justify='left',
+          bg=bg_general,foreground='white').grid(row=2, column=0, pady=4)
     
-    entry_ip_rasp = Entry(config_window, width=42, font=('consolas', 15))
-    entry_ip_rasp.grid(row=2, column=1, pady=2)
+    entry_ip_rasp = Entry(config_window, width=40, font=('consolas', 15))
+    entry_ip_rasp.grid(row=2, column=1, pady=4)
 
     # - IP ESP - #
-    Label(config_window, text="       IP ESP: ", font=('Z003',13, 'bold'), 
-          bg=bg_general,foreground='white').grid(row=3, column=0, pady=2)
+    Label(config_window, text="          IP ESP:", font=('Z003',13, 'bold'), justify='left',
+          bg=bg_general,foreground='white').grid(row=3, column=0, pady=4)
     
-    entry_ip_esp = Entry(config_window, width=42, font=('consolas', 15))
-    entry_ip_esp.grid(row=3, column=1, pady=2)
+    entry_ip_esp = Entry(config_window, width=40, font=('consolas', 15))
+    entry_ip_esp.grid(row=3, column=1, pady=4)
 
     # - URL - #
-    Label(config_window, text="  Stream URL: ", font=('Z003',13, 'bold'), 
+    Label(config_window, text="   Stream URL:", font=('Z003',13, 'bold'), justify='left',
           bg=bg_general,foreground='white').grid(row=4, column=0, pady=2)
     
-    entry_server_stream = Entry(config_window, width=42, font=('consolas', 15))
-    entry_server_stream.grid(row=4, column=1, pady=2)
+    entry_server_stream = Entry(config_window, width=40, font=('consolas', 15))
+    entry_server_stream.grid(row=4, column=1, pady=4)
+    
+    # - Robot ID - #
+    Label(config_window, text="      Robot ID:", font=('Z003',13, 'bold'), justify='left',
+          bg=bg_general,foreground='white').grid(row=5, column=0, pady=4)
+    
+    entry_Robot_ID = Entry(config_window, width=40, font=('consolas', 15))
+    entry_Robot_ID.grid(row=5, column=1, pady=4)
 
     # - BOTON - #
     Button(config_window, text="Save", width=10,font=('Magneto',14, 'bold'), 
            bg=bg_general, foreground='white' ,
-           command=save_config).grid(row=5, columnspan=2, pady=5)
+           command=save_config).grid(row=6, columnspan=2, pady=5)
 
     config_window.mainloop()
 
@@ -129,7 +143,7 @@ class App(Frame):
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
         # -- Propiedades de la App principal -- #
-        self.parent.title('MAPI-Tenshi Control Software - V1.0')
+        self.parent.title(f'MAPI-Tenshi Control Software - V1.0. on Robot ID: {ID_bot} with IP: {ip_rasp}')
         # Size del monitor
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
@@ -148,20 +162,20 @@ class App(Frame):
         
         # Creamos un frame simple para Tab 1
         self.tab1 = Frame(notebook)
-        self.tab2 = FrameFiles(notebook)
+        #self.tab2 = FrameFiles(notebook)
         self.tab3 = FrameOptions(notebook)
         self.tab4 = FrameWebControl(notebook)
         self.tab5 = FrameAbout(notebook)
         # Agregamos las pestañas al Notebook
         notebook.add(self.tab1, text='Main')
-        notebook.add(self.tab2, text='File')
+        #notebook.add(self.tab2, text='File')
         notebook.add(self.tab3, text='Options')
         notebook.add(self.tab4, text='Web Control')
         notebook.add(self.tab5, text='About')
 
         # - Atributos y elementos de aplicacion - #
         # - TITULO - #
-        Label(self.tab1, text="Control Panel. Robot 01",
+        Label(self.tab1, text=f"Control Panel. Robot {ID_bot}",
               foreground='black',
               font=("Magneto", 20, "bold")).grid(row=1, column=0, columnspan=2)
         """
