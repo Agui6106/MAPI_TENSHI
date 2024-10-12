@@ -378,7 +378,7 @@ class Frame_Main_Pros_Camera(Frame):
         cap = cv2.VideoCapture(self.stream_url)
 
         # Crear ventana de OpenCV
-        cv2.namedWindow('Deteccion de colores')
+        cv2.namedWindow(f'Color detection of robot: {ID_bot}')
 
         # Crear trackbars para ajustar los valores de HSV
         def nothing(x):
@@ -444,7 +444,7 @@ class Frame_Main_Pros_Camera(Frame):
             # Dibujar contornos
             cv2.drawContours(frame, contours, -1, (0, 255, 0), 2)
             
-            cv2.imshow('Deteccion de contornos', frame)
+            cv2.imshow(f'Contour detection of robot {ID_bot}', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             
@@ -460,7 +460,7 @@ class Frame_Main_Pros_Camera(Frame):
         if ret:
             # Usar un cuadro de diálogo para seleccionar la ubicación y nombre del archivo
             file_path = filedialog.asksaveasfilename(defaultextension=".png",
-                                                     initialfile=f'image_{day}_{month}_{year}_at_{hour}_{minute}.png',
+                                                     initialfile=f'image_{day}_{month}_{year}_at_{hour}_{minute}_by_bot_{ID_bot}.png',
                                                      filetypes=[("PNG files", "*.png"),
                                                                 ("JPEG files", "*.jpg"),
                                                                 ("All files", "*.*")])
