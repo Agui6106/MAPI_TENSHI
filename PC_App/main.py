@@ -34,13 +34,8 @@ import controls.ps4_control as ps4
     los respecitvos frames
 """
 
-# Ips
-ip_rasp = '0.0.0.1'
-ip_esp = '0.0.0.2'
+# IP Local
 ip = get_ip_Windows()
-ID_bot = '01'
-# Link servidor
-server_stream = 'https://server-example.com'
 
 # - Ventan de configuracion inicial - #
 def open_config_window():
@@ -51,8 +46,15 @@ def open_config_window():
         ip_esp = entry_ip_esp.get()
         server_stream = entry_server_stream.get()
         ID_bot = entry_Robot_ID.get()
+        if ip_rasp == '' or ip_esp == '' or server_stream == '' or ID_bot == '' :
+            ip_rasp = '0.0.0.1'
+            ip_esp = '0.0.0.2'
+            ID_bot = '01'
+            server_stream = 'https://server-example.com'
+            messagebox.showwarning("Input Empty", "No selected values. Default selected")
+        
         config_window.destroy()
-
+            
     bg_general = 'black'
     # - Configuracion de ventan inicial - #
     config_window = Tk()
