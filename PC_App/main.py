@@ -34,12 +34,12 @@ import controls.ps4_control as ps4
 """
 
 # Ips
-ip_rasp = ''
-ip_esp = ''
+ip_rasp = '0.0.0.1'
+ip_esp = '0.0.0.2'
 ip = get_ip_Windows()
-ID_bot = ''
+ID_bot = '01'
 # Link servidor
-server_stream = ''
+server_stream = 'https://server-example.com'
 
 # - Ventan de configuracion inicial - #
 def open_config_window():
@@ -113,7 +113,7 @@ def open_config_window():
 
 open_config_window()
 
-# Mqtt client
+# Mqtt client Raspberry
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
 mqtt_client.start()
 
@@ -162,13 +162,11 @@ class App(Frame):
         
         # Creamos un frame simple para Tab 1
         self.tab1 = Frame(notebook)
-        #self.tab2 = FrameFiles(notebook)
         self.tab3 = FrameOptions(notebook)
         self.tab4 = FrameWebControl(notebook)
         self.tab5 = FrameAbout(notebook)
         # Agregamos las pestañas al Notebook
         notebook.add(self.tab1, text='Main')
-        #notebook.add(self.tab2, text='File')
         notebook.add(self.tab3, text='Options')
         notebook.add(self.tab4, text='Web Control')
         notebook.add(self.tab5, text='About')
@@ -481,7 +479,6 @@ class Frame_Main_Pros_Camera(Frame):
 
         cap.release()
     
-    
 # -- Command Promt -- #
 class Frame_CMD(Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -615,40 +612,7 @@ class Frame_CMD(Frame):
 # ----------------------------------- #
 # -------- Frames de control -------- #
 # ----------------------------------- #
-
-# ---- Clase ventana de archivos ---- #
-class FrameFiles(Frame):
-    def __init__(self, parent, *args, **kwargs):
-        Frame.__init__(self, parent, *args, **kwargs)
-        self.parent = parent
-    
-        # - Creacion de objetos TKinter - #
-        self.title: Label = self._Create_title()
-        self.content: Label = self._content()
-        
-        # Creamos los objetos
-        self.init_gui()
-        
-    # - Colocamos los elementos visuales - #
-    def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2, padx=40)
-        
-        # Añadimos un Label en FrameOne usando grid()
-        self.content.grid(row=1, column=0)
-        
-    # - Atributos y elementos de aplicacion - #
-    # - TITULO - #
-    def _Create_title(self) -> Label:
-        return Label(
-            master=self,
-            text='Titulo Ventana Archivo',
-            foreground='black',
-            font=("Z003", 20, "bold")
-        )
-    
-    def _content(self) -> Label:
-        return Label(self, text="Contenido de la Pestaña 2")
-    
+   
 # ---- Clase ventana de Opciones ---- #
 class FrameOptions(Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -664,7 +628,7 @@ class FrameOptions(Frame):
         self.EsIP_label: Label = self._espIP_Label()
         self.RasIP_label: Label = self._raspIP_Label()
         
-        self.host_ip: Label = self._ip_host()
+        self.host_ip: Entry = self._ip_host()
         self.esp_ip: Entry = self._ip_esp_in()
         self.rasp_ip: Entry = self._ip_rasp_in()
         
@@ -675,6 +639,7 @@ class FrameOptions(Frame):
         
         # Creamos los objetos
         self.init_gui()
+        self.update_configs()
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
@@ -682,7 +647,7 @@ class FrameOptions(Frame):
         
         # - IP - #
         # - TItulos - #
-        self.content.grid(row=1, column=0)
+        self.content.grid(row=1, column=0,columnspan=2)
         self.HIP_label.grid(row=2, column=0)
         self.EsIP_label.grid(row=3, column=0)
         self.RasIP_label.grid(row=4, column=0)
@@ -693,9 +658,9 @@ class FrameOptions(Frame):
         self.rasp_ip.grid(row=4,column=1)
         
         # - SERVER - #
-        self.title_server.grid(row=1,column=3)
-        self.server_label.grid(row=2,column=3)
-        self.server_URL.grid(row=2,column=4)
+        self.title_server.grid(row=5,column=0, columnspan=2)
+        self.server_label.grid(row=6,column=0)
+        self.server_URL.grid(row=6,column=1)
 
         
     # - Atributos y elementos de aplicacion - #
@@ -703,14 +668,14 @@ class FrameOptions(Frame):
     def _Create_title(self) -> Label:
         return Label(
             master=self,
-            text='Opciones',
+            text='Connectivity',
             foreground='black',
             font=("Magneto", 20, "bold")
         )
     
-    # - ELEMENTOS VISUALES IPS - #
+    # - ELEMENTOS VISUALES IPs - #
     def _Ip_Opt_Label(self) -> Label:
-        return Label(self, text="Ip Options", font=("Z003", 15, "bold"))
+        return Label(self, text="Actual IPs", font=("Z003", 15, "bold"))
     
     def _hostIP_Label(self) -> Label:
         return Label(self, 
@@ -728,27 +693,30 @@ class FrameOptions(Frame):
                      font=("Z003", 15))    
     
     # - Mostrar Ips correspondientes -#
-    def _ip_host(self) -> Label:
-        return Label(self, 
-                     text=ip,
+    def _ip_host(self) -> Entry:
+        return Entry(self, 
+                     font=('consolas', 14),  
                      justify='left',
-                     font=("Z003", 15))
+                     state='readonly',
+                     width=40)
                      
     def _ip_esp_in(self) -> Entry:
         return Entry(self, 
+                     font=('consolas', 14),  
                      justify='left',
-                     font=("Z003", 15),
-                     width=30)
+                     state='readonly',
+                     width=40)
     
     def _ip_rasp_in(self) -> Entry:
         return Entry(self, 
+                     font=('consolas', 14),  
                      justify='left',
-                     font=("Z003", 15),
-                     width=30)
+                     state='readonly',
+                     width=40)
 
     # - ELEMENTOS VISUALES SERVIDOR - #
     def _Server_title(self) -> Label:
-        return Label(self, text="Servidor", font=("Z003", 15, "bold"))
+        return Label(self, text="Stream Server", font=("Z003", 15, "bold"))
     
     def _Server_tag(self) -> Label:
         return Label(self, 
@@ -757,21 +725,37 @@ class FrameOptions(Frame):
     
     def _server_url(self) -> Entry:
         return Entry(self, 
+                     font=('consolas', 14),  
                      justify='left',
-                     font=("Z003", 15),
-                     width=30)
+                     state='readonly',
+                     width=40)
     
-    
-    # - ELEMENTOS OPERATIVOS - #        
-    def get_URL(self):
-        return self.esp_ip.get()
-
-    def get_esp_ip(self):
-        return self.esp_ip.get()
+    # - Reinicamos valores - #
+    def update_configs(self):
+        self.esp_ip.config(state='normal')
+        self.rasp_ip.config(state='normal')
+        self.server_URL.config(state='normal')
+        self.host_ip.config(state='normal')
         
-    def get_rasp_ip(self):
-        return self.rasp_ip.get()
+        # Insertar IP Local
+        self.host_ip.delete(0, 'end')  # Borrar el contenido anterior
+        self.host_ip.insert(0, ip)  # Insertar el nuevo mensaje
+        self.host_ip.config(state='readonly')
 
+        # Insertar en el ESP
+        self.esp_ip.delete(0, 'end')  # Borrar el contenido anterior
+        self.esp_ip.insert(0, ip_esp)  # Insertar el nuevo mensaje
+        self.esp_ip.config(state='readonly')
+
+        # Insertar en Rasp
+        self.rasp_ip.delete(0, 'end')  # Borrar el contenido anterior
+        self.rasp_ip.insert(0, ip_rasp)  # Insertar el nuevo mensaje
+        self.rasp_ip.config(state='readonly')
+        
+        # Insertar en URL
+        self.server_URL.delete(0, 'end')  # Borrar el contenido anterior
+        self.server_URL.insert(0, server_stream)  # Insertar el nuevo mensaje
+        self.server_URL.config(state='readonly')
         
 # ---- Clase ventana de WebControl ---- #
 class FrameWebControl(Frame):
@@ -843,12 +827,8 @@ class FrameAbout(Frame):
 # -------------- Inicializacion de la app -------------- #
 # ------------------------------------------------------ #
 root = Tk()
-# http://192.168.252.18:8000/stream.mjpg
+
 if __name__ == '__main__':
-    #server_stream = input(f'Inserte link de stream')
-    # Ejecutar la ventana de configuración antes de la app principal
-    #open_config_window()
-    # Inicio de app
     ex = App(root)
     root.mainloop()
     
