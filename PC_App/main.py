@@ -186,32 +186,32 @@ class App(Frame):
         # - TITULO - #
         Label(self.tab1, text=f"Control Panel. Robot {ID_bot}",
               foreground='black',
-              font=("Magneto", 20, "bold")).grid(row=1, column=0, columnspan=2)
+              font=("Magneto", 20, "bold")).grid(row=0, column=0, columnspan=2)
         """
         Interfaz Esperada:
         
             |   0    |      1        |
             --------------------------
-          0 | mqtt   |   Raw Cam     |
+          1 | mqtt   |   Raw Cam     |
             --------------------------
-          1 | CMD    |   Pos Cam     |
+          2 | CMD    |   Pos Cam     |
             --------------------------
         """
         # Control MQTT
         frame_mqtt_control = Frame_Main_MQTT_Control(self.tab1)  # Instanciar el frame aquí
-        frame_mqtt_control.grid(row=2, column=0)
+        frame_mqtt_control.grid(row=1, column=0)
 
         # Camara sin proceso
         frame_Raw_camera = Frame_Main_Raw_Camera(self.tab1)  # Instanciar el frame aquí
-        frame_Raw_camera.grid(row=2, column=1)
+        frame_Raw_camera.grid(row=1, column=1)
         
         # Camara procesada
         frame_pros_camera = Frame_Main_Pros_Camera(self.tab1)
-        frame_pros_camera.grid(row=3, column=1)
+        frame_pros_camera.grid(row=2, column=1)
         
         # Command Prompt
         frame_CMD_promt = Frame_CMD(self.tab1)
-        frame_CMD_promt.grid(row=4,column=0)
+        frame_CMD_promt.grid(row=2,column=0)
         frame_CMD_promt.config(bg='black')
         
         return notebook
@@ -334,7 +334,7 @@ class Frame_Main_Pros_Camera(Frame):
         # Botones para las funciones
         self.but_colors: Button = self._but_colors()
         self.but_contours: Button = self._but_contors()
-        self.but_objects: Button = self._but_save()
+        self.but_save: Button = self._but_save()
         self.but_faces: Button = self._but_faces()
         
         # Creamos los objetos
@@ -342,13 +342,13 @@ class Frame_Main_Pros_Camera(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=3)
+        self.title.grid(row=0, column=0, columnspan=3, pady=10)
         
         # Colocamos los botones
-        self.but_colors.grid(row=1, column=0, padx=10, pady=10)
-        self.but_contours.grid(row=1, column=1, padx=10, pady=10)
-        self.but_objects.grid(row=2, column=0, padx=10, pady=10)
-        self.but_faces.grid(row=2, column=1, padx=10, pady=10)
+        self.but_colors.grid(row=1, column=0, padx=10, pady=5)
+        self.but_contours.grid(row=1, column=1, padx=10, pady=5)
+        self.but_faces.grid(row=2, column=0, padx=10, pady=5)
+        self.but_save.grid(row=2, column=1, padx=10, pady=5)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
@@ -363,7 +363,7 @@ class Frame_Main_Pros_Camera(Frame):
     # - Botones - #
     def _but_colors(self) -> Button:
         return Button(self,
-                      width=10,
+                      width=18,
                       borderwidth=1,
                       command=self.detect_colors,
                       text='Colors',
@@ -371,7 +371,7 @@ class Frame_Main_Pros_Camera(Frame):
     
     def _but_contors(self) -> Button:
         return Button(self,
-                      width=10,
+                      width=18,
                       borderwidth=1,
                       command=self.detect_contorns,
                       text='Contorns',
@@ -379,7 +379,7 @@ class Frame_Main_Pros_Camera(Frame):
     
     def _but_save(self) -> Button:
         return Button(self,
-                      width=10,
+                      width=18,
                       borderwidth=1,
                       command=self.save_photo,
                       text='Save',
@@ -387,7 +387,7 @@ class Frame_Main_Pros_Camera(Frame):
         
     def _but_faces(self) -> Button:
         return Button(self,
-                      width=10,
+                      width=18,
                       borderwidth=1,
                       command=self.face_detect,
                       text='Faces',
@@ -636,8 +636,8 @@ class Frame_CMD(Frame):
         self.send.grid(column=3,row=1,padx=5, rowspan=2)
         
         # - Recepcion de comandos - # 
-        self.out.grid(column=1,row=2)
-        self.cmd_out.grid(column=2,row=2)
+        self.out.grid(column=1,row=2, pady=5)
+        self.cmd_out.grid(column=2,row=2, pady=5)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
