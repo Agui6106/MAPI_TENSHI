@@ -15,6 +15,9 @@ from tkinter.ttk import Separator
 
 import datetime as dt
 
+import subprocess
+import sys
+
 import os
 
 import cv2
@@ -146,7 +149,7 @@ class App(Frame):
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
         # -- Propiedades de la App principal -- #
-        self.parent.title(f'MAPI-Tenshi Control Software - V1.0. on Robot ID: {ID_bot} with IP: {ip_rasp}')
+        self.parent.title(f'MAPI-Tenshi Control Panel - V1.0. on Robot ID: {ID_bot} with IP: {ip_rasp}')
         # Size del monitor
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
@@ -932,7 +935,11 @@ class FrameOptions(Frame):
         self.axes.config(state='readonly')
         
     def run_test(self):
-        messagebox.showinfo('Running..', 'Function to run pad_test.py')
+        code_file = os.path.join(os.path.dirname(__file__), 'Control_test.py')
+        try:
+            subprocess.run([sys.executable, code_file])
+        except Exception as e:
+                messagebox.showerror('Error', f'Failed to start due to: {str(e)}')
            
 # ---- Clase ventana de WebControl ---- #
 class FrameWebControl(Frame):
