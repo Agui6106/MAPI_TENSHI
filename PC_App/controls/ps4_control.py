@@ -1,17 +1,24 @@
 import pygame
+import time
 
 pygame.init()
 pygame.joystick.init()
 
-def get_joys():
-    """
-    Hay joysticks disponibles?
-    """
+joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
+    
+def refresh_joys():
+    # - Reescanemos los controles - #
+    pygame.joystick.quit()  
+    pygame.joystick.init() 
+    
     joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
-    if joysticks != 0:
-        return False
-    else:
-        return True
+    
+    # Reiniciamos los joysticks
+    for joystick in joysticks:
+        joystick.init()  
+        
+    print(f"{len(joysticks)} joystick(s) connected: {joysticks}")
+    return joysticks  # Devuelve la lista de joysticks
 
 # - BOTONES Y JOYSTICKS - #
 def get_buttons():
@@ -95,9 +102,8 @@ def get_pad_info(id_pad, val):
         return joystick.get_numaxes()       
                     
 if __name__ == "__main__":
-    
     # - Info - #
-    print(f'\nName: {get_pad_info(0,'name')}')
+    """ print(f'\nName: {get_pad_info(0,'name')}')
     print(f'Id: {get_pad_info(0,'id')}')
     print(f'Power: {get_pad_info(0,'power')}')
     print(f'Total Buttons: {get_pad_info(0,'buttons')}')
@@ -111,4 +117,4 @@ if __name__ == "__main__":
         print(button)
         print('')
         print(f'X Left: {xval_left}, Y Left: {yval_left} \n')
-        print(f'X right: {xval_right}, Y right: {yval_right} \n')
+        print(f'X right: {xval_right}, Y right: {yval_right} \n')"""

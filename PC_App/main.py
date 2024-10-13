@@ -654,6 +654,9 @@ class FrameOptions(Frame):
         self.buttons: Entry = self.buts_label()
         self.axes: Entry = self.axes_label()
         
+        self.joys_updated: Button = self.but_refresh()
+        self.run_tests_butt: Button = self.but_test()
+        
         # Creamos los objetos
         self.init_gui()
         self.update_configs_connect()
@@ -692,6 +695,10 @@ class FrameOptions(Frame):
         self.power.grid(row=10,column=1)
         self.buttons.grid(row=11,column=1)
         self.axes.grid(row=12,column=1)
+        
+        # - BUTTONS - #
+        self.joys_updated.grid(row=13, column=0, columnspan=2, pady=2)
+        self.run_tests_butt.grid(row=14, column=0, columnspan=2, pady=2)
 
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
@@ -790,7 +797,7 @@ class FrameOptions(Frame):
             master=self,
             text='Joystick',
             foreground='black',
-            font=("Magneto", 20, "bold")
+            font=("Z003", 15, "bold")
         )
     
     # - Etiquetado - #
@@ -855,14 +862,35 @@ class FrameOptions(Frame):
                      state='readonly',
                      width=40)
     
+    # - BOTONES - #
+    def but_refresh(self) -> Button:
+        return Button(self,
+                      width=40,
+                      command=self.get_joy_stats,
+                      text='Update',
+                      font=('Magneto', 15))
+    
+    def but_test(self) -> Button:
+                return Button(self,
+                      width=40,
+                      command=self.run_test,
+                      text='Test',
+                      font=('Magneto', 15))
+    
+    # - OPERATIVO - #
     def get_joy_stats(self):
+        joysticks = ps4.refresh_joys()
+        
         # - Variables - #
-        if ps4.get_joys() == False:
+        if not joysticks:
             name = 'No joystick'
             id = 'No joystick'
             power = 'No joystick'
             buttons = 'No joystick'
             axes = 'No joystick'
+        
+        elif len(joysticks) > 1:
+            messagebox.showerror('Warning!!!','Only 1 controll support')
             
         else:
             name = ps4.get_pad_info(0,'name')
@@ -870,15 +898,7 @@ class FrameOptions(Frame):
             power = ps4.get_pad_info(0,'power')
             buttons = ps4.get_pad_info(0,'buttons')
             axes = ps4.get_pad_info(0,'axes')
-        
-        """
-        self.name: Entry = self.name_label()
-        self.id: Entry = self.id_label()
-        self.power: Entry = self.power_label()
-        self.buttons: Entry = self.buts_label()
-        self.axes: Entry = self.axes_label()
-        
-        """
+            
         # - Las aplicamos a nuestra app - #
         self.name.config(state='normal')
         self.id.config(state='normal')
@@ -910,6 +930,9 @@ class FrameOptions(Frame):
         self.axes.delete(0, 'end')  # Borrar el contenido anterior
         self.axes.insert(0, axes)  # Insertar el nuevo mensaje
         self.axes.config(state='readonly')
+        
+    def run_test(self):
+        messagebox.showinfo('Running..', 'Function to run pad_test.py')
            
 # ---- Clase ventana de WebControl ---- #
 class FrameWebControl(Frame):
