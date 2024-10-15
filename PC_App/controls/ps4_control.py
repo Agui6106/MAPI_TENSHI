@@ -5,6 +5,21 @@ pygame.init()
 pygame.joystick.init()
 
 joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
+
+# - Verificacion - #
+def check_ps4_connection():
+    """
+    Verifica si hay un control de PS4 conectado
+    """
+    joystick_count = pygame.joystick.get_count()
+    if joystick_count == 0:
+        print("No hay control PS4 conectado. Por favor, conecta un control.")
+        return False
+    else:
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
+        print(f"Control conectado: {joystick.get_name()}")
+        return True
     
 def refresh_joys():
     # - Reescanemos los controles - #
@@ -102,6 +117,7 @@ def get_pad_info(id_pad, val):
         return joystick.get_numaxes()       
                     
 if __name__ == "__main__":
+    get_joys_left
     # - Info - #
     """ print(f'\nName: {get_pad_info(0,'name')}')
     print(f'Id: {get_pad_info(0,'id')}')
