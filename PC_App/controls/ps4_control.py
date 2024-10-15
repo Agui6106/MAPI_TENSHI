@@ -18,7 +18,7 @@ def check_ps4_connection():
     else:
         joystick = pygame.joystick.Joystick(0)
         joystick.init()
-        print(f"Control conectado: {joystick.get_name()}")
+        #print(f"Control conectado: {joystick.get_name()}")
         return True
     
 def refresh_joys():
