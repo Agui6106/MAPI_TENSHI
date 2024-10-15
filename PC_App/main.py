@@ -49,6 +49,20 @@ import controls.ps4_control as ps4
 # IP Local
 ip = get_ip_Windows()
 
+# - Verificacion y ejecucion de Node-Red - #
+def is_node_red_running():
+    for process in psutil.process_iter(['pid', 'name']):
+        if 'node-red' in process.info['name']:  # Busca node-red en los procesos
+            return True
+    return False
+
+# Si no está en ejecución, ejecuta node-red
+"""if not is_node_red_running():
+    print("Node-RED no está en ejecución. Iniciando...")
+    os.system('node-red')
+else:
+    print("Node-RED ya está en ejecución.")"""
+
 # - Ventan de configuracion inicial - #
 def open_config_window():
     # -- VARIABLES GLOBALES -- #
@@ -231,8 +245,9 @@ class Frame_Main_MQTT_Control(Frame):
         self.parent = parent
         # - MQTT - #
         # Mqtt client ESP
-        self.esp_sub = '', self.esp_pub = ''
-        self.mqtt_esp = mqtt_coms(ip, 1883, self.esp_sub, self.esp_pub)
+        self.esp_sub = ''
+        self.esp_pub = ''
+        #self.mqtt_esp = mqtt_coms(ip, 1883, self.esp_sub, self.esp_pub)
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -262,7 +277,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.content_forC: Label = self._contentC()
         
         # - Obtenemos lso valores del control - #        
-        self.update_slider_val()
+        self.update_vals()
 
         # - Creacion de elementos visuales -#
         self.init_main_gui()
@@ -362,7 +377,6 @@ class Frame_Main_MQTT_Control(Frame):
         return Button(self.vital_Data_frame, 
                       font=('Z003', 14), text="Buzzer")
         
-            
     # Positions
     def _contentB(self) -> Label:
         return Label(self.positions_frame, text="Controlled by B")
@@ -372,7 +386,7 @@ class Frame_Main_MQTT_Control(Frame):
         return Label(self.recv_data_frame, text="Controlled by C")
     
     # -- OPERATIVO -- #
-    def update_slider_val(self):
+    def update_vals(self):
         # Verificamos que haya un control Conectado
         if not ps4.check_ps4_connection():
             pass
@@ -389,14 +403,14 @@ class Frame_Main_MQTT_Control(Frame):
             # Enviar x mqtt
             
             self.esp_sub = 'ESP/motorX'
-            try:
+            """try:
                 self.mqtt_esp.publish_message(xl)  # Envía el comando por MQTT
             except Exception as e:
                 messagebox.showerror("MQTT Error", f"Failed to send command: {e}")
             else:
-                messagebox.showwarning("Input Error", "Please enter a command.")
+                messagebox.showwarning("Input Error", "Please enter a command.")"""
                 
-            self.after(50, self.update_slider_val)
+            self.after(50, self.update_vals)
     
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
