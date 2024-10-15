@@ -18,6 +18,8 @@ from tkinter.ttk import Separator
 import datetime as dt
 
 import subprocess
+import threading
+
 import sys
 import os
 
@@ -245,6 +247,8 @@ class Frame_Main_MQTT_Control(Frame):
         self.motorA_data: Label = self._motorA_Data()
         self.motorB_data: Label = self._motorB_Data()
         self.cam_scale: Scale = self._create_joystick_slider()
+        self.buz_but: Button = self._button_Buz()
+        self.lamp_but: Button = self._button_lamp()
         
         
         # - Positions Elements - #
@@ -253,19 +257,25 @@ class Frame_Main_MQTT_Control(Frame):
         # - Data Elements -#
         self.content_forC: Label = self._contentC()
         
+        # - Obtenemos lso valores del control - #        
         self.update_slider_val()
-        # Creamos los objetos
-        self.init_gui()
+
+        # - Creacion de elementos visuales -#
+        self.init_main_gui()
+        self.init_gui_of_VitalData()
+        self.init_gui_of_Positions()
+        self.init_gui_of_RecvData()
         
     # - Colocamos los elementos visuales - #
-    def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2)
+    def init_main_gui(self)-> None:
+        self.title.pack(fill='both')
         
         # - LABEL FRAMES -#
-        self.vital_Data_frame.grid(row=1,column=0) # 5x6
-        self.positions_frame.grid(row=2,column=0)
-        self.recv_data_frame.grid(row=3,column=0)
+        self.vital_Data_frame.pack(fill='both') # 5x6
+        self.positions_frame.pack(fill='both')
+        self.recv_data_frame.pack(fill='both')
         
+    def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
         # Ttitulos
         self.Motors_title.grid(row=0, column=0,columnspan=2)
@@ -276,12 +286,16 @@ class Frame_Main_MQTT_Control(Frame):
         self.motorB_label.grid(row=2,column=0)
         self.motorA_data.grid(row=1,column=1)
         self.motorB_data.grid(row=2,column=1)
-        self.cam_scale.grid(row=1,column=2,columnspan=2)
+        self.cam_scale.grid(row=1,column=2,columnspan=2,rowspan=2)
+        self.buz_but.grid(row=1,column=4)
+        self.lamp_but.grid(row=1,column=4)
         
-        
+    
+    def init_gui_of_Positions(self) -> None:
         # - CONTENTS POSITIONS - #
         self.content_forB.grid(row=1, column=0)
-        
+    
+    def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
         self.content_forC.grid(row=1, column=0)
         
@@ -300,44 +314,49 @@ class Frame_Main_MQTT_Control(Frame):
         return LabelFrame(
             self,
             text="Vital Data",
-            font=("Magneto", 17, )
+            font=("Magneto", 17,),
+            width=1000
         )
         
     def _create_Pos(self) -> LabelFrame:
         return LabelFrame(
             self,
             text="Actual Positions",
-            font=("Magneto", 17, )
+            font=("Magneto", 17,),
+            width=1000
         )
         
     def _create_Data(self) -> LabelFrame:
         return LabelFrame(
             self,
             text="General Data",
-            font=("Magneto", 17, )
+            font=("Magneto", 17,),
+            width=1000
         )
     
     # - CONTENIDOS SUBFRAMES - #
     # - Vital Data - #
     # Motors 
     def _motorA_Data(self) -> Label:
-        return Label(self.vital_Data_frame, font=('Z003', 14), text="0000")
+        #x,y = self.update_Motors_val()
+        return Label(self.vital_Data_frame, font=('Z003', 14), text=f'0000')
     def _motorB_Data(self) -> Label:
-        return Label(self.vital_Data_frame, font=('Z003', 14), text="0000")
+        #x,y = self.update_Motors_val()
+        return Label(self.vital_Data_frame, font=('Z003', 14), text=f'0000')
    
     # - Slider - #
     def _create_joystick_slider(self) -> Scale:
         return Scale(self.vital_Data_frame, from_=-1, to=1, 
                      resolution=0.01, orient='horizontal',width=20)
-    def update_slider_val(self):
-        if not ps4.check_ps4_connection():
-            pass
-        else:
-            x,_ = ps4.get_joys_right()
-            self.cam_scale.set(x)
-            self.after(50, self.update_slider_val)
     
     # - Perifericos - #
+    def _button_Buz(self) -> Button:
+        return Button(self.vital_Data_frame, 
+                      font=('Z003', 14), text="Lamp")
+        
+    def _button_lamp(self) -> Button:
+        return Button(self.vital_Data_frame, 
+                      font=('Z003', 14), text="Buzzer")
         
             
     # Positions
@@ -347,6 +366,24 @@ class Frame_Main_MQTT_Control(Frame):
     # Data
     def _contentC(self) -> Label:
         return Label(self.recv_data_frame, text="Controlled by C")
+    
+    # -- OPERATIVO -- #
+    def update_slider_val(self):
+        # Verificamos que haya un control Conectado
+        if not ps4.check_ps4_connection():
+            pass
+        else:
+            # Obtenemos los valores y redondeamos los necesarios
+            xr,yr = ps4.get_joys_right()
+            xl,yl = ps4.get_joys_left()
+            xl = round(xl,2)
+            yl = round(yl,2)
+            
+            # Escritura en interfaz
+            self.cam_scale.set(xr)
+            self.motorA_data.config(text=f'x: {xl}. y: {yl}')
+            # Enviar x mqtt
+            self.after(50, self.update_slider_val)
     
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
