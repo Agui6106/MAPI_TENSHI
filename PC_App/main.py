@@ -246,8 +246,8 @@ class Frame_Main_MQTT_Control(Frame):
         # - MQTT - #
         # Mqtt client ESP
         self.esp_sub = ''
-        self.esp_pub = ''
-        #self.mqtt_esp = mqtt_coms(ip, 1883, self.esp_sub, self.esp_pub)
+        self.esp_pub = 'ESP/out'
+        self.mqtt_esp = mqtt_coms(ip, 1883, self.esp_sub, self.esp_pub)
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -401,16 +401,15 @@ class Frame_Main_MQTT_Control(Frame):
             self.cam_scale.set(xr)
             self.motorA_data.config(text=f'x: {xl}. y: {yl}')
             # Enviar x mqtt
-            
-            self.esp_sub = 'ESP/motorX'
-            """try:
-                self.mqtt_esp.publish_message(xl)  # Envía el comando por MQTT
-            except Exception as e:
-                messagebox.showerror("MQTT Error", f"Failed to send command: {e}")
-            else:
-                messagebox.showwarning("Input Error", "Please enter a command.")"""
-                
             self.after(50, self.update_vals)
+        
+    def send_vals(self):
+        self.esp_sub = 'ESP/MotorA'
+        try:
+            self.mqtt_esp.publish_message('xd')  # Envía el comando por MQTT
+        except Exception as e:
+            messagebox.showerror("MQTT Error", f"Failed to send command: {e}")
+
     
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
