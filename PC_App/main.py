@@ -146,6 +146,12 @@ open_config_window()
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
 mqtt_client.start()
 
+# Mqtt client esp
+esp_sub = 'ESP/MotorX'
+esp_pub = 'ESP/Servo'
+mqtt_esp = mqtt_coms(ip, 1883, esp_sub, esp_pub)
+mqtt_esp.start()
+
 # Fecha de hoy
 date = dt.datetime.now()
         
@@ -244,10 +250,6 @@ class Frame_Main_MQTT_Control(Frame):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
         # - MQTT - #
-        # Mqtt client ESP
-        self.esp_sub = ''
-        self.esp_pub = 'ESP/out'
-        self.mqtt_esp = mqtt_coms(ip, 1883, self.esp_sub, self.esp_pub)
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -268,7 +270,6 @@ class Frame_Main_MQTT_Control(Frame):
         self.cam_scale: Scale = self._create_joystick_slider()
         self.buz_but: Button = self._button_Buz()
         self.lamp_but: Button = self._button_lamp()
-        
         
         # - Positions Elements - #
         self.content_forB: Label = self._contentB()
@@ -400,15 +401,15 @@ class Frame_Main_MQTT_Control(Frame):
             # Escritura en interfaz
             self.cam_scale.set(xr)
             self.motorA_data.config(text=f'x: {xl}. y: {yl}')
+            self.send_vals(val=xr)
             # Enviar x mqtt
             self.after(50, self.update_vals)
         
-    def send_vals(self):
-        self.esp_sub = 'ESP/MotorA'
+    def send_vals(self, val):
         try:
-            self.mqtt_esp.publish_message('xd')  # Envía el comando por MQTT
+            mqtt_esp.publish_message(val)  # Envía el comando por MQTT
         except Exception as e:
-            messagebox.showerror("MQTT Error", f"Failed to send command: {e}")
+            print(f"Failed to send command: {e}")
 
     
 # -- Camara sin procesar -- #
@@ -557,7 +558,7 @@ class Frame_Main_Pros_Camera(Frame):
         cap = cv2.VideoCapture(self.stream_url)
 
         # Crear ventana de OpenCV
-        cv2.namedWindow(f'Color detection of robot: {ID_bot}')
+        cv2.namedWindow('Deteccion de colores')
 
         # Crear trackbars para ajustar los valores de HSV
         def nothing(x):
@@ -608,7 +609,7 @@ class Frame_Main_Pros_Camera(Frame):
     def detect_contorns(self): 
         cap = cv2.VideoCapture(self.stream_url)
         
-        cv2.namedWindow(f'Contour detection of robot {ID_bot}')
+        #cv2.namedWindow(f'Contour detection of robot {ID_bot}')
         while True:
             ret, frame = cap.read()
             if not ret:
