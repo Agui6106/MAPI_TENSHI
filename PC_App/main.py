@@ -8,6 +8,8 @@ from tkinter import Canvas
 from tkinter import PhotoImage
 from tkinter import Entry
 from tkinter import filedialog
+from tkinter import LabelFrame
+from tkinter import Scale
 
 from tkinter.ttk import Combobox
 from tkinter.ttk import Notebook
@@ -228,30 +230,123 @@ class Frame_Main_MQTT_Control(Frame):
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
-        self.content: Label = self._content()
+        # SubFrames
+        self.vital_Data_frame: LabelFrame = self._create_VitalData()
+        self.positions_frame: LabelFrame = self._create_Pos()
+        self.recv_data_frame: LabelFrame = self._create_Data()
         
+        # - VitalData Elements - #
+        self.Motors_title = Label(self.vital_Data_frame, text="Main Motors", font=('Z003', 15, 'bold'))
+        self.servo_title = Label(self.vital_Data_frame, text="Servo", font=('Z003', 15, 'bold'))
+        self.perifercials_title = Label(self.vital_Data_frame, text="Peripherals", font=('Z003', 15, 'bold'))
+        
+        self.motorA_label = Label(self.vital_Data_frame, text="Motor A: ", font=('Z003', 14))
+        self.motorB_label = Label(self.vital_Data_frame, text="Motor B: ", font=('Z003', 14))
+        self.motorA_data: Label = self._motorA_Data()
+        self.motorB_data: Label = self._motorB_Data()
+        self.cam_scale: Scale = self._create_joystick_slider()
+        
+        
+        # - Positions Elements - #
+        self.content_forB: Label = self._contentB()
+        
+        # - Data Elements -#
+        self.content_forC: Label = self._contentC()
+        
+        self.update_slider_val()
         # Creamos los objetos
         self.init_gui()
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2, padx=40)
+        self.title.grid(row=0, column=0, columnspan=2)
         
-        # Añadimos un Label en FrameOne usando grid()
-        self.content.grid(row=1, column=0)
+        # - LABEL FRAMES -#
+        self.vital_Data_frame.grid(row=1,column=0) # 5x6
+        self.positions_frame.grid(row=2,column=0)
+        self.recv_data_frame.grid(row=3,column=0)
+        
+        # - CONTENTS VITAL- #
+        # Ttitulos
+        self.Motors_title.grid(row=0, column=0,columnspan=2)
+        self.servo_title.grid(row=0,column=2,columnspan=2)
+        self.perifercials_title.grid(row=0,column=4,columnspan=2)
+        # Elementos
+        self.motorA_label.grid(row=1,column=0)
+        self.motorB_label.grid(row=2,column=0)
+        self.motorA_data.grid(row=1,column=1)
+        self.motorB_data.grid(row=2,column=1)
+        self.cam_scale.grid(row=1,column=2,columnspan=2)
+        
+        
+        # - CONTENTS POSITIONS - #
+        self.content_forB.grid(row=1, column=0)
+        
+        # - CONTENTS DATA - #
+        self.content_forC.grid(row=1, column=0)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
     def _Create_title(self) -> Label:
         return Label(
             master=self,
-            text='UI de control del robot',
+            text='Robot Control and Data',
             foreground='black',
             font=("Z003", 20, "bold")
         )
     
-    def _content(self) -> Label:
-        return Label(self, text="Controlled by MQTT")
+    # - Sub Frames -#
+    def _create_VitalData(self) -> LabelFrame:
+        return LabelFrame(
+            self,
+            text="Vital Data",
+            font=("Magneto", 17, )
+        )
+        
+    def _create_Pos(self) -> LabelFrame:
+        return LabelFrame(
+            self,
+            text="Actual Positions",
+            font=("Magneto", 17, )
+        )
+        
+    def _create_Data(self) -> LabelFrame:
+        return LabelFrame(
+            self,
+            text="General Data",
+            font=("Magneto", 17, )
+        )
+    
+    # - CONTENIDOS SUBFRAMES - #
+    # - Vital Data - #
+    # Motors 
+    def _motorA_Data(self) -> Label:
+        return Label(self.vital_Data_frame, font=('Z003', 14), text="0000")
+    def _motorB_Data(self) -> Label:
+        return Label(self.vital_Data_frame, font=('Z003', 14), text="0000")
+   
+    # - Slider - #
+    def _create_joystick_slider(self) -> Scale:
+        return Scale(self.vital_Data_frame, from_=-1, to=1, 
+                     resolution=0.01, orient='horizontal',width=20)
+    def update_slider_val(self):
+        if not ps4.check_ps4_connection():
+            pass
+        else:
+            x,_ = ps4.get_joys_right()
+            self.cam_scale.set(x)
+            self.after(50, self.update_slider_val)
+    
+    # - Perifericos - #
+        
+            
+    # Positions
+    def _contentB(self) -> Label:
+        return Label(self.positions_frame, text="Controlled by B")
+    
+    # Data
+    def _contentC(self) -> Label:
+        return Label(self.recv_data_frame, text="Controlled by C")
     
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
