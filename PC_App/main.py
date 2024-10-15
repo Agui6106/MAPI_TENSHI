@@ -18,7 +18,7 @@ from tkinter.ttk import Separator
 import datetime as dt
 
 import subprocess
-import threading
+import psutil
 
 import sys
 import os
@@ -229,6 +229,10 @@ class Frame_Main_MQTT_Control(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
+        # - MQTT - #
+        # Mqtt client ESP
+        self.esp_sub = '', self.esp_pub = ''
+        self.mqtt_esp = mqtt_coms(ip, 1883, self.esp_sub, self.esp_pub)
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -383,6 +387,15 @@ class Frame_Main_MQTT_Control(Frame):
             self.cam_scale.set(xr)
             self.motorA_data.config(text=f'x: {xl}. y: {yl}')
             # Enviar x mqtt
+            
+            self.esp_sub = 'ESP/motorX'
+            try:
+                self.mqtt_esp.publish_message(xl)  # Envía el comando por MQTT
+            except Exception as e:
+                messagebox.showerror("MQTT Error", f"Failed to send command: {e}")
+            else:
+                messagebox.showwarning("Input Error", "Please enter a command.")
+                
             self.after(50, self.update_slider_val)
     
 # -- Camara sin procesar -- #
