@@ -16,6 +16,7 @@ from tkinter.ttk import Notebook
 from tkinter.ttk import Separator
 
 import datetime as dt
+import time
 
 import subprocess
 import psutil
@@ -142,15 +143,24 @@ def open_config_window():
 
 open_config_window()
 
-# Mqtt client Raspberry
+# - Buscar implementar con daemons (threads)
+# - RASP - #
+# Mqtt client Raspberry(ipbroker, puerto, publicacion, suscribcion)
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
 mqtt_client.start()
 
-# Mqtt client esp
-esp_sub = 'ESP/MotorX'
-esp_pub = 'ESP/Servo'
-mqtt_esp = mqtt_coms(ip, 1883, esp_sub, esp_pub)
-mqtt_esp.start()
+# - ESP32 - #
+# Mqtt client Servomotor(ipbroker, puerto, publicacion, suscribcion)
+mqtt_esp_Servo = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/Servo')
+mqtt_esp_Servo.start()
+
+# Mqtt client MotorX(ipbroker, puerto, publicacion, suscribcion)
+mqtt_esp_X = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/MotorX')
+mqtt_esp_X.start()
+
+# Mqtt client MotorY(ipbroker, puerto, publicacion, suscribcion)
+mqtt_esp_Y = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/MotorY')
+mqtt_esp_Y.start()
 
 # Fecha de hoy
 date = dt.datetime.now()
@@ -223,19 +233,19 @@ class App(Frame):
         """
         # Control MQTT
         frame_mqtt_control = Frame_Main_MQTT_Control(self.tab1)  # Instanciar el frame aquí
-        frame_mqtt_control.grid(row=1, column=0)
+        frame_mqtt_control.grid(row=1, column=0, sticky='nsew')
 
         # Camara sin proceso
         frame_Raw_camera = Frame_Main_Raw_Camera(self.tab1)  # Instanciar el frame aquí
-        frame_Raw_camera.grid(row=1, column=1)
+        frame_Raw_camera.grid(row=1, column=1, sticky='nsew')
         
         # Camara procesada
         frame_pros_camera = Frame_Main_Pros_Camera(self.tab1)
-        frame_pros_camera.grid(row=2, column=1)
+        frame_pros_camera.grid(row=2, column=1, sticky='nsew')
         
         # Command Prompt
         frame_CMD_promt = Frame_CMD(self.tab1)
-        frame_CMD_promt.grid(row=2,column=0)
+        frame_CMD_promt.grid(row=2,column=0, sticky='nsew')
         frame_CMD_promt.config(bg='black')
         
         return notebook
@@ -263,10 +273,10 @@ class Frame_Main_MQTT_Control(Frame):
         self.servo_title = Label(self.vital_Data_frame, text="Servo", font=('Z003', 15, 'bold'))
         self.perifercials_title = Label(self.vital_Data_frame, text="Peripherals", font=('Z003', 15, 'bold'))
         
-        self.motorA_label = Label(self.vital_Data_frame, text="Motor A: ", font=('Z003', 14))
-        self.motorB_label = Label(self.vital_Data_frame, text="Motor B: ", font=('Z003', 14))
-        self.motorA_data: Label = self._motorA_Data()
-        self.motorB_data: Label = self._motorB_Data()
+        self.motorX_label = Label(self.vital_Data_frame, text="Motor X: ", font=('Z003', 14))
+        self.motorY_label = Label(self.vital_Data_frame, text="Motor Y: ", font=('Z003', 14))
+        self.motorX_data: Label = self._motorX_Data()
+        self.motorY_data: Label = self._motorY_Data()
         self.cam_scale: Scale = self._create_joystick_slider()
         self.buz_but: Button = self._button_Buz()
         self.lamp_but: Button = self._button_lamp()
@@ -288,12 +298,15 @@ class Frame_Main_MQTT_Control(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_main_gui(self)-> None:
-        self.title.pack(fill='both')
+        self.title.grid(row=0, column=0, columnspan=2, sticky="nsew")
         
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+
         # - LABEL FRAMES -#
-        self.vital_Data_frame.pack(fill='both') # 5x6
-        self.positions_frame.pack(fill='both')
-        self.recv_data_frame.pack(fill='both')
+        self.vital_Data_frame.grid(row=1, column=0, sticky="nsew") # 5x6
+        self.positions_frame.grid(row=2, column=0, sticky="nsew")
+        self.recv_data_frame.grid(row=3, column=0, sticky="nsew")
         
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
@@ -302,13 +315,16 @@ class Frame_Main_MQTT_Control(Frame):
         self.servo_title.grid(row=0,column=2,columnspan=2)
         self.perifercials_title.grid(row=0,column=4,columnspan=2)
         # Elementos
-        self.motorA_label.grid(row=1,column=0)
-        self.motorB_label.grid(row=2,column=0)
-        self.motorA_data.grid(row=1,column=1)
-        self.motorB_data.grid(row=2,column=1)
+        self.motorX_label.grid(row=1,column=0)
+        self.motorY_label.grid(row=2,column=0)
+        
+        self.motorX_data.grid(row=1,column=1)
+        self.motorY_data.grid(row=2,column=1)
+        
         self.cam_scale.grid(row=1,column=2,columnspan=2,rowspan=2)
+        
         self.buz_but.grid(row=1,column=4)
-        self.lamp_but.grid(row=1,column=4)
+        self.lamp_but.grid(row=2,column=4)
         
     
     def init_gui_of_Positions(self) -> None:
@@ -335,7 +351,7 @@ class Frame_Main_MQTT_Control(Frame):
             self,
             text="Vital Data",
             font=("Magneto", 17,),
-            width=1000
+            
         )
         
     def _create_Pos(self) -> LabelFrame:
@@ -343,7 +359,7 @@ class Frame_Main_MQTT_Control(Frame):
             self,
             text="Actual Positions",
             font=("Magneto", 17,),
-            width=1000
+            
         )
         
     def _create_Data(self) -> LabelFrame:
@@ -351,23 +367,23 @@ class Frame_Main_MQTT_Control(Frame):
             self,
             text="General Data",
             font=("Magneto", 17,),
-            width=1000
+            
         )
     
     # - CONTENIDOS SUBFRAMES - #
     # - Vital Data - #
     # Motors 
-    def _motorA_Data(self) -> Label:
+    def _motorX_Data(self) -> Label:
         #x,y = self.update_Motors_val()
         return Label(self.vital_Data_frame, font=('Z003', 14), text=f'0000')
-    def _motorB_Data(self) -> Label:
+    def _motorY_Data(self) -> Label:
         #x,y = self.update_Motors_val()
         return Label(self.vital_Data_frame, font=('Z003', 14), text=f'0000')
    
     # - Slider - #
     def _create_joystick_slider(self) -> Scale:
         return Scale(self.vital_Data_frame, from_=-1, to=1, 
-                     resolution=0.01, orient='horizontal',width=20)
+                     resolution=0.01, orient='horizontal',sliderlength=20, length=600)
     
     # - Perifericos - #
     def _button_Buz(self) -> Button:
@@ -395,21 +411,28 @@ class Frame_Main_MQTT_Control(Frame):
             # Obtenemos los valores y redondeamos los necesarios
             xr,yr = ps4.get_joys_right()
             xl,yl = ps4.get_joys_left()
-            xl = round(xl,2)
-            yl = round(yl,2)
+            
+            xr = round(xr, 2)
+            yr = round(yr, 2)
+            xl = round(xl, 2)
+            yl = round(yl, 2)
             
             # Escritura en interfaz
             self.cam_scale.set(xr)
-            self.motorA_data.config(text=f'x: {xl}. y: {yl}')
-            self.send_vals(val=xr)
+            self.motorX_data.config(text=xl)
+            self.motorY_data.config(text=yl)
+            
             # Enviar x mqtt
+            self.send_vals(Servo=xr, MotorX=xl, MotorY=yl)
             self.after(50, self.update_vals)
         
-    def send_vals(self, val):
+    def send_vals(self, Servo, MotorX, MotorY):
         try:
-            mqtt_esp.publish_message(val)  # Envía el comando por MQTT
+            mqtt_esp_Servo.publish_message(Servo)  # Envía el comando por MQTT
+            mqtt_esp_X.publish_message(MotorX)
+            mqtt_esp_Y.publish_message(MotorY)
         except Exception as e:
-            print(f"Failed to send command: {e}")
+            print(f"Failed to send info due to: {e}")
 
     
 # -- Camara sin procesar -- #
