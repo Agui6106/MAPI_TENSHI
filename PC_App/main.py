@@ -145,28 +145,28 @@ open_config_window()
 
 # - Buscar implementar con daemons (threads)
 # - RASP - #
-# Mqtt client Raspberry(ipbroker, puerto, publicacion, suscribcion)
+# Mqtt client Raspberry(ipbroker, puerto, suscribcion, publica)
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
 mqtt_client.start()
 
 # - ESP32 - #
-# Mqtt client Servomotor(ipbroker, puerto, publicacion, suscribcion)
+# Mqtt client Servomotor(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_Servo = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/Servo')
 mqtt_esp_Servo.start()
 
-# Mqtt client MotorX(ipbroker, puerto, publicacion, suscribcion)
+# Mqtt client MotorX(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_X = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/MotorX')
 mqtt_esp_X.start()
 
-# Mqtt client MotorY(ipbroker, puerto, publicacion, suscribcion)
+# Mqtt client MotorY(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_Y = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/MotorY')
 mqtt_esp_Y.start()
 
-# Mqtt client Lamp(ipbroker, puerto, publicacion, suscribcion)
+# Mqtt client Lamp(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_Lamp = mqtt_coms(ip, 1883, 'ESP/LampState', 'ESP/Lamp')
 mqtt_esp_Lamp.start()
 
-# Mqtt client Buzzer(ipbroker, puerto, publicacion, suscribcion)
+# Mqtt client Buzzer(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_Buzzer = mqtt_coms(ip, 1883, 'ESP/BuzState', 'ESP/Buzz')
 mqtt_esp_Buzzer.start()
 
@@ -294,7 +294,14 @@ class Frame_Main_MQTT_Control(Frame):
         self.buz_but: Button = self._button_Buz()
         self.lamp_but: Button = self._button_lamp()
         
+        self.statuts1_label = Label(self.vital_Data_frame, text="Status 1", font=('Z003', 13))
+        self.statuts2_label = Label(self.vital_Data_frame, text="Status 2", font=('Z003', 13))
+        self.statuts3_label = Label(self.vital_Data_frame, text="Status 3", font=('Z003', 13))
+        self.statuts4_label = Label(self.vital_Data_frame, text="Status 4", font=('Z003', 13))
         self.status1: Button = self.stat_1()
+        self.status2: Button = self.stat_2()
+        self.status3: Button = self.stat_3()
+        self.status4: Button = self.stat_4()
         
         # - Positions Elements - #
         self.content_forB: Label = self._contentB()
@@ -304,6 +311,9 @@ class Frame_Main_MQTT_Control(Frame):
         
         # - Obtenemos lso valores del control - #        
         self.update_vals()
+        
+        # - Recibimnos los valores de Mqtt - #
+        self.get_response()
 
         # - Creacion de elementos visuales -#
         self.init_main_gui()
@@ -347,8 +357,20 @@ class Frame_Main_MQTT_Control(Frame):
         self.lamp_on_label.grid(row=2,column=5, padx=2)
         
         # Status
-        self.status1.grid(row=1,column=6)
+        self.statuts1_label.grid(row=2,column=6, padx=10)
         
+        self.status1.grid(row=1,column=6, padx=10)
+        self.status2.grid(row=1,column=7, padx=10)
+        self.status3.grid(row=1,column=8, padx=10)
+        self.status4.grid(row=1,column=9, padx=10)
+        self.statuts2_label.grid(row=2,column=7)
+        self.statuts3_label.grid(row=2,column=8)
+        self.statuts4_label.grid(row=2,column=9)
+        
+        #self.status1.grid_remove()
+        #self.status2.grid_remove()
+        #self.status3.grid_remove()
+        #self.status4.grid_remove()
     
     def init_gui_of_Positions(self) -> None:
         # - CONTENTS POSITIONS - #
@@ -422,9 +444,25 @@ class Frame_Main_MQTT_Control(Frame):
     # Status
     def stat_1(self) -> Button:
         return Button(self.vital_Data_frame, 
-                      font=('Magneto', 14), text="",width=6,
-                      default='disabled')
+                      text='',width=6, 
+                      bg='green', default='disabled', state='disabled')
+    
+    def stat_2(self) -> Button:
+        return Button(self.vital_Data_frame, 
+                      text='',width=6, 
+                      bg='yellow', default='disabled', state='disabled')
         
+    def stat_3(self) -> Button:
+        return Button(self.vital_Data_frame, 
+                      text='',width=6, 
+                      bg='red', default='disabled', state='disabled')
+    
+    def stat_4(self) -> Button:
+        return Button(self.vital_Data_frame, 
+                      text='',width=6, 
+                      bg='blue', default='disabled', state='disabled')
+    
+     
     # Positions
     def _contentB(self) -> Label:
         return Label(self.positions_frame, text="Controlled by B")
@@ -481,6 +519,8 @@ class Frame_Main_MQTT_Control(Frame):
         self.mensaje_lamp = mqtt_esp_Lamp.last_message
         self.mensaje_buzz = mqtt_esp_Buzzer.last_message
         
+        self.response = mqtt_esp_X.last_message
+        
         # Verificar respuesta en lampara
         if self.mensaje_lamp:
             if self.mensaje_lamp == 'LPOn':
@@ -494,6 +534,10 @@ class Frame_Main_MQTT_Control(Frame):
                 self.buz_on_label.config(text='On', foreground='green')
             elif self.mensaje_lamp == 'BSOff':
                 self.lamp_on_label.config(text='Off',foreground='red')
+                
+        if self.response:
+            if self.response == 'Stat1':
+                self.status1.config()
 
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
