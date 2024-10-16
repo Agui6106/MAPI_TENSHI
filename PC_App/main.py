@@ -268,6 +268,7 @@ class Frame_Main_MQTT_Control(Frame):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
         # - MQTT - #
+        self.get_response()
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -280,6 +281,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.Motors_title = Label(self.vital_Data_frame, text="Main Motors", font=('Z003', 15, 'bold'))
         self.servo_title = Label(self.vital_Data_frame, text="Camera angle", font=('Z003', 15, 'bold'))
         self.perifercials_title = Label(self.vital_Data_frame, text="Peripherals", font=('Z003', 15, 'bold'))
+        self.status_label = Label(self.vital_Data_frame, text="Status", font=('Z003', 15, 'bold'))
         self.buz_on_label = Label(self.vital_Data_frame, text="Off", font=('Z003', 15, 'bold'), foreground='red')
         self.lamp_on_label = Label(self.vital_Data_frame, text="Off", font=('Z003', 15, 'bold'), foreground='red')
         
@@ -287,9 +289,12 @@ class Frame_Main_MQTT_Control(Frame):
         self.motorY_label = Label(self.vital_Data_frame, text="Motor Y: ", font=('Z003', 14))
         self.motorX_data: Label = self._motorX_Data()
         self.motorY_data: Label = self._motorY_Data()
+        
         self.cam_scale: Scale = self._create_joystick_slider()
         self.buz_but: Button = self._button_Buz()
         self.lamp_but: Button = self._button_lamp()
+        
+        self.status1: Button = self.stat_1()
         
         # - Positions Elements - #
         self.content_forB: Label = self._contentB()
@@ -314,28 +319,35 @@ class Frame_Main_MQTT_Control(Frame):
         self.grid_columnconfigure(0, weight=1)
 
         # - LABEL FRAMES -#
-        self.vital_Data_frame.grid(row=1, column=0, sticky="nsew") # 5x6
+        self.vital_Data_frame.grid(row=1, column=0, sticky="nsew") # 10x3
         self.positions_frame.grid(row=2, column=0, sticky="nsew")
         self.recv_data_frame.grid(row=3, column=0, sticky="nsew")
         
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
         # Ttitulos
-        self.Motors_title.grid(row=0, column=0,columnspan=2, padx=5)
+        self.Motors_title.grid(row=0, column=0,columnspan=2,)
         self.servo_title.grid(row=0,column=2,columnspan=2)
         self.perifercials_title.grid(row=0,column=4,columnspan=2)
+        self.status_label.grid(row=0,column=6,columnspan=4)
+        
         # Elementos Motor
         self.motorX_label.grid(row=1,column=0, padx=10)
         self.motorY_label.grid(row=2,column=0, padx=10)
         self.motorX_data.grid(row=1,column=1)
         self.motorY_data.grid(row=2,column=1)
         
+        # Servo
         self.cam_scale.grid(row=1,column=2,columnspan=2,padx=5)
         
+        # Perifericos
         self.buz_but.grid(row=1,column=4, padx=10)
         self.lamp_but.grid(row=2,column=4, padx=10)
         self.buz_on_label.grid(row=1,column=5, padx=2)
         self.lamp_on_label.grid(row=2,column=5, padx=2)
+        
+        # Status
+        self.status1.grid(row=1,column=6)
         
     
     def init_gui_of_Positions(self) -> None:
@@ -406,6 +418,12 @@ class Frame_Main_MQTT_Control(Frame):
         return Button(self.vital_Data_frame, 
                       font=('Magneto', 14), text="Buzzer",width=6,
                       command=self.send_buttons_info(topic='Lamp'))
+    
+    # Status
+    def stat_1(self) -> Button:
+        return Button(self.vital_Data_frame, 
+                      font=('Magneto', 14), text="",width=6,
+                      default='disabled')
         
     # Positions
     def _contentB(self) -> Label:
