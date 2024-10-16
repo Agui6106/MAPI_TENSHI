@@ -170,6 +170,22 @@ mqtt_esp_Lamp.start()
 mqtt_esp_Buzzer = mqtt_coms(ip, 1883, 'ESP/BuzState', 'ESP/Buzz')
 mqtt_esp_Buzzer.start()
 
+# Mqtt client GiroscoopioX(ipbroker, puerto, suscribcion, publica)
+mqtt_esp_PX = mqtt_coms(ip, 1883, 'ESP/PX', 'PC/Response')
+mqtt_esp_PX.start()
+
+# Mqtt client GiroscoopioY(ipbroker, puerto, suscribcion, publica)
+mqtt_esp_PY = mqtt_coms(ip, 1883, 'ESP/PY', 'PC/Response')
+mqtt_esp_PY.start()
+
+# Mqtt client GiroscoopioY(ipbroker, puerto, suscribcion, publica)
+mqtt_esp_Lat = mqtt_coms(ip, 1883, 'ESP/Lat', 'PC/Response')
+mqtt_esp_Lat.start()
+
+# Mqtt client GiroscoopioY(ipbroker, puerto, suscribcion, publica)
+mqtt_esp_Long = mqtt_coms(ip, 1883, 'ESP/Long', 'PC/Response')
+mqtt_esp_Long.start()
+
 # Fecha de hoy
 date = dt.datetime.now()
         
@@ -277,7 +293,8 @@ class Frame_Main_MQTT_Control(Frame):
         self.positions_frame: LabelFrame = self._create_Pos()
         self.recv_data_frame: LabelFrame = self._create_Data()
         
-        # - VitalData Elements - #
+        # -- VITAL-DATA ELEMENTS -- #
+        # - TITULOS - #
         self.Motors_title = Label(self.vital_Data_frame, text="Main Motors", font=('Z003', 15, 'bold'))
         self.servo_title = Label(self.vital_Data_frame, text="Camera angle", font=('Z003', 15, 'bold'))
         self.perifercials_title = Label(self.vital_Data_frame, text="Peripherals", font=('Z003', 15, 'bold'))
@@ -285,15 +302,18 @@ class Frame_Main_MQTT_Control(Frame):
         self.buz_on_label = Label(self.vital_Data_frame, text="Off", font=('Z003', 15, 'bold'), foreground='red')
         self.lamp_on_label = Label(self.vital_Data_frame, text="Off", font=('Z003', 15, 'bold'), foreground='red')
         
+        # - MOTORES - #
         self.motorX_label = Label(self.vital_Data_frame, text="Motor X: ", font=('Z003', 14))
         self.motorY_label = Label(self.vital_Data_frame, text="Motor Y: ", font=('Z003', 14))
         self.motorX_data: Label = self._motorX_Data()
         self.motorY_data: Label = self._motorY_Data()
         
+        # - PERIFERICOS - #
         self.cam_scale: Scale = self._create_joystick_slider()
         self.buz_but: Button = self._button_Buz()
         self.lamp_but: Button = self._button_lamp()
         
+        # - STATUS - #
         self.statuts1_label = Label(self.vital_Data_frame, text="Status 1", font=('Z003', 13))
         self.statuts2_label = Label(self.vital_Data_frame, text="Status 2", font=('Z003', 13))
         self.statuts3_label = Label(self.vital_Data_frame, text="Status 3", font=('Z003', 13))
@@ -303,17 +323,25 @@ class Frame_Main_MQTT_Control(Frame):
         self.status3: Button = self.stat_3()
         self.status4: Button = self.stat_4()
         
-        # - Positions Elements - #
-        self.content_forB: Label = self._contentB()
+        # -- POSITIONS ELEMENTS -- #
+        self.X_Label = Label(self.positions_frame, text="X: ", font=('Z003', 15, 'bold'))
+        self.Y_Label = Label(self.positions_frame, text="Y: ", font=('Z003', 15, 'bold'))
+        self.X_Data =  Label(self.positions_frame, text="00000", font=('Z003', 15,))
+        self.Y_Data = Label(self.positions_frame,  text="00000", font=('Z003', 15,))
         
-        # - Data Elements -#
+        self.Latitud_Label = Label(self.positions_frame,  text="  Latitud:", font=('Z003', 15, 'bold'))
+        self.Longitud_Label = Label(self.positions_frame, text="Longitud:", font=('Z003', 15, 'bold'))
+        self.Latitud_Data = Label(self.positions_frame, text="000.000", font=('Z003', 15,))
+        self.Longitud_Data = Label(self.positions_frame, text="000.000", font=('Z003', 15,))
+        
+        self.Google_maps_But: Button = self.launch_GM_Butt()
+        
+        
+        # -- DATA ELEMENTS -- #
         self.content_forC: Label = self._contentC()
         
         # - Obtenemos lso valores del control - #        
         self.update_vals()
-        
-        # - Recibimnos los valores de Mqtt - #
-        self.get_response()
 
         # - Creacion de elementos visuales -#
         self.init_main_gui()
@@ -329,9 +357,9 @@ class Frame_Main_MQTT_Control(Frame):
         self.grid_columnconfigure(0, weight=1)
 
         # - LABEL FRAMES -#
-        self.vital_Data_frame.grid(row=1, column=0, sticky="nsew") # 10x3
-        self.positions_frame.grid(row=2, column=0, sticky="nsew")
-        self.recv_data_frame.grid(row=3, column=0, sticky="nsew")
+        self.vital_Data_frame.grid(row=1, column=0, sticky="ne") # 10x3
+        self.positions_frame.grid(row=2, column=0, sticky="new", )
+        self.recv_data_frame.grid(row=3, column=0, sticky="n", ipady=100)
         
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
@@ -352,7 +380,7 @@ class Frame_Main_MQTT_Control(Frame):
         
         # Perifericos
         self.buz_but.grid(row=1,column=4, padx=10)
-        self.lamp_but.grid(row=2,column=4, padx=10)
+        self.lamp_but.grid(row=2,column=4, padx=10, pady=5)
         self.buz_on_label.grid(row=1,column=5, padx=2)
         self.lamp_on_label.grid(row=2,column=5, padx=2)
         
@@ -374,8 +402,26 @@ class Frame_Main_MQTT_Control(Frame):
     
     def init_gui_of_Positions(self) -> None:
         # - CONTENTS POSITIONS - #
-        self.content_forB.grid(row=1, column=0)
-    
+        # Giroscopio
+        self.X_Label.grid(row=1, column=0)
+        self.Y_Label.grid(row=2, column=0)
+        
+        self.X_Data.grid(row=1,column=1)
+        self.Y_Data.grid(row=2,column=1)
+        
+        # Coordenadas
+        self.Latitud_Label.grid(row=1,column=2, padx=10)
+        self.Longitud_Label.grid(row=2,column=2, padx=10)
+        
+        self.Latitud_Data.grid(row=1,column=3)
+        self.Longitud_Data.grid(row=2,column=3)
+        
+        self.Google_maps_But.grid(row=1,column=4)
+        
+
+        
+        
+        
     def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
         self.content_forC.grid(row=1, column=0)
@@ -404,7 +450,6 @@ class Frame_Main_MQTT_Control(Frame):
             self,
             text="Actual Positions",
             font=("Magneto", 17,),
-            
         )
         
     def _create_Data(self) -> LabelFrame:
@@ -435,7 +480,6 @@ class Frame_Main_MQTT_Control(Frame):
         return Button(self.vital_Data_frame, 
                       font=('Magneto', 14), text="Lamp",width=6,
                       command=self.send_buttons_info(topic='Buzzer'))
-        
     def _button_lamp(self) -> Button:
         return Button(self.vital_Data_frame, 
                       font=('Magneto', 14), text="Buzzer",width=6,
@@ -446,28 +490,28 @@ class Frame_Main_MQTT_Control(Frame):
         return Button(self.vital_Data_frame, 
                       text='',width=6, 
                       bg='green', default='disabled', state='disabled')
-    
     def stat_2(self) -> Button:
         return Button(self.vital_Data_frame, 
                       text='',width=6, 
-                      bg='yellow', default='disabled', state='disabled')
-        
+                      bg='yellow', default='disabled', state='disabled') 
     def stat_3(self) -> Button:
         return Button(self.vital_Data_frame, 
                       text='',width=6, 
                       bg='red', default='disabled', state='disabled')
-    
     def stat_4(self) -> Button:
         return Button(self.vital_Data_frame, 
                       text='',width=6, 
                       bg='blue', default='disabled', state='disabled')
     
-     
-    # Positions
-    def _contentB(self) -> Label:
-        return Label(self.positions_frame, text="Controlled by B")
+    # - Positions - #
+    def long_data(self) -> Label:
+        return Label(self.positions_frame, text="00000")
     
-    # Data
+    def launch_GM_Butt(self) -> Button:
+        return Button(self.positions_frame, 
+                      font=('Magneto', 14), text="Google Maps",)
+    
+    # - Data - #
     def _contentC(self) -> Label:
         return Label(self.recv_data_frame, text="Controlled by C")
     
@@ -516,9 +560,16 @@ class Frame_Main_MQTT_Control(Frame):
     
     # Recepcion        
     def get_response(self):
+        # Perifericos
         self.mensaje_lamp = mqtt_esp_Lamp.last_message
         self.mensaje_buzz = mqtt_esp_Buzzer.last_message
-        
+        # Giroscopio
+        self.mensaje_PX = mqtt_esp_PX.last_message
+        self.mensaje_PY = mqtt_esp_PY.last_message
+        # Coordenadas
+        self.Lat = mqtt_esp_Lat.last_message
+        self.Long = mqtt_esp_Long.last_message
+        # Respuesta del ESP
         self.response = mqtt_esp_X.last_message
         
         # Verificar respuesta en lampara
@@ -535,6 +586,19 @@ class Frame_Main_MQTT_Control(Frame):
             elif self.mensaje_lamp == 'BSOff':
                 self.lamp_on_label.config(text='Off',foreground='red')
                 
+        # Escritura de los valores del giroscopio
+        if self.mensaje_PX:
+            self.X_Data.config(text=self.mensaje_PX)
+        if self.mensaje_PY:
+            self.Y_Data.config(text=self.mensaje_PY)
+            
+        # Escritura de coordenadas
+        if self.Lat:
+            self.Latitud_Data.config(text=self.Lat)
+        if self.Long:
+            self.Longitud_Data.config(text=self.Long)
+            
+        # Verifica respuesat del status
         if self.response:
             if self.response == 'Stat1':
                 self.status1.config()
