@@ -162,6 +162,14 @@ mqtt_esp_X.start()
 mqtt_esp_Y = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/MotorY')
 mqtt_esp_Y.start()
 
+# Mqtt client Lamp(ipbroker, puerto, publicacion, suscribcion)
+mqtt_esp_Lamp = mqtt_coms(ip, 1883, 'ESP/LampState', 'ESP/Lamp')
+mqtt_esp_Lamp.start()
+
+# Mqtt client Buzzer(ipbroker, puerto, publicacion, suscribcion)
+mqtt_esp_Buzzer = mqtt_coms(ip, 1883, 'ESP/BuzState', 'ESP/Buzz')
+mqtt_esp_Buzzer.start()
+
 # Fecha de hoy
 date = dt.datetime.now()
         
@@ -245,7 +253,7 @@ class App(Frame):
         
         # Command Prompt
         frame_CMD_promt = Frame_CMD(self.tab1)
-        frame_CMD_promt.grid(row=2,column=0, sticky='nsew')
+        frame_CMD_promt.grid(row=2,column=0,)
         frame_CMD_promt.config(bg='black')
         
         return notebook
@@ -270,8 +278,10 @@ class Frame_Main_MQTT_Control(Frame):
         
         # - VitalData Elements - #
         self.Motors_title = Label(self.vital_Data_frame, text="Main Motors", font=('Z003', 15, 'bold'))
-        self.servo_title = Label(self.vital_Data_frame, text="Servo", font=('Z003', 15, 'bold'))
+        self.servo_title = Label(self.vital_Data_frame, text="Camera angle", font=('Z003', 15, 'bold'))
         self.perifercials_title = Label(self.vital_Data_frame, text="Peripherals", font=('Z003', 15, 'bold'))
+        self.buz_on_label = Label(self.vital_Data_frame, text="Off", font=('Z003', 15, 'bold'), foreground='red')
+        self.lamp_on_label = Label(self.vital_Data_frame, text="Off", font=('Z003', 15, 'bold'), foreground='red')
         
         self.motorX_label = Label(self.vital_Data_frame, text="Motor X: ", font=('Z003', 14))
         self.motorY_label = Label(self.vital_Data_frame, text="Motor Y: ", font=('Z003', 14))
@@ -298,7 +308,7 @@ class Frame_Main_MQTT_Control(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_main_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2, sticky="nsew")
+        self.title.grid(row=0, column=0, columnspan=2)
         
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -311,20 +321,21 @@ class Frame_Main_MQTT_Control(Frame):
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
         # Ttitulos
-        self.Motors_title.grid(row=0, column=0,columnspan=2)
+        self.Motors_title.grid(row=0, column=0,columnspan=2, padx=5)
         self.servo_title.grid(row=0,column=2,columnspan=2)
         self.perifercials_title.grid(row=0,column=4,columnspan=2)
-        # Elementos
-        self.motorX_label.grid(row=1,column=0)
-        self.motorY_label.grid(row=2,column=0)
-        
+        # Elementos Motor
+        self.motorX_label.grid(row=1,column=0, padx=10)
+        self.motorY_label.grid(row=2,column=0, padx=10)
         self.motorX_data.grid(row=1,column=1)
         self.motorY_data.grid(row=2,column=1)
         
-        self.cam_scale.grid(row=1,column=2,columnspan=2,rowspan=2)
+        self.cam_scale.grid(row=1,column=2,columnspan=2,padx=5)
         
-        self.buz_but.grid(row=1,column=4)
-        self.lamp_but.grid(row=2,column=4)
+        self.buz_but.grid(row=1,column=4, padx=10)
+        self.lamp_but.grid(row=2,column=4, padx=10)
+        self.buz_on_label.grid(row=1,column=5, padx=2)
+        self.lamp_on_label.grid(row=2,column=5, padx=2)
         
     
     def init_gui_of_Positions(self) -> None:
@@ -380,19 +391,21 @@ class Frame_Main_MQTT_Control(Frame):
         #x,y = self.update_Motors_val()
         return Label(self.vital_Data_frame, font=('Z003', 14), text=f'0000')
    
-    # - Slider - #
+    # Slider
     def _create_joystick_slider(self) -> Scale:
         return Scale(self.vital_Data_frame, from_=-1, to=1, 
-                     resolution=0.01, orient='horizontal',sliderlength=20, length=600)
+                     resolution=0.01, orient='horizontal',sliderlength=20, length=200)
     
-    # - Perifericos - #
+    # Perifericos
     def _button_Buz(self) -> Button:
         return Button(self.vital_Data_frame, 
-                      font=('Z003', 14), text="Lamp")
+                      font=('Magneto', 14), text="Lamp",width=6,
+                      command=self.send_buttons_info(topic='Buzzer'))
         
     def _button_lamp(self) -> Button:
         return Button(self.vital_Data_frame, 
-                      font=('Z003', 14), text="Buzzer")
+                      font=('Magneto', 14), text="Buzzer",width=6,
+                      command=self.send_buttons_info(topic='Lamp'))
         
     # Positions
     def _contentB(self) -> Label:
@@ -423,18 +436,47 @@ class Frame_Main_MQTT_Control(Frame):
             self.motorY_data.config(text=yl)
             
             # Enviar x mqtt
-            self.send_vals(Servo=xr, MotorX=xl, MotorY=yl)
+            self.send_motors_vals(Servo=xr, MotorX=xl, MotorY=yl)
             self.after(50, self.update_vals)
         
-    def send_vals(self, Servo, MotorX, MotorY):
+    # - MQTT PROTOCOL - #
+    # Envio
+    def send_motors_vals(self, Servo, MotorX, MotorY):
         try:
-            mqtt_esp_Servo.publish_message(Servo)  # Envía el comando por MQTT
+            mqtt_esp_Servo.publish_message(Servo)  
             mqtt_esp_X.publish_message(MotorX)
             mqtt_esp_Y.publish_message(MotorY)
         except Exception as e:
             print(f"Failed to send info due to: {e}")
-
+            
+    def send_buttons_info(self, topic):
+        try:
+            if topic == 'Lamp':
+                mqtt_esp_Lamp.publish_message('lamp')
+            elif topic == 'Buzzer':
+                mqtt_esp_Buzzer.publish_message('buzz')
+        except Exception as e:
+            print(f"Failed to send info due to: {e}")
     
+    # Recepcion        
+    def get_response(self):
+        self.mensaje_lamp = mqtt_esp_Lamp.last_message
+        self.mensaje_buzz = mqtt_esp_Buzzer.last_message
+        
+        # Verificar respuesta en lampara
+        if self.mensaje_lamp:
+            if self.mensaje_lamp == 'LPOn':
+                self.buz_on_label.config(text='On', foreground='green')
+            elif self.mensaje_lamp == 'LPOff':
+                self.lamp_on_label.config(text='Off',foreground='red')
+        
+        # Verificar respuesta del buzzer
+        if self.mensaje_buzz:
+            if self.mensaje_lamp == 'BSOn':
+                self.buz_on_label.config(text='On', foreground='green')
+            elif self.mensaje_lamp == 'BSOff':
+                self.lamp_on_label.config(text='Off',foreground='red')
+
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -909,7 +951,7 @@ class Frame_CMD(Frame):
 
         # Volver a hacer el Entry de solo lectura
         self.cmd_out.config(state='readonly')
-        self.parent.after(1000, self.update_cmd_output)
+        self.parent.after(500, self.update_cmd_output)
 
 # ----------------------------------- #
 # -------- Frames de control -------- #
@@ -1166,7 +1208,7 @@ class FrameOptions(Frame):
         return Button(self,
                       width=40,
                       command=self.get_joy_stats,
-                      text='Update',
+                      text='Refresh Control',
                       font=('Magneto', 15))
     
     def but_test(self) -> Button:
