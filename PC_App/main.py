@@ -324,23 +324,46 @@ class Frame_Main_MQTT_Control(Frame):
         self.status4: Button = self.stat_4()
         
         # -- POSITIONS ELEMENTS -- #
+        # - GIROSCOPIO - #
         self.X_Label = Label(self.positions_frame, text="X: ", font=('Z003', 15, 'bold'))
         self.Y_Label = Label(self.positions_frame, text="Y: ", font=('Z003', 15, 'bold'))
         self.X_Data =  Label(self.positions_frame, text="00000", font=('Z003', 15,))
         self.Y_Data = Label(self.positions_frame,  text="00000", font=('Z003', 15,))
         
+        # - GPS - #
         self.Latitud_Label = Label(self.positions_frame,  text="  Latitud:", font=('Z003', 15, 'bold'))
         self.Longitud_Label = Label(self.positions_frame, text="Longitud:", font=('Z003', 15, 'bold'))
         self.Latitud_Data = Label(self.positions_frame, text="000.000", font=('Z003', 15,))
         self.Longitud_Data = Label(self.positions_frame, text="000.000", font=('Z003', 15,))
         
+        # - ACCIONES - #
         self.Google_maps_But: Button = self.launch_GM_Butt()
-        
         self.empty_space = Label(self.positions_frame, text=" ", font=('Z003', 15, 'bold'))
         
-        
         # -- DATA ELEMENTS -- #
-        self.content_forC: Label = self._contentC()
+        # Titulos
+        self.dist_front_title = Label(self.recv_data_frame, text="Frontal Distance", font=('Z003', 15, 'bold'))
+        self.dist_back_title = Label(self.recv_data_frame, text="Back Distance", font=('Z003', 15, 'bold'))
+        self.sensors_title = Label(self.recv_data_frame, text="Sensors", font=('Z003', 15, 'bold'))
+        
+        # Sensores distancias
+        self.frontal_Ultr: Label = self.ultr_label()
+        self.frontal_Infr: Label = self.infr_label()
+        
+        self.back_Ultr: Label = self.ultr_label()
+        self.back_Infr: Label = self.infr_label()
+        
+        # Sensores generales
+        self.temp_label = Label(self.recv_data_frame, text="Temperatura: ", font=('Z003', 15, 'bold'))
+        self.Hum_label = Label(self.recv_data_frame, text="Humedad: ", font=('Z003', 15, 'bold'))
+        self.Gas_label = Label(self.recv_data_frame, text="Gas: ", font=('Z003', 15, 'bold'))
+        
+        self.data_temp: Label = self.data_label()
+        self.data_Hum: Label = self.data_label()
+        self.data_Dist_InfrF: Label = self.data_label()
+        self.data_Dist_UltrF: Label = self.data_label()
+        self.data_Dist_InfrB: Label = self.data_label()
+        self.data_Dist_UltrB: Label = self.data_label()
         
         # - Obtenemos lso valores del control - #        
         self.update_vals()
@@ -361,7 +384,7 @@ class Frame_Main_MQTT_Control(Frame):
         # - LABEL FRAMES -#
         self.vital_Data_frame.grid(row=1, column=0, sticky="new") # 10x3
         self.positions_frame.grid(row=2, column=0, sticky="nsew", ) # 7x2
-        self.recv_data_frame.grid(row=3, column=0, sticky="nsew", ipady=81)
+        self.recv_data_frame.grid(row=3, column=0, sticky="nsew", )
         
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
@@ -383,8 +406,8 @@ class Frame_Main_MQTT_Control(Frame):
         # Perifericos
         self.buz_but.grid(row=1,column=4, padx=10)
         self.lamp_but.grid(row=2,column=4, padx=10, pady=5)
-        self.buz_on_label.grid(row=1,column=5, padx=2)
-        self.lamp_on_label.grid(row=2,column=5, padx=2)
+        self.buz_on_label.grid(row=1,column=5, padx=3)
+        self.lamp_on_label.grid(row=2,column=5, padx=3)
         
         # Status
         self.statuts1_label.grid(row=2,column=6, padx=10)
@@ -421,13 +444,32 @@ class Frame_Main_MQTT_Control(Frame):
         
         self.Google_maps_But.grid(row=1,column=7, rowspan=2, padx=20)
         
-
-        
-        
-        
     def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
-        self.content_forC.grid(row=1, column=0)
+        # Titulos
+        self.dist_front_title.grid(row=0, column=0, columnspan=2)
+        self.dist_back_title.grid(row=0, column=2, columnspan=2)
+        self.sensors_title.grid(row=3, column=0,columnspan=4)
+        
+        # Etiquetas
+        self.frontal_Ultr.grid(row=1, column=0, )
+        self.frontal_Infr.grid(row=2, column=0, )
+        
+        self.back_Ultr.grid(row=1,column=2)
+        self.back_Infr.grid(row=2,column=2)
+        
+        self.temp_label.grid(row=4,column=0)
+        self.Hum_label.grid(row=4,column=2)
+        self.Gas_label.grid(row=5,column=0)
+        
+        # Data
+        self.data_Dist_UltrF.grid(row=1, column=1)
+        self.data_Dist_InfrF.grid(row=2, column=1)
+        self.data_Dist_InfrB.grid(row=1,column=3)
+        self.data_Dist_UltrB.grid(row=2,column=3)
+        
+        self.data_temp.grid(row=4,column=1)
+        self.data_Hum.grid(row=4,column=3)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
@@ -507,16 +549,23 @@ class Frame_Main_MQTT_Control(Frame):
                       bg='blue', default='disabled', state='disabled')
     
     # - Positions - #
-    def long_data(self) -> Label:
-        return Label(self.positions_frame, text="00000")
-    
     def launch_GM_Butt(self) -> Button:
         return Button(self.positions_frame, 
-                      font=('Magneto', 14), text="Open on Google Maps",)
+                      font=('Magneto', 14), text="Open on Google Maps",
+                      command=self.get_and_launch_MAPS)
+    # Obtener las coordenadas en google maps
+    def get_and_launch_MAPS(self):
+        pass
     
-    # - Data - #
-    def _contentC(self) -> Label:
-        return Label(self.recv_data_frame, text="Controlled by C")
+    # - Data - #    
+    def ultr_label(self) -> Label:
+        return Label(self.recv_data_frame, text="Ultrasonico: ", font=('Z003', 15, 'bold'))
+    
+    def infr_label(self) -> Label:
+        return Label(self.recv_data_frame, text="Infrarojo: ", font=('Z003', 15, 'bold'))
+    
+    def data_label(self) -> Label:
+        return Label(self.recv_data_frame, text="0000", font=('Z003', 15,))
     
     # -- OPERATIVO -- #
     def update_vals(self):
