@@ -336,6 +336,8 @@ class Frame_Main_MQTT_Control(Frame):
         
         self.Google_maps_But: Button = self.launch_GM_Butt()
         
+        self.empty_space = Label(self.positions_frame, text=" ", font=('Z003', 15, 'bold'))
+        
         
         # -- DATA ELEMENTS -- #
         self.content_forC: Label = self._contentC()
@@ -351,15 +353,15 @@ class Frame_Main_MQTT_Control(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_main_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2)
+        self.title.grid(row=0, column=0, )
         
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
         # - LABEL FRAMES -#
-        self.vital_Data_frame.grid(row=1, column=0, sticky="ne") # 10x3
-        self.positions_frame.grid(row=2, column=0, sticky="new", )
-        self.recv_data_frame.grid(row=3, column=0, sticky="n", ipady=100)
+        self.vital_Data_frame.grid(row=1, column=0, sticky="new") # 10x3
+        self.positions_frame.grid(row=2, column=0, sticky="nsew", ) # 7x2
+        self.recv_data_frame.grid(row=3, column=0, sticky="nsew", ipady=81)
         
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
@@ -402,21 +404,22 @@ class Frame_Main_MQTT_Control(Frame):
     
     def init_gui_of_Positions(self) -> None:
         # - CONTENTS POSITIONS - #
+        self.empty_space.grid(row=1, column=0, padx=70)
         # Giroscopio
-        self.X_Label.grid(row=1, column=0)
-        self.Y_Label.grid(row=2, column=0)
+        self.X_Label.grid(row=1, column=1, pady=5,)
+        self.Y_Label.grid(row=2, column=1, pady=5)
         
-        self.X_Data.grid(row=1,column=1)
-        self.Y_Data.grid(row=2,column=1)
+        self.X_Data.grid(row=1,column=2, columnspan=2, padx=10)
+        self.Y_Data.grid(row=2,column=2, columnspan=2, )
         
         # Coordenadas
-        self.Latitud_Label.grid(row=1,column=2, padx=10)
-        self.Longitud_Label.grid(row=2,column=2, padx=10)
+        self.Latitud_Label.grid(row=1,column=4,  padx=10)
+        self.Longitud_Label.grid(row=2,column=4, )
         
-        self.Latitud_Data.grid(row=1,column=3)
-        self.Longitud_Data.grid(row=2,column=3)
+        self.Latitud_Data.grid(row=1,column=5, columnspan=2)
+        self.Longitud_Data.grid(row=2,column=5, columnspan=2)
         
-        self.Google_maps_But.grid(row=1,column=4)
+        self.Google_maps_But.grid(row=1,column=7, rowspan=2, padx=20)
         
 
         
@@ -509,7 +512,7 @@ class Frame_Main_MQTT_Control(Frame):
     
     def launch_GM_Butt(self) -> Button:
         return Button(self.positions_frame, 
-                      font=('Magneto', 14), text="Google Maps",)
+                      font=('Magneto', 14), text="Open on Google Maps",)
     
     # - Data - #
     def _contentC(self) -> Label:
