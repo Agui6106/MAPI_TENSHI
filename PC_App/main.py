@@ -14,6 +14,7 @@ from tkinter import Scale
 from tkinter.ttk import Combobox
 from tkinter.ttk import Notebook
 from tkinter.ttk import Separator
+from tkinter.ttk import Progressbar
 
 import datetime as dt
 import time
@@ -325,8 +326,8 @@ class Frame_Main_MQTT_Control(Frame):
         
         # -- POSITIONS ELEMENTS -- #
         # - GIROSCOPIO - #
-        self.X_Label = Label(self.positions_frame, text="X: ", font=('Z003', 15, 'bold'))
-        self.Y_Label = Label(self.positions_frame, text="Y: ", font=('Z003', 15, 'bold'))
+        self.X_Label = Label(self.positions_frame, text="X:", font=('Z003', 15, 'bold'))
+        self.Y_Label = Label(self.positions_frame, text="Y:", font=('Z003', 15, 'bold'))
         self.X_Data =  Label(self.positions_frame, text="00000", font=('Z003', 15,))
         self.Y_Data = Label(self.positions_frame,  text="00000", font=('Z003', 15,))
         
@@ -338,7 +339,8 @@ class Frame_Main_MQTT_Control(Frame):
         
         # - ACCIONES - #
         self.Google_maps_But: Button = self.launch_GM_Butt()
-        self.empty_space = Label(self.positions_frame, text=" ", font=('Z003', 15, 'bold'))
+        self.empty_space_positions = Label(self.positions_frame, text=" ", font=('Z003', 15, 'bold'))
+        self.empty_space_recv = Label(self.recv_data_frame, text=" ", font=('Z003', 15, 'bold'))
         
         # -- DATA ELEMENTS -- #
         # Titulos
@@ -355,8 +357,8 @@ class Frame_Main_MQTT_Control(Frame):
         
         # Sensores generales
         self.temp_label = Label(self.recv_data_frame, text="Temperatura: ", font=('Z003', 15, 'bold'))
-        self.Hum_label = Label(self.recv_data_frame, text="Humedad: ", font=('Z003', 15, 'bold'))
-        self.Gas_label = Label(self.recv_data_frame, text="Gas: ", font=('Z003', 15, 'bold'))
+        self.Hum_label = Label(self.recv_data_frame,  text="    Humedad: ", font=('Z003', 15, 'bold'))
+        self.Gas_label = Label(self.recv_data_frame,  text="         Gas:", font=('Z003', 15, 'bold'))
         
         self.data_temp: Label = self.data_label()
         self.data_Hum: Label = self.data_label()
@@ -376,15 +378,15 @@ class Frame_Main_MQTT_Control(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_main_gui(self)-> None:
-        self.title.grid(row=0, column=0, )
+        self.title.grid(row=0, column=0, columnspan=2)
         
-        self.grid_rowconfigure(1, weight=1)
-        self.grid_columnconfigure(0, weight=1)
+        #self.grid_rowconfigure(1, weight=1)
+        #self.grid_columnconfigure(0, weight=1)
 
         # - LABEL FRAMES -#
-        self.vital_Data_frame.grid(row=1, column=0, sticky="new") # 10x3
-        self.positions_frame.grid(row=2, column=0, sticky="nsew", ) # 7x2
-        self.recv_data_frame.grid(row=3, column=0, sticky="nsew", )
+        self.vital_Data_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", ipadx=10, pady=10) # 10x3
+        self.positions_frame.grid(row=2, column=1, sticky="nsew", ) # 7x2
+        self.recv_data_frame.grid(row=2, column=0, sticky="nsew", )
         
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
@@ -427,49 +429,50 @@ class Frame_Main_MQTT_Control(Frame):
     
     def init_gui_of_Positions(self) -> None:
         # - CONTENTS POSITIONS - #
-        self.empty_space.grid(row=1, column=0, padx=70)
+        #self.empty_space_positions.grid(row=1, column=0, padx=70)
         # Giroscopio
-        self.X_Label.grid(row=1, column=1, pady=5,)
-        self.Y_Label.grid(row=2, column=1, pady=5)
+        self.X_Label.grid(row=1, column=0, pady=5,)
+        self.Y_Label.grid(row=2, column=0, pady=5)
         
-        self.X_Data.grid(row=1,column=2, columnspan=2, padx=10)
-        self.Y_Data.grid(row=2,column=2, columnspan=2, )
+        self.X_Data.grid(row=1,column=1, padx=10)
+        self.Y_Data.grid(row=2,column=1, )
         
         # Coordenadas
-        self.Latitud_Label.grid(row=1,column=4,  padx=10)
-        self.Longitud_Label.grid(row=2,column=4, )
+        self.Latitud_Label.grid(row=1, column=2,  padx=10)
+        self.Longitud_Label.grid(row=2,column=2, )
         
-        self.Latitud_Data.grid(row=1,column=5, columnspan=2)
-        self.Longitud_Data.grid(row=2,column=5, columnspan=2)
+        self.Latitud_Data.grid(row=1,column=3, columnspan=2)
+        self.Longitud_Data.grid(row=2,column=3, columnspan=2)
         
-        self.Google_maps_But.grid(row=1,column=7, rowspan=2, padx=20)
+        self.Google_maps_But.grid(row=3,column=1, columnspan=4, padx=20)
         
     def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
+        self.empty_space_recv.grid(row=0,column=0, padx=10)
         # Titulos
-        self.dist_front_title.grid(row=0, column=0, columnspan=2)
-        self.dist_back_title.grid(row=0, column=2, columnspan=2)
-        self.sensors_title.grid(row=3, column=0,columnspan=4)
+        self.dist_front_title.grid(row=0, column=1, columnspan=2)
+        self.dist_back_title.grid(row=0, column=3, columnspan=2)
+        self.sensors_title.grid(row=3, column=1,columnspan=4, pady=10)
         
         # Etiquetas
-        self.frontal_Ultr.grid(row=1, column=0, )
-        self.frontal_Infr.grid(row=2, column=0, )
+        self.frontal_Ultr.grid(row=1, column=1, pady=10)
+        self.frontal_Infr.grid(row=2, column=1, )
         
-        self.back_Ultr.grid(row=1,column=2)
-        self.back_Infr.grid(row=2,column=2)
+        self.back_Ultr.grid(row=1,column=3)
+        self.back_Infr.grid(row=2,column=3)
         
-        self.temp_label.grid(row=4,column=0)
-        self.Hum_label.grid(row=4,column=2)
-        self.Gas_label.grid(row=5,column=0)
+        self.temp_label.grid(row=4,column=1)
+        self.Hum_label.grid(row=4,column=3)
+        self.Gas_label.grid(row=5,column=1)
         
         # Data
-        self.data_Dist_UltrF.grid(row=1, column=1)
-        self.data_Dist_InfrF.grid(row=2, column=1)
-        self.data_Dist_InfrB.grid(row=1,column=3)
-        self.data_Dist_UltrB.grid(row=2,column=3)
+        self.data_Dist_UltrF.grid(row=1, column=2)
+        self.data_Dist_InfrF.grid(row=2, column=2)
+        self.data_Dist_InfrB.grid(row=1,column=4)
+        self.data_Dist_UltrB.grid(row=2,column=4)
         
-        self.data_temp.grid(row=4,column=1)
-        self.data_Hum.grid(row=4,column=3)
+        self.data_temp.grid(row=4,column=2)
+        self.data_Hum.grid(row=4,column=4)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
@@ -559,10 +562,10 @@ class Frame_Main_MQTT_Control(Frame):
     
     # - Data - #    
     def ultr_label(self) -> Label:
-        return Label(self.recv_data_frame, text="Ultrasonico: ", font=('Z003', 15, 'bold'))
+        return Label(self.recv_data_frame, text="Ultrasonico:", font=('Z003', 15, 'bold'))
     
     def infr_label(self) -> Label:
-        return Label(self.recv_data_frame, text="Infrarojo: ", font=('Z003', 15, 'bold'))
+        return Label(self.recv_data_frame, text="    Infrarojo:", font=('Z003', 15, 'bold'))
     
     def data_label(self) -> Label:
         return Label(self.recv_data_frame, text="0000", font=('Z003', 15,))
