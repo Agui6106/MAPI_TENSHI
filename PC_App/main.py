@@ -151,6 +151,7 @@ mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
 mqtt_client.start()
 
 # - ESP32 - #
+# -- MOTORS -- #
 # Mqtt client Servomotor(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_Servo = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/Servo')
 mqtt_esp_Servo.start()
@@ -163,6 +164,16 @@ mqtt_esp_X.start()
 mqtt_esp_Y = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/MotorY')
 mqtt_esp_Y.start()
 
+# -- SENSORS -- #
+# Mqtt client MotorY(ipbroker, puerto, suscribcion, publica)
+mqtt_esp_Temp = mqtt_coms(ip, 1883, 'ESP/Temperatura', 'PC/Response')
+mqtt_esp_Temp.start()
+
+# Mqtt client MotorY(ipbroker, puerto, suscribcion, publica)
+mqtt_esp_Hum = mqtt_coms(ip, 1883, 'ESP/Humedad', 'PC/Response')
+mqtt_esp_Hum.start()
+
+# -- PERIFERICOS -- #
 # Mqtt client Lamp(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_Lamp = mqtt_coms(ip, 1883, 'ESP/LampState', 'ESP/Lamp')
 mqtt_esp_Lamp.start()
@@ -171,6 +182,7 @@ mqtt_esp_Lamp.start()
 mqtt_esp_Buzzer = mqtt_coms(ip, 1883, 'ESP/BuzState', 'ESP/Buzz')
 mqtt_esp_Buzzer.start()
 
+# -- GIROSCOPIO Y GPS -- #
 # Mqtt client GiroscoopioX(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_PX = mqtt_coms(ip, 1883, 'ESP/PX', 'PC/Response')
 mqtt_esp_PX.start()
@@ -270,7 +282,7 @@ class App(Frame):
         
         # Command Prompt
         frame_CMD_promt = Frame_CMD(self.tab1)
-        frame_CMD_promt.grid(row=2,column=0,)
+        frame_CMD_promt.grid(row=2,column=0,sticky='nsew')
         frame_CMD_promt.config(bg='black')
         
         return notebook
@@ -626,8 +638,9 @@ class Frame_Main_MQTT_Control(Frame):
         # Coordenadas
         self.Lat = mqtt_esp_Lat.last_message
         self.Long = mqtt_esp_Long.last_message
-        # Respuesta del ESP
-        self.response = mqtt_esp_X.last_message
+        # Sensores
+        self.response_temp = mqtt_esp_Temp.last_message
+        self.response_hum = mqtt_esp_Hum.last_message
         
         # Verificar respuesta en lampara
         if self.mensaje_lamp:
@@ -656,10 +669,11 @@ class Frame_Main_MQTT_Control(Frame):
             self.Longitud_Data.config(text=self.Long)
             
         # Verifica respuesat del status
-        if self.response:
-            if self.response == 'Stat1':
-                self.status1.config()
-
+        if self.response_hum:
+            self.data_Hum.config(text=self.response_hum)
+        if self.response_temp:
+            self.data_temp.config(text=self.response_temp)
+            
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -749,13 +763,13 @@ class Frame_Main_Pros_Camera(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=3, pady=10)
+        self.title.grid(row=0, column=0, columnspan=3,)
         
         # Colocamos los botones
         self.but_colors.grid(row=1, column=0, padx=30, pady=5,)
-        self.but_contours.grid(row=1, column=1, pady=5)
-        self.but_faces.grid(row=2, column=0, pady=5)
-        self.but_save.grid(row=2, column=1, pady=5)
+        self.but_contours.grid(row=1, column=1,)
+        self.but_faces.grid(row=2, column=0, )
+        self.but_save.grid(row=2, column=1,)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
@@ -1038,13 +1052,13 @@ class Frame_CMD(Frame):
         self.title.grid(column=0,row=0,columnspan=3)
         
         # - Envio de comandos - #
-        self.content.grid(column=1,row=1)
-        self.command.grid(column=2,row=1)
-        self.send.grid(column=3,row=1,padx=5, rowspan=2)
+        self.content.grid(column=0,row=1)
+        self.command.grid(column=1,row=1)
+        self.send.grid(column=2,row=1,padx=5, rowspan=2)
         
         # - Recepcion de comandos - # 
-        self.out.grid(column=1,row=2, pady=5)
-        self.cmd_out.grid(column=2,row=2, pady=5)
+        self.out.grid(column=0,row=2, pady=5)
+        self.cmd_out.grid(column=1,row=2, pady=5)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
