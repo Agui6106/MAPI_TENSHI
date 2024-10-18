@@ -217,7 +217,7 @@ class App(Frame):
         # Size del monitor
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
-        root.geometry(f'{screen_width-50}x{screen_height-50}')
+        root.geometry(f'{screen_width-50}x{screen_height-110}')
         root.resizable(False, False)
 
         # -- Colocacion de widgets -- #
@@ -356,9 +356,10 @@ class Frame_Main_MQTT_Control(Frame):
         self.back_Infr: Label = self.infr_label()
         
         # Sensores generales
-        self.temp_label = Label(self.recv_data_frame, text="Temperatura: ", font=('Z003', 15, 'bold'))
-        self.Hum_label = Label(self.recv_data_frame,  text="    Humedad: ", font=('Z003', 15, 'bold'))
-        self.Gas_label = Label(self.recv_data_frame,  text="         Gas:", font=('Z003', 15, 'bold'))
+        self.temp_label = Label(self.recv_data_frame, text="Temperatura:", font=('Z003', 15, 'bold'))
+        self.Hum_label = Label(self.recv_data_frame,  text="    Humedad:", font=('Z003', 15, 'bold'))
+        self.Gas_label = Label(self.recv_data_frame,  text="          Gas:", font=('Z003', 15, 'bold'))
+        self.gas_levels: Progressbar = self._progress_GAS()
         
         self.data_temp: Label = self.data_label()
         self.data_Hum: Label = self.data_label()
@@ -471,6 +472,8 @@ class Frame_Main_MQTT_Control(Frame):
         self.data_Dist_InfrB.grid(row=1,column=4)
         self.data_Dist_UltrB.grid(row=2,column=4)
         
+        self.gas_levels.grid(row=5,column=2, columnspan=3)
+        
         self.data_temp.grid(row=4,column=2)
         self.data_Hum.grid(row=4,column=4)
         
@@ -492,14 +495,12 @@ class Frame_Main_MQTT_Control(Frame):
             font=("Magneto", 17,),
             
         )
-        
     def _create_Pos(self) -> LabelFrame:
         return LabelFrame(
             self,
             text="Actual Positions",
             font=("Magneto", 17,),
         )
-        
     def _create_Data(self) -> LabelFrame:
         return LabelFrame(
             self,
@@ -563,12 +564,13 @@ class Frame_Main_MQTT_Control(Frame):
     # - Data - #    
     def ultr_label(self) -> Label:
         return Label(self.recv_data_frame, text="Ultrasonico:", font=('Z003', 15, 'bold'))
-    
     def infr_label(self) -> Label:
         return Label(self.recv_data_frame, text="    Infrarojo:", font=('Z003', 15, 'bold'))
-    
     def data_label(self) -> Label:
         return Label(self.recv_data_frame, text="0000", font=('Z003', 15,))
+    
+    def _progress_GAS(self) -> Progressbar:
+        return Progressbar(self.recv_data_frame, orient='horizontal', mode='determinate', length=300)
     
     # -- OPERATIVO -- #
     def update_vals(self):
