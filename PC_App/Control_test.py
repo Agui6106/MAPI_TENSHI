@@ -134,7 +134,6 @@ while running:
         elif yL >= 1:
             y += speed
             
-            
         # Inputs Botones
         elif command == 'X':
             show_start_text = True
