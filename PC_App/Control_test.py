@@ -32,11 +32,6 @@ color = color_inactive
 active = False
 text = ''
 
-# Función para leer datos del puerto serial
-def read_ps4():
-    var = ps4.get_buttons
-    return var
-
 # Función para mostrar el texto recibido del puerto serial
 def display_serial_text(screen, font, text, position):
     if text:
@@ -50,8 +45,8 @@ text_surface = font.render("Input a command:", True, 'white')
 recv_txt = font.render("Response:", True, 'white')
 
 # Lo que recibi. Texto variable por la lectura serial
-"""serial_text = read_ps4()
-serial_disp_txt = font.render(serial_text, True, 'blue')"""
+serial_text = ps4.get_buttons
+serial_disp_txt = font.render(serial_text, True, 'blue')
 
 # - Reaccion a botones - #
 # Start
@@ -109,7 +104,8 @@ while running:
     # Response:
     screen.blit(recv_txt, (500, 20))
     # Leer y mostrar datos del puerto serial
-    command = read_ps4()
+    command = ps4.get_buttons
+    xL, yL = ps4.get_joys_left
     #display_serial_text(screen, font, command, (500, 50))
     
     # Reaccion a botones
@@ -125,16 +121,20 @@ while running:
     pygame.display.flip()
 
     # - Reaccionamos a la input recibida - #
-    if command:
+    if xL:
         # Inputs Joystick
-        if command == 'I':
+        if xL <= -0.1:
             x -= speed
-        elif command == 'D':
+        elif xL >= 1:
             x += speed
-        elif command == 'A':
+    
+    if yL:
+        if yL <= -0.1:
             y -= speed
-        elif command == 'a':
+        elif yL >= 1:
             y += speed
+            
+            
         # Inputs Botones
         elif command == 'X':
             show_start_text = True
@@ -157,7 +157,7 @@ while running:
             show_jump_text = False
             show_shoot_text = True
             
-    """
+    """1
         Received command list:
         - Movement
             Izquierda = I
