@@ -432,20 +432,20 @@ class Frame_Main_MQTT_Control(Frame):
         # - CONTENTS POSITIONS - #
         #self.empty_space_positions.grid(row=1, column=0, padx=70)
         # Giroscopio
-        self.X_Label.grid(row=1, column=0, pady=5,)
+        self.X_Label.grid(row=1, column=0, pady=5, ipadx=15)
         self.Y_Label.grid(row=2, column=0, pady=5)
         
-        self.X_Data.grid(row=1,column=1, padx=10)
+        self.X_Data.grid(row=1,column=1, )
         self.Y_Data.grid(row=2,column=1, )
         
         # Coordenadas
-        self.Latitud_Label.grid(row=1, column=2,  padx=10)
+        self.Latitud_Label.grid(row=1, column=2, )
         self.Longitud_Label.grid(row=2,column=2, )
         
         self.Latitud_Data.grid(row=1,column=3, columnspan=2)
         self.Longitud_Data.grid(row=2,column=3, columnspan=2)
         
-        self.Google_maps_But.grid(row=3,column=1, columnspan=4, padx=20)
+        self.Google_maps_But.grid(row=3,column=1, columnspan=4,)
         
     def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
@@ -752,10 +752,10 @@ class Frame_Main_Pros_Camera(Frame):
         self.title.grid(row=0, column=0, columnspan=3, pady=10)
         
         # Colocamos los botones
-        self.but_colors.grid(row=1, column=0, padx=10, pady=5)
-        self.but_contours.grid(row=1, column=1, padx=10, pady=5)
-        self.but_faces.grid(row=2, column=0, padx=10, pady=5)
-        self.but_save.grid(row=2, column=1, padx=10, pady=5)
+        self.but_colors.grid(row=1, column=0, padx=30, pady=5,)
+        self.but_contours.grid(row=1, column=1, pady=5)
+        self.but_faces.grid(row=2, column=0, pady=5)
+        self.but_save.grid(row=2, column=1, pady=5)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
