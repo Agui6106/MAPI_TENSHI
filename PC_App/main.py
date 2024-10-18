@@ -17,7 +17,7 @@ from tkinter.ttk import Separator
 from tkinter.ttk import Progressbar
 
 import datetime as dt
-import time
+import webbrowser
 
 import subprocess
 import psutil
@@ -47,9 +47,6 @@ import controls.ps4_control as ps4
     Puesto que todo se esta modificando dentro de 
     los respecitvos frames
 """
-
-# IP Local
-ip = get_ip_Windows()
 
 # - Verificacion y ejecucion de Node-Red - #
 def is_node_red_running():
@@ -143,6 +140,9 @@ def open_config_window():
     config_window.mainloop()
 
 open_config_window()
+
+# IP Local
+ip = get_ip_Windows()
 
 # - Buscar implementar con daemons (threads)
 # - RASP - #
@@ -305,6 +305,9 @@ class Frame_Main_MQTT_Control(Frame):
         self.vital_Data_frame: LabelFrame = self._create_VitalData()
         self.positions_frame: LabelFrame = self._create_Pos()
         self.recv_data_frame: LabelFrame = self._create_Data()
+        self.out_ESP_Label = Label(self, text="ESP Output:", font=('Consolas', 15))
+        self.dev_button: Button = self._button_Open_Dev()
+        self.output: Entry = self._ESP_output()
         
         # -- VITAL-DATA ELEMENTS -- #
         # - TITULOS - #
@@ -397,9 +400,13 @@ class Frame_Main_MQTT_Control(Frame):
         #self.grid_columnconfigure(0, weight=1)
 
         # - LABEL FRAMES -#
-        self.vital_Data_frame.grid(row=1, column=0, columnspan=2, sticky="nsew", ipadx=10, pady=10) # 10x3
-        self.positions_frame.grid(row=2, column=1, sticky="nsew", ) # 7x2
-        self.recv_data_frame.grid(row=2, column=0, sticky="nsew", )
+        self.vital_Data_frame.grid(row=1, column=0, columnspan=3, sticky="nsew", ipadx=10, pady=10) # 10x3
+        self.positions_frame.grid(row=2, column=2, sticky="nsew", ) # 7x2
+        self.recv_data_frame.grid(row=2, column=0, sticky="nsew", columnspan=2)
+        
+        self.out_ESP_Label.grid(row=3,column=0, pady=10)
+        self.dev_button.grid(row=3,column=2)
+        self.output.grid(row=3,column=1)
         
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
@@ -465,7 +472,7 @@ class Frame_Main_MQTT_Control(Frame):
         # Titulos
         self.dist_front_title.grid(row=0, column=1, columnspan=2)
         self.dist_back_title.grid(row=0, column=3, columnspan=2)
-        self.sensors_title.grid(row=3, column=1,columnspan=4, pady=10)
+        self.sensors_title.grid(row=3, column=1,columnspan=4, pady=5)
         
         # Etiquetas
         self.frontal_Ultr.grid(row=1, column=1, pady=10)
@@ -498,6 +505,26 @@ class Frame_Main_MQTT_Control(Frame):
             foreground='black',
             font=("Z003", 20, "bold")
         )
+    
+    def _button_Open_Dev(self) -> Button:
+        return Button(self, 
+                      text='Open Web Debugger', 
+                      font=("Magneto", 13),
+                      width=20,
+                      command= self.open_user)
+        
+    def _ESP_output(self) -> Entry:
+        return Entry(self, 
+                     foreground='black',
+                     bg = 'black',
+                     font=('consolas', 14),  
+                     justify='left',
+                     state='readonly',
+                     width=35)
+        
+    def open_user(self):
+        nav1 = webbrowser.get()
+        nav1.open(f"http://{ip}:1880/ui")
     
     # - Sub Frames -#
     def _create_VitalData(self) -> LabelFrame:
