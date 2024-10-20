@@ -173,6 +173,22 @@ mqtt_esp_Temp.start()
 mqtt_esp_Hum = mqtt_coms(ip, 1883, 'ESP/Humedad', 'PC/Response')
 mqtt_esp_Hum.start()
 
+# Mqtt client Ultrasonico 1(ipbroker, puerto, suscribcion, publica)
+mqtt_esp_Ultra1 = mqtt_coms(ip, 1883, 'ESP/Ultra-Distancas1', 'PC/Response')
+mqtt_esp_Ultra1.start()
+
+# Mqtt client Ultrasonico 2(ipbroker, puerto, suscribcion, publica)
+mqtt_esp_Ultra2 = mqtt_coms(ip, 1883, 'ESP/Ultra-Distancas1', 'PC/Response')
+mqtt_esp_Ultra2.start()
+
+# Mqtt client Infrarojos 1(ipbroker, puerto, suscribcion, publica)
+mqtt_esp_Infra1 = mqtt_coms(ip, 1883, 'ESP/Infra-Distancias', 'PC/Response')
+mqtt_esp_Infra1.start()
+
+# Mqtt client Infrarojos 2(ipbroker, puerto, suscribcion, publica)
+mqtt_esp_Infra2 = mqtt_coms(ip, 1883, 'ESP/Infra-Distancias2', 'PC/Response')
+mqtt_esp_Infra2.start()
+
 # -- PERIFERICOS -- #
 # Mqtt client Lamp(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_Lamp = mqtt_coms(ip, 1883, 'ESP/LampState', 'ESP/Lamp')
@@ -515,8 +531,6 @@ class Frame_Main_MQTT_Control(Frame):
         
     def _ESP_output(self) -> Entry:
         return Entry(self, 
-                     foreground='black',
-                     bg = 'black',
                      font=('consolas', 14),  
                      justify='left',
                      state='readonly',
@@ -665,9 +679,15 @@ class Frame_Main_MQTT_Control(Frame):
         # Coordenadas
         self.Lat = mqtt_esp_Lat.last_message
         self.Long = mqtt_esp_Long.last_message
-        # Sensores
+        # SensoresTemp y Hum
         self.response_temp = mqtt_esp_Temp.last_message
         self.response_hum = mqtt_esp_Hum.last_message
+        # Sensores de distancia
+        self.distances1 = mqtt_esp_Ultra1.last_message
+        self.distances2 = mqtt_esp_Ultra2.last_message
+        # Sensores Infrarojos
+        self.infrarojo1 = mqtt_esp_Infra1.last_message
+        self.infrarojo2 = mqtt_esp_Infra2.last_message
         
         # Verificar respuesta en lampara
         if self.mensaje_lamp:
@@ -682,20 +702,32 @@ class Frame_Main_MQTT_Control(Frame):
                 self.buz_on_label.config(text='On', foreground='green')
             elif self.mensaje_lamp == 'BSOff':
                 self.lamp_on_label.config(text='Off',foreground='red')
+        
+        # Lectura de los valores de los sesnores ultrasonicos
+        if self.distances1:
+            self.data_Dist_UltrF.config(text=self.distances1)
+        if self.distances2:
+            self.data_Dist_UltrB.config(text=self.distances2)
                 
-        # Escritura de los valores del giroscopio
+        # Lectura de los valores de los sesnores Infrarojos
+        if self.infrarojo1:
+            self.data_Dist_InfrF.config(text=self.infrarojo1)
+        if self.infrarojo2:
+            self.data_Dist_InfrB.config(text=self.infrarojo2)
+            
+        # Lectura de los valores del giroscopio
         if self.mensaje_PX:
             self.X_Data.config(text=self.mensaje_PX)
         if self.mensaje_PY:
             self.Y_Data.config(text=self.mensaje_PY)
             
-        # Escritura de coordenadas
+        # Lectura de coordenadas
         if self.Lat:
             self.Latitud_Data.config(text=self.Lat)
         if self.Long:
             self.Longitud_Data.config(text=self.Long)
             
-        # Verifica respuesat del status
+        # Lectura de los sensores de temperatura
         if self.response_hum:
             self.data_Hum.config(text=self.response_hum)
         if self.response_temp:
