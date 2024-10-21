@@ -194,15 +194,15 @@ mqtt_esp_Ultra1 = mqtt_coms(ip, 1883, 'ESP/Ultra-Distancas1', 'PC/Response')
 mqtt_esp_Ultra1.start()
 
 # Mqtt client Ultrasonico 2(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Ultra2 = mqtt_coms(ip, 1883, 'ESP/Ultra-Distancas1', 'PC/Response')
+mqtt_esp_Ultra2 = mqtt_coms(ip, 1883, 'ESP/Ultra-Distancas2', 'PC/Response')
 mqtt_esp_Ultra2.start()
 
 # Mqtt client Infrarojos 1(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Infra1 = mqtt_coms(ip, 1883, 'ESP/Infra-Distancias', 'PC/Response')
+mqtt_esp_Infra1 = mqtt_coms(ip, 1883, 'ESP/Infra-1', 'PC/Response')
 mqtt_esp_Infra1.start()
 
 # Mqtt client Infrarojos 2(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Infra2 = mqtt_coms(ip, 1883, 'ESP/Infra-Distancias2', 'PC/Response')
+mqtt_esp_Infra2 = mqtt_coms(ip, 1883, 'ESP/Infra-2', 'PC/Response')
 mqtt_esp_Infra2.start()
 
 # -- PERIFERICOS -- #
@@ -333,8 +333,6 @@ class Frame_Main_MQTT_Control(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-        # - MQTT - #
-        self.get_response()
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -344,7 +342,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.recv_data_frame: LabelFrame = self._create_Data()
         self.out_ESP_Label = Label(self, text="ESP Output:", font=('Consolas', 15))
         self.dev_button: Button = self._button_Open_Dev()
-        self.output: Entry = self._ESP_output()
+        self.output_ESP: Entry = self._ESP_output()
         
         # -- VITAL-DATA ELEMENTS -- #
         # - TITULOS - #
@@ -420,6 +418,8 @@ class Frame_Main_MQTT_Control(Frame):
         self.data_Dist_InfrB: Label = self.data_label()
         self.data_Dist_UltrB: Label = self.data_label()
         
+        # - MQTT - #
+        self.get_response()
         # - Obtenemos lso valores del control - #        
         self.update_vals()
 
@@ -443,7 +443,7 @@ class Frame_Main_MQTT_Control(Frame):
         
         self.out_ESP_Label.grid(row=3,column=0, pady=10)
         self.dev_button.grid(row=3,column=2)
-        self.output.grid(row=3,column=1)
+        self.output_ESP.grid(row=3,column=1)
         
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
@@ -548,7 +548,7 @@ class Frame_Main_MQTT_Control(Frame):
                       text='Open Web Debugger', 
                       font=("Magneto", 13),
                       width=20,
-                      command= self.open_user)
+                      command= self.open_debugger)
         
     def _ESP_output(self) -> Entry:
         return Entry(self, 
@@ -557,7 +557,7 @@ class Frame_Main_MQTT_Control(Frame):
                      state='readonly',
                      width=35)
         
-    def open_user(self):
+    def open_debugger(self):
         nav1 = webbrowser.get()
         nav1.open(f"http://{ip}:1880/ui")
     
@@ -691,6 +691,8 @@ class Frame_Main_MQTT_Control(Frame):
     
     # Recepcion        
     def get_response(self):
+        # Respuesta del ESP
+        self.response = mqtt_esp_Servo.last_message
         # Perifericos
         self.mensaje_lamp = mqtt_esp_Lamp.last_message
         self.mensaje_buzz = mqtt_esp_Buzzer.last_message
@@ -709,6 +711,16 @@ class Frame_Main_MQTT_Control(Frame):
         # Sensores Infrarojos
         self.infrarojo1 = mqtt_esp_Infra1.last_message
         self.infrarojo2 = mqtt_esp_Infra2.last_message
+        
+        # Reescibir output
+        self.output_ESP.config(state='normal')
+        # Insertar el mensaje en el Entry
+        if self.response:
+            print(f'ESP Output: {self.response}')
+            self.output_ESP.delete(0, 'end')  
+            self.output_ESP.insert(0, self.response) 
+        # Volver a hacer el Entry de solo lectura
+        self.output_ESP.config(state='readonly')
         
         # Verificar respuesta en lampara
         if self.mensaje_lamp:
@@ -753,6 +765,8 @@ class Frame_Main_MQTT_Control(Frame):
             self.data_Hum.config(text=self.response_hum)
         if self.response_temp:
             self.data_temp.config(text=self.response_temp)
+            
+        self.parent.after(500, self.get_response)
             
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
