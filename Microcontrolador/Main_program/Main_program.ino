@@ -13,7 +13,7 @@ const char* ssid = "OPPO Reno7";
 const char* password = "ingesitos#1";
 
 // Configuración del broker MQTT
-const char* mqttServer = "192.168.117.58"; //Nuestra IP del PC es la que ponemos aqui
+const char* mqttServer = "192.168.252.58"; //Nuestra IP del PC es la que ponemos aqui
 const int mqttPort = 1883;
 
 //  - Configuracion DHT11 - //
@@ -25,13 +25,17 @@ DHT dht(SENSOR, DHT11);   // creacion del objeto, cambiar segundo parametro
 
 // Configuracion Motores
 // Motores A
-int IN1 = 14;      
-int IN2 = 12;      
-int ENA = 13;      
+#define IN1 14      
+#define IN2 12      
+// int ENA = 13;      
 // Motores B
-int IN4 = 4;      
-int IN3 = 2;      
-int ENB = 15;      
+#define IN4 4      
+#define IN3 2      
+// int ENB = 15; 
+#define FREQ 5000
+#define PWM_CHANNEL 0 
+#define RESOLUTION 8
+int duty_cycle = 200; //seria el 100 porciento, registro de 8 bits
 
 // Configuracion Servo
 Servo myServo;
@@ -49,10 +53,13 @@ long duration2;
 float distance2;
 
 // Coniguración Sensor Infrarrojo 1
-int infrarojo1 = 5;
+int infrarrojo1 = 5;  // Pin de Sensor Infrarrojo 1
 
 // Configuración Sensor Infrarrojo 2
-int infrarojo2 = 25;
+int infrarrojo2 = 25;  // Pin de Sensor Infrarrojo 2
+
+
+
 
 // ==================================================================== //
 
@@ -61,7 +68,7 @@ WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 
 // -- Función de callback para mensajes MQTT. Recibimos Datos -- //
-void callback(char* topic, byte* payload, unsigned int length) {
+void callback(char* topic, byte* payload, unsigned int length) {      //Datos que mandamos desde la app
     Serial.print("Mensaje recibido en el tópico: ");
     Serial.println(topic);
 
@@ -77,34 +84,39 @@ void callback(char* topic, byte* payload, unsigned int length) {
     // - Control del Motor A basado en el mensaje - //
     if (message == "MAon") {
       // Habilita motor A (giro en un sentido)
-      digitalWrite(ENA, HIGH);  
+      //digitalWrite(ENA, HIGH);  
       digitalWrite(IN1, LOW); 
       digitalWrite(IN2, HIGH);  
-      mqttClient.publish("ESP/MotorA", "Encendido");
+      mqttClient.publish("ESP/Response", "MotorA Encendido");
     } else if (message == "MAoff") {
-        digitalWrite(ENA, LOW); 
-        mqttClient.publish("ESP/MotorA", "Apagado");
+        //digitalWrite(ENA, LOW); 
+        mqttClient.publish("ESP/Response", "MotorA Apagado");
     }
 
     // - Control del Motor B basado en el mensaje - //
     if (message == "MBon") {
        // Habilita motor B (giro en un sentido)
-      digitalWrite(ENB, HIGH);  
+      //digitalWrite(ENB, HIGH);  
       digitalWrite(IN3, LOW);
       digitalWrite(IN4, HIGH);  
-      mqttClient.publish("ESP/MotorB", "Encendido");
+      mqttClient.publish("ESP/Response", "MotorB Encendido");
     } else if (message == "MBoff") {
-        digitalWrite(ENB, LOW); 
-        mqttClient.publish("ESP/MotorB", "Apagado");
+       // digitalWrite(ENB, LOW); 
+        mqttClient.publish("ESP/Response", "MotorB Apagado");
     }
 
     // - Control del Servo Motor basado en el mensaje - //
-    int angle = message.toInt();  // Convierte el mensaje a un número entero
+    float angle = message.toFloat();  // Convierte el mensaje a un número entero
     if (angle >= 0 && angle <= 180) {
        myServo.write(angle);
     } else {
        Serial.println("Valor no válido para el servo");
     }
+    
+    
+
+    
+
 }
 
 // Funcion de Conectar al broker MQTT
@@ -114,8 +126,8 @@ void reconnect() {
         if (mqttClient.connect("ESP32Client")) {
             Serial.println("Conectado");
             // Control Motores
-            mqttClient.subscribe("ESP/MotorA");
-            mqttClient.subscribe("ESP/MotorB");
+            //mqttClient.subscribe("ESP/MotorX");
+            //mqttClient.subscribe("ESP/MotorY");
             mqttClient.subscribe("ESP/Servo");
         } else {
             Serial.print("Fallido, rc=");
@@ -141,25 +153,35 @@ void setup() {
     // -  Inicializacion de Motor A - //
     pinMode(IN1, OUTPUT); 
     pinMode(IN2, OUTPUT);  
-    pinMode(ENA, OUTPUT);   
+    // pinMode(ENA, OUTPUT);   
 
     // - Inicializacion de Motor B - //
     pinMode(IN4, OUTPUT); 
     pinMode(IN3, OUTPUT);  
-    pinMode(ENB, OUTPUT);
+    // pinMode(ENB, OUTPUT);
+
+    //ledcSetup(PWM_CHANNEL, FREQ, RESOLUTION);
+    ledcAttach(IN1, FREQ, RESOLUTION);
+    digitalWrite(IN2, LOW);
+
+    ledcAttach(IN3, FREQ, RESOLUTION);
+    digitalWrite(IN4, LOW);
 
     // - Inicializacion de Sensor Ultrasónico - //
     pinMode(trigPin, OUTPUT);
     pinMode(echoPin, INPUT);
+    digitalWrite(trigPin, LOW);//Inicializamos el pin con 0
 
     // - Inicializacion de Sensor Ultrasónico 2 - //
     pinMode(trigPin2, OUTPUT);
     pinMode(echoPin2, INPUT);
 
-    // - Inicializacion del Sensor Infrarojo 1 - //
-    pinMode(infrarojo1, INPUT);
-    // - Inicializacion del Sensor Infrarojo 2 - //
-    pinMode(infrarojo2, INPUT);
+    // - Inicializacion de Sensor Infrarrojo 1 - //
+    pinMode(infrarrojo1, INPUT);
+
+    // - Inicializacion de Sensor Infrarrojo 2 - //
+    pinMode(infrarrojo2, INPUT);
+
 
 
     // Conectar a la red Wi-Fi
@@ -175,7 +197,12 @@ void setup() {
     mqttClient.setCallback(callback);
 }
 
-void loop() {
+void loop() { // Datos que recibimos del ESP32
+    if (!mqttClient.connected()) {
+        reconnect();
+    }
+    mqttClient.loop();
+    
     t = dht.readTemperature();  // obtencion de valor de temperatura
     h = dht.readHumidity();   // obtencion de valor de humedad
 
@@ -189,38 +216,73 @@ void loop() {
     mqttClient.publish("ESP/Humedad", hum.c_str());
     Serial.print(" Humedad: ");
     Serial.println(h);
-    delay(2000);
+    //delay(200);
+/*
+    // Motores 
+    duty_cycle =   + 10;
+    Serial.println(duty_cycle);
+    if(duty_cycle > 255)
+    {
+      duty_cycle = 0;
+    }
+    
+    ledcWrite(PWM_CHANNEL, duty_cycle);
+*/
+    delay(500);
+
+    // Lectura de Ultrasonico 1
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);          //Enviamos un pulso de 10us
+    digitalWrite(trigPin, LOW);
+  
+    duration = pulseIn(echoPin, HIGH); //obtenemos el ancho del pulso
+    distance = duration/59;             //escalamos el tiempo a una distancia en cm
+    
 
     // -- ENVIO DISTANCIA SENSOR ULTRASONICO 1 -- //
     String dist = String(distance);
-    mqttClient.publish("ESP/Ultra-Distancias1", dist.c_str());
+    mqttClient.publish("ESP/Ultra-Distancas1", dist.c_str());
     Serial.print("Distancia: ");
     Serial.println(distance);
-    delay(2000);
-
+    //delay(200);
+/*
     // -- ENVIO DISTANCIA SENSOR ULTRASONICO 2 -- //
     String dist2 = String(distance2);
-    mqttClient.publish("ESP/Ultra-Distancias2", dist2.c_str());
+    mqttClient.publish("ESP/Ultra-Distancas2", dist2.c_str());
     Serial.print("Distancia2: ");
     Serial.println(distance2);
     delay(2000);
 
-    // -- ENVIO VALOR SENSOR INFRAROJO 1 -- //
-    String infra1 = String(infrarojo1);
-    mqttClient.publish("ESP/Infra-Distancias1", infra1.c_str());
-    Serial.print("Infrarojo 1: ");
-    Serial.println(infrarojo1);
+    // -- ENVIO ESTADO SENSOR INFRARROJO 1 -- //
+    // Lectura de sensores infrarrojos
+    int valueInf1 = digitalRead(infrarrojo1);
+    int valueInf2 = digitalRead(infrarrojo2);
+
+    // Procesamiento de las lecturas de infrarrojo para detectar obstáculos
+    if (valueInf1 == HIGH) {
+        if (distance < 10) {
+            Serial.println("Peligro de colisión inminente");
+            mqttClient.publish("ESP/Infra-Distancias", "collision");
+
+        }
+    } else {
+        Serial.println("No hay obstáculo detectado");
+        mqttClient.publish("ESP/Infra-1", "clear");
+    }
+
     delay(2000);
 
-  // -- ENVIO VALOR SENSOR INFRAROJO 2 -- //
-    String infra2 = String(infrarojo2);
-    mqttClient.publish("ESP/Infra-Distancias2", infra2.c_str());
-    Serial.print("Infrarojo 2: ");
-    Serial.println(infrarojo2);
+    // -- ENVIO ESTADO SENSOR INFRARROJO 2 -- //
+    String infra2 = String(digitalRead(infrarrojo2));
+    mqttClient.publish("ESP/Infra-2", infr2.c_str());
+    int valueInf2 = 0;
+    value = digitalRead(infrarrojo2);  //lectura digital de pin
+
+    if (value == HIGH) {
+            Serial.println("Detectando obstaculo");
+        }
+
     delay(2000);
-  
-    if (!mqttClient.connected()) {
-        reconnect();
-    }
-    mqttClient.loop();
+  */
+    
 }
