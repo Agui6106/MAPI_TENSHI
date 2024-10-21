@@ -19,6 +19,7 @@ from tkinter.ttk import Progressbar
 import datetime as dt
 import webbrowser
 
+import threading
 import subprocess
 import psutil
 
@@ -47,15 +48,33 @@ import controls.ps4_control as ps4
     Puesto que todo se esta modificando dentro de 
     los respecitvos frames
 """
+# IP Local
+ip = get_ip_Windows()
 
-# - Verificacion y ejecucion de Node-Red - #
+# - Verificacion de ejecucion de Node-Red - #
 def is_node_red_running():
     for process in psutil.process_iter(['pid', 'name']):
         if 'node-red' in process.info['name']:  # Busca node-red en los procesos
             return True
     return False
 
-# Si no está en ejecución, ejecuta node-red
+# Inicializacion de Node-RED 
+def start_node_red():
+    if not is_node_red_running():
+        print(f"Node-RED not running. Initializing using {ip} as broker...")
+        os.system('node-red')
+    else:
+        print("Node-RED already running.")
+
+# Función para detener Node-RED
+def stop_node_red():
+    try:
+        # Ejecutar el comando 'taskkill' para detener Node-RED en Windows
+        os.system("taskkill /F /IM node-red.exe")
+        print("Node-RED detenido exitosamente.")
+    except Exception as e:
+        print(f"Error al detener Node-RED: {e}")
+        
 """if not is_node_red_running():
     print("Node-RED no está en ejecución. Iniciando...")
     os.system('node-red')
@@ -140,9 +159,6 @@ def open_config_window():
     config_window.mainloop()
 
 open_config_window()
-
-# IP Local
-ip = get_ip_Windows()
 
 # - Buscar implementar con daemons (threads)
 # - RASP - #
@@ -231,12 +247,17 @@ class App(Frame):
     def __init__(self, parent, *args, **kwargs):       
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent: Tk = parent
-        
+        #self.parent.protocol("WM_DELETE_WINDOW", self.on_closing)
+
         # - Creacion de Notebook (pestañas) - #
         self.notebook = self._Create_notebook()
         
         # - Creacion de los objetos - #
         self.init_gui()
+    
+    def on_closing(self):
+        stop_node_red()
+        self.destroy()
     
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
