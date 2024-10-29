@@ -18,6 +18,7 @@ from tkinter.ttk import Progressbar
 
 import datetime as dt
 import webbrowser
+import time
 
 import threading
 import subprocess
@@ -430,7 +431,9 @@ class Frame_Main_MQTT_Control(Frame):
         # - MQTT - #
         self.get_response()
         # - Obtenemos lso valores del control - #        
-        self.update_vals()
+        self.update_vals()       
+        x = threading.Thread(target= self.buttons, daemon=True)
+        x.start()
 
         # - Creacion de elementos visuales -#
         self.init_main_gui()
@@ -656,7 +659,14 @@ class Frame_Main_MQTT_Control(Frame):
         return Progressbar(self.recv_data_frame, orient='horizontal', mode='determinate', length=300)
     
     # -- OPERATIVO -- #
-    def update_vals(self):
+    def buttons(self):
+        while True:
+            buttons = ps4.get_buttons()
+            print(f'Sending {buttons} to Servo')
+            mqtt_esp_Servo.publish_message(buttons)  
+            time.sleep(0.1)
+                
+    def update_vals(self):        
         # Verificamos que haya un control Conectado
         if not ps4.check_ps4_connection():
             pass
@@ -670,23 +680,20 @@ class Frame_Main_MQTT_Control(Frame):
             xl = round(xl, 2)
             yl = round(yl, 2)
             
-            # Obtenemos botones
-            local_Buttons = ps4.get_buttons()
-            
             # Escritura en interfaz
             self.cam_scale.set(xr)
             self.motorX_data.config(text=xl)
             self.motorY_data.config(text=yl)
             
             # Enviar x mqtt
-            self.send_motors_vals(Servo=local_Buttons, MotorX=xl, MotorY=yl)
+            self.send_motors_vals( MotorX=xl, MotorY=yl)
             self.after(50, self.update_vals)
         
     # - MQTT PROTOCOL - #
     # Envio
-    def send_motors_vals(self, Servo, MotorX, MotorY):
+    def send_motors_vals(self, MotorX, MotorY):
         try:
-            mqtt_esp_Servo.publish_message(Servo)  
+            #mqtt_esp_Servo.publish_message(Servo)  
             mqtt_esp_X.publish_message(MotorX)
             mqtt_esp_Y.publish_message(MotorY)
         except Exception as e:
@@ -762,7 +769,10 @@ class Frame_Main_MQTT_Control(Frame):
                 
         # Lectura de los valores de los sesnores Infrarojos
         if self.infrarojo1:
-            self.data_Dist_InfrF.config(text=self.infrarojo1)
+            if self.infrarojo1 == 'collision':
+                self.data_Dist_InfrF.config(text='Danger', foreground='red')
+            if self.infrarojo1 == 'clear':
+                self.data_Dist_InfrF.config(text='Safe', foreground='Green')
         if self.infrarojo2:
             self.data_Dist_InfrB.config(text=self.infrarojo2)
             

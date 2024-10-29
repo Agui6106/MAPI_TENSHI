@@ -117,20 +117,6 @@ def get_pad_info(id_pad, val):
         return joystick.get_numaxes()       
                     
 if __name__ == "__main__":
-    get_joys_left
-    # - Info - #
-    """ print(f'\nName: {get_pad_info(0,'name')}')
-    print(f'Id: {get_pad_info(0,'id')}')
-    print(f'Power: {get_pad_info(0,'power')}')
-    print(f'Total Buttons: {get_pad_info(0,'buttons')}')
-    print(f'Total Axes: {get_pad_info(0,'axes')}')
-    
-    # - Butons - #
     while True:
-        button = get_buttons()
-        xval_left, yval_left = get_joys_left()
-        xval_right, yval_right = get_joys_right()
-        print(button)
-        print('')
-        print(f'X Left: {xval_left}, Y Left: {yval_left} \n')
-        print(f'X right: {xval_right}, Y right: {yval_right} \n')"""
+        print(get_buttons())
+        
