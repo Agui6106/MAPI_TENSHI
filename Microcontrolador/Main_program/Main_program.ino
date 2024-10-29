@@ -41,14 +41,14 @@ int duty_cycle = 200; //seria el 100 porciento, registro de 8 bits
 Servo myServo;
 
 // Configuración Sensor Ultrasónico
-int trigPin = 16;    // Pin de Trigger
-int echoPin = 17;    // Pin de Echo
+#define trigPin 16    // Pin de Trigger
+#define echoPin 17    // Pin de Echo
 long duration;
 float distance;
 
 // Configuración Sensor Ultrasónico 2
-int trigPin2 = 26;    // Pin de Trigger
-int echoPin2 = 27;    // Pin de Echo
+#define trigPin2 26   // Pin de Trigger
+#define echoPin2 27   // Pin de Echo
 long duration2;
 float distance2;
 
@@ -106,12 +106,26 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     }
 
     // - Control del Servo Motor basado en el mensaje - //
+    int angle = 0;
+    if (message == "D_LFT") {
+      myServo.write(angle + 10);
+      mqttClient.publish("ESP/Response", "Angulo +10°");
+      
+      } else if (message == "D_RGT"){
+        myServo.write(angle - 10);
+        mqttClient.publish("ESP/Response", "Angulo -10°");
+
+      }
+
+    
+    /*
     float angle = message.toFloat();  // Convierte el mensaje a un número entero
     if (angle >= 0 && angle <= 180) {
        myServo.write(angle);
     } else {
        Serial.println("Valor no válido para el servo");
     }
+    */
     
     
 
