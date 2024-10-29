@@ -107,13 +107,14 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
 
     // - Control del Servo Motor basado en el mensaje - //
     int angle = 0;
+    myServo.write(180);
     if (message == "D_LFT") {
-      myServo.write(angle + 10);
-      mqttClient.publish("ESP/Response", "Angulo +10°");
+      myServo.write(angle - 10);
+      mqttClient.publish("ESP/Response", "Servo -10°");
       
       } else if (message == "D_RGT"){
-        myServo.write(angle - 10);
-        mqttClient.publish("ESP/Response", "Angulo -10°");
+        myServo.write(angle + 10);
+        mqttClient.publish("ESP/Response", "Servo +10°");
 
       }
 
@@ -230,7 +231,7 @@ void loop() { // Datos que recibimos del ESP32
     mqttClient.publish("ESP/Humedad", hum.c_str());
     Serial.print(" Humedad: ");
     Serial.println(h);
-    //delay(200);
+    delay(500);
 /*
     // Motores 
     duty_cycle =   + 10;
@@ -242,7 +243,7 @@ void loop() { // Datos que recibimos del ESP32
     
     ledcWrite(PWM_CHANNEL, duty_cycle);
 */
-    delay(500);
+    //delay(500);
 
     // Lectura de Ultrasonico 1
     digitalWrite(trigPin, HIGH);
@@ -258,31 +259,42 @@ void loop() { // Datos que recibimos del ESP32
     mqttClient.publish("ESP/Ultra-Distancas1", dist.c_str());
     Serial.print("Distancia: ");
     Serial.println(distance);
-    //delay(200);
-/*
+    delay(200);
+    
     // -- ENVIO DISTANCIA SENSOR ULTRASONICO 2 -- //
     String dist2 = String(distance2);
     mqttClient.publish("ESP/Ultra-Distancas2", dist2.c_str());
     Serial.print("Distancia2: ");
     Serial.println(distance2);
-    delay(2000);
+    delay(200);
 
-    // -- ENVIO ESTADO SENSOR INFRARROJO 1 -- //
+// -- ENVIO ESTADO SENSOR INFRARROJO 1 -- //
     // Lectura de sensores infrarrojos
-    int valueInf1 = digitalRead(infrarrojo1);
-    int valueInf2 = digitalRead(infrarrojo2);
+    int valueInf1 = 0;
+     valueInf1 = digitalRead(infrarrojo1);
+    int valueInf2 = 0;
+     valueInf2 = digitalRead(infrarrojo2);
 
     // Procesamiento de las lecturas de infrarrojo para detectar obstáculos
-    if (valueInf1 == HIGH) {
-        if (distance < 10) {
-            Serial.println("Peligro de colisión inminente");
-            mqttClient.publish("ESP/Infra-Distancias", "collision");
+    if (valueInf1 == LOW) {
+        mqttClient.publish("ESP/Infra-1", "collision");
+        Serial.println("Peligro de colisión inminente. Sending to Broker...");
+    } else if (valueInf1 == HIGH){
+      mqttClient.publish("ESP/Infra-1", "clear");
+      }
 
+    delay(2000);
+
+    // -- ENVIO ESTADO SENSOR INFRARROJO 2 -- //
+    /*
+    String infra2 = String(digitalRead(infrarrojo2));
+    mqttClient.publish("ESP/Infra-Distancias2", infr2.c_str());
+    int valueInf2 = 0;
+    value = digitalRead(infrarrojo2);  //lectura digital de pin
+
+    if (value == HIGH) {
+            Serial.println("Detectando obstaculo");
         }
-    } else {
-        Serial.println("No hay obstáculo detectado");
-        mqttClient.publish("ESP/Infra-1", "clear");
-    }
 
     delay(2000);
 
