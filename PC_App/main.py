@@ -90,12 +90,21 @@ def open_config_window():
         ip_esp = entry_ip_esp.get()
         server_stream = entry_server_stream.get()
         ID_bot = entry_Robot_ID.get()
-        if ip_rasp == '' or ip_esp == '' or server_stream == '' or ID_bot == '' :
+        if ip_rasp == '':
             ip_rasp = '0.0.0.1'
+            messagebox.showwarning("Input Empty on IP Raspberry", "No selected values. Default selected")
+            
+        elif ip_esp == '':
             ip_esp = '0.0.0.2'
+            messagebox.showwarning("Input Empty on IP ESP", "No selected values. Default selected")
+            
+        elif ID_bot == '' :
             ID_bot = '01'
+            messagebox.showwarning("Input Empty on Robot ID", "No selected values. Default selected")
+            
+        elif server_stream == '':
             server_stream = 'https://server-example.com'
-            messagebox.showwarning("Input Empty", "No selected values. Default selected")
+            messagebox.showwarning("Input Empty on Stream URL", "No selected values. Default selected")
         
         config_window.destroy()
             
@@ -431,7 +440,7 @@ class Frame_Main_MQTT_Control(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_main_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2)
+        self.title.grid(row=0, column=0, columnspan=3)
         
         #self.grid_rowconfigure(1, weight=1)
         #self.grid_columnconfigure(0, weight=1)
@@ -661,13 +670,16 @@ class Frame_Main_MQTT_Control(Frame):
             xl = round(xl, 2)
             yl = round(yl, 2)
             
+            # Obtenemos botones
+            local_Buttons = ps4.get_buttons()
+            
             # Escritura en interfaz
             self.cam_scale.set(xr)
             self.motorX_data.config(text=xl)
             self.motorY_data.config(text=yl)
             
             # Enviar x mqtt
-            self.send_motors_vals(Servo=xr, MotorX=xl, MotorY=yl)
+            self.send_motors_vals(Servo=local_Buttons, MotorX=xl, MotorY=yl)
             self.after(50, self.update_vals)
         
     # - MQTT PROTOCOL - #
@@ -714,6 +726,12 @@ class Frame_Main_MQTT_Control(Frame):
         
         # Reescibir output
         self.output_ESP.config(state='normal')
+        if self.response:
+            self.output_ESP.delete(0, 'end')
+            self.output_ESP.insert(0, self.response)
+        
+        self.output_ESP.config(state='readonly')
+        
         # Insertar el mensaje en el Entry
         if self.response:
             print(f'ESP Output: {self.response}')
