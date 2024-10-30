@@ -90,15 +90,15 @@ def open_config_window():
             ip_rasp = '0.0.0.1'
             messagebox.showwarning("Input Empty on IP Raspberry", "No selected values. Default selected")
             
-        elif ip_esp == '':
+        if ip_esp == '':
             ip_esp = '0.0.0.2'
             messagebox.showwarning("Input Empty on IP ESP", "No selected values. Default selected")
             
-        elif ID_bot == '' :
+        if ID_bot == '' :
             ID_bot = '01'
             messagebox.showwarning("Input Empty on Robot ID", "No selected values. Default selected")
             
-        elif server_stream == '':
+        if server_stream == '':
             server_stream = 'https://server-example.com'
             messagebox.showwarning("Input Empty on Stream URL", "No selected values. Default selected")
         
@@ -272,7 +272,7 @@ class App(Frame):
         # Size del monitor
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
-        root.geometry(f'{screen_width-50}x{screen_height-110}')
+        root.geometry(f'{screen_width-50}x{screen_height-140}')
         root.resizable(False, False)
 
         # -- Colocacion de widgets -- #
@@ -431,9 +431,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.get_response()
         # - Obtenemos lso valores del control - #        
         self.update_vals()       
-        x = threading.Thread(target= self.buttons, daemon=True)
-        x.start()
-
+        
         # - Creacion de elementos visuales -#
         self.init_main_gui()
         self.init_gui_of_VitalData()
@@ -668,8 +666,8 @@ class Frame_Main_MQTT_Control(Frame):
             pass
         else:
             # Obtenemos los valores y redondeamos los necesarios
-            xr,yr = ps4.get_joys_right()
-            xl,yl = ps4.get_joys_left()
+            xl,yl,xr,yr = ps4.get_joys()
+            buttons = ps4.get_buttons()
             
             xr = round(xr, 2)
             yr = round(yr, 2)
@@ -887,7 +885,7 @@ class Frame_Main_Pros_Camera(Frame):
         self.title.grid(row=0, column=0, columnspan=3,)
         
         # Colocamos los botones
-        self.but_colors.grid(row=1, column=0, padx=30, pady=5,)
+        self.but_colors.grid(row=1, column=0, padx=10, pady=5,)
         self.but_contours.grid(row=1, column=1,)
         self.but_faces.grid(row=2, column=0, )
         self.but_save.grid(row=2, column=1,)
@@ -905,35 +903,35 @@ class Frame_Main_Pros_Camera(Frame):
     # - Botones - #
     def _but_colors(self) -> Button:
         return Button(self,
-                      width=18,
+                      width=24,
                       borderwidth=1,
                       command=self.detect_colors,
                       text='Colors',
-                      font=('Magneto', 15))
+                      font=('Z003', 15, 'bold'))
     
     def _but_contors(self) -> Button:
         return Button(self,
-                      width=18,
+                      width=24,
                       borderwidth=1,
                       command=self.detect_contorns,
                       text='Contorns',
-                      font=('Magneto', 15))
+                      font=('Z003', 15, 'bold'))
     
     def _but_save(self) -> Button:
         return Button(self,
-                      width=18,
+                      width=24,
                       borderwidth=1,
                       command=self.save_photo,
                       text='Save',
-                      font=('Magneto', 15))
+                      font=('Z003', 15, 'bold'))
         
     def _but_faces(self) -> Button:
         return Button(self,
-                      width=18,
+                      width=24,
                       borderwidth=1,
                       command=self.face_detect,
                       text='Faces',
-                      font=('Magneto', 15))
+                      font=('Z003', 15, 'bold'))
         
     # -- OPERATIVO -- #
     # Colores 
@@ -1314,7 +1312,6 @@ class FrameOptions(Frame):
         self.axes: Entry = self.axes_label()
         
         self.joys_updated: Button = self.but_refresh()
-        self.run_tests_butt: Button = self.but_test()
         
         # Creamos los objetos
         self.init_gui()
@@ -1357,7 +1354,6 @@ class FrameOptions(Frame):
         
         # - BUTTONS - #
         self.joys_updated.grid(row=13, column=0, columnspan=2, pady=2)
-        self.run_tests_butt.grid(row=14, column=0, columnspan=2, pady=2)
 
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
@@ -1527,14 +1523,7 @@ class FrameOptions(Frame):
                       width=40,
                       command=self.get_joy_stats,
                       text='Refresh Control',
-                      font=('Magneto', 15))
-    
-    def but_test(self) -> Button:
-                return Button(self,
-                      width=40,
-                      command=self.run_test,
-                      text='Test',
-                      font=('Magneto', 15))
+                      font=('Z003', 15, 'bold'))
     
     # - OPERATIVO - #
     def get_joy_stats(self):
@@ -1589,13 +1578,6 @@ class FrameOptions(Frame):
         self.axes.delete(0, 'end')  # Borrar el contenido anterior
         self.axes.insert(0, axes)  # Insertar el nuevo mensaje
         self.axes.config(state='readonly')
-        
-    def run_test(self):
-        code_file = os.path.join(os.path.dirname(__file__), 'Control_test.py')
-        try:
-            subprocess.run([sys.executable, code_file])
-        except Exception as e:
-                messagebox.showerror('Error', f'Failed to start due to: {str(e)}')
            
 # ---- Clase ventana de WebControl ---- #
 class FrameWebControl(Frame):

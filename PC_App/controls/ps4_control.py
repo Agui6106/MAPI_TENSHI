@@ -39,6 +39,7 @@ def refresh_joys():
 def get_buttons():
     """
     Nos regresa todos los botones del control
+    
     """
     while True:
         for event in pygame.event.get():
@@ -67,31 +68,26 @@ def get_buttons():
                 if event.button == 14:
                     return 'D_RGT'
 
-def get_joys_left():
+def get_joys():
     """
     Nos regresa las posiciones de la palanca Izquierda
     """
-    x = 0
-    y = 0
+    # Joystick Izquierdo
+    xL = 0
+    yL = 0
+    # Joystick Derecho
+    xR = 0
+    yR = 0
+    
     while True:
         for event in pygame.event.get():
+            # Joysticks
             if event.type == pygame.JOYAXISMOTION:
-                x = pygame.joystick.Joystick(0).get_axis(0)
-                y = pygame.joystick.Joystick(0).get_axis(1)
-                return x, y
-            
-def get_joys_right():
-    """
-    Nos regresa las posiciones de la palanca Derecha
-    """
-    x = 0
-    y = 0
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.JOYAXISMOTION:
-                x = pygame.joystick.Joystick(0).get_axis(2)
-                y = pygame.joystick.Joystick(0).get_axis(3)
-                return x, y
+                xL = pygame.joystick.Joystick(0).get_axis(0)
+                yL = pygame.joystick.Joystick(0).get_axis(1)
+                xR = pygame.joystick.Joystick(0).get_axis(2)
+                yR = pygame.joystick.Joystick(0).get_axis(3)
+                return xL, yL, xR, yR
 
 # - INFORMACION DEL PAD - #
 def get_pad_info(id_pad, val):
