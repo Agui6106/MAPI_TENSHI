@@ -36,58 +36,37 @@ def refresh_joys():
     return joysticks  # Devuelve la lista de joysticks
 
 # - BOTONES Y JOYSTICKS - #
-def get_buttons():
+def get_controller_state():
     """
-    Nos regresa todos los botones del control
+    Devuelve el estado de los botones y posiciones de las palancas del control.
+    """
+    buttons = {}
+    axes = {}
     
-    """
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.JOYBUTTONDOWN:
-                if event.button == 0:
-                    return 'X'
-
-                if event.button == 1:
-                    return 'O'
-
-                if event.button == 2:
-                    return 'SQR'
-
-                if event.button == 3:
-                    return 'TRI'
-                
-                if event.button == 11:
-                    return 'D_UP'
-                
-                if event.button == 12:
-                    return 'D_DWN'
-                
-                if event.button == 13:
-                    return 'D_LFT'
-                
-                if event.button == 14:
-                    return 'D_RGT'
-
-def get_joys():
-    """
-    Nos regresa las posiciones de la palanca Izquierda
-    """
-    # Joystick Izquierdo
-    xL = 0
-    yL = 0
-    # Joystick Derecho
-    xR = 0
-    yR = 0
+    for event in pygame.event.get():
+        if event.type == pygame.JOYBUTTONDOWN or event.type == pygame.JOYBUTTONUP:
+            # Mapear botones con sus nombres
+            buttons = {
+                'X': pygame.joystick.Joystick(0).get_button(0),
+                'O': pygame.joystick.Joystick(0).get_button(1),
+                'SQR': pygame.joystick.Joystick(0).get_button(2),
+                'TRI': pygame.joystick.Joystick(0).get_button(3),
+                'D_UP': pygame.joystick.Joystick(0).get_button(11),
+                'D_DWN': pygame.joystick.Joystick(0).get_button(12),
+                'D_LFT': pygame.joystick.Joystick(0).get_button(13),
+                'D_RGT': pygame.joystick.Joystick(0).get_button(14)
+            }
+        
+        if event.type == pygame.JOYAXISMOTION:
+            # Mapear posiciones de las palancas
+            axes = {
+                'xL': pygame.joystick.Joystick(0).get_axis(0),
+                'yL': pygame.joystick.Joystick(0).get_axis(1),
+                'xR': pygame.joystick.Joystick(0).get_axis(2),
+                'yR': pygame.joystick.Joystick(0).get_axis(3)
+            }
     
-    while True:
-        for event in pygame.event.get():
-            # Joysticks
-            if event.type == pygame.JOYAXISMOTION:
-                xL = pygame.joystick.Joystick(0).get_axis(0)
-                yL = pygame.joystick.Joystick(0).get_axis(1)
-                xR = pygame.joystick.Joystick(0).get_axis(2)
-                yR = pygame.joystick.Joystick(0).get_axis(3)
-                return xL, yL, xR, yR
+    return {'buttons': buttons, 'axes': axes}
 
 # - INFORMACION DEL PAD - #
 def get_pad_info(id_pad, val):
@@ -113,6 +92,8 @@ def get_pad_info(id_pad, val):
         return joystick.get_numaxes()       
                     
 if __name__ == "__main__":
-    while True:
-        print(get_buttons())
+    if check_ps4_connection():
+        while True:
+            state = get_controller_state()
+            print(state)
         
