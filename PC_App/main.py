@@ -653,36 +653,37 @@ class Frame_Main_MQTT_Control(Frame):
         return Label(self.recv_data_frame, text="0000", font=('Z003', 15,))
     
     # -- OPERATIVO -- #
-    def buttons(self):
-        while True:
-            buttons = ps4.get_buttons()
-            print(f'Sending {buttons} to Servo')
-            mqtt_esp_Servo.publish_message(buttons)  
-            time.sleep(0.1)
-                
     def update_vals(self):        
         # Verificamos que haya un control Conectado
         if not ps4.check_ps4_connection():
-            pass
+            pass        
         else:
             # Obtenemos los valores y redondeamos los necesarios
-            xl,yl,xr,yr = ps4.get_joys()
-            buttons = ps4.get_buttons()
-            
-            xr = round(xr, 2)
-            yr = round(yr, 2)
-            xl = round(xl, 2)
-            yl = round(yl, 2)
-            
-            # Escritura en interfaz
+            controller_state = ps4.get_controller_state()
+            # Redondeamos los valores de los ejes necesarios
+            xl = round(controller_state['axes'].get('xL', 0), 2)
+            yl = round(controller_state['axes'].get('yL', 0), 2)
+            xr = round(controller_state['axes'].get('xR', 0), 2)
+            yr = round(controller_state['axes'].get('yR', 0), 2)
+        
+            # Actualizamos los valores en la interfaz
             self.cam_scale.set(xr)
             self.motorX_data.config(text=xl)
             self.motorY_data.config(text=yl)
             
-            # Enviar x mqtt
-            self.send_motors_vals( MotorX=xl, MotorY=yl)
+            # Enviamos valores por MQTT
+            self.send_motors_vals(MotorX=xl, MotorY=yl)
+            
+            # Chequear botones específicos y enviar info por MQTT
+            buttons = controller_state['buttons']
+            if buttons.get('X', 0):  # Por ejemplo, 'X' activa la lámpara
+                self.send_buttons_info('Lamp')
+            if buttons.get('O', 0):  # 'O' activa el buzzer
+                self.send_buttons_info('Buzzer')
+            
+            # Llamada recursiva para actualizar cada 50ms
             self.after(50, self.update_vals)
-        
+            
     # - MQTT PROTOCOL - #
     # Envio
     def send_motors_vals(self, MotorX, MotorY):
@@ -730,7 +731,6 @@ class Frame_Main_MQTT_Control(Frame):
         if self.response:
             self.output_ESP.delete(0, 'end')
             self.output_ESP.insert(0, self.response)
-        
         self.output_ESP.config(state='readonly')
         
         # Insertar el mensaje en el Entry
