@@ -44,11 +44,6 @@ from MQTT_con.MQTT_ex import mqtt_coms
 # - PS4 CONTROLLER - #
 import controls.ps4_control as ps4
 
-"""
-    Nota: En teoria ya no es encesario entrar a App.
-    Puesto que todo se esta modificando dentro de 
-    los respecitvos frames
-"""
 # IP Local
 ip = get_ip_Windows()
 
@@ -170,7 +165,7 @@ def open_config_window():
 
 open_config_window()
 
-# - Buscar implementar con daemons (threads)
+""" - DEMASIADOS MQTT - OPTIMIZAR """
 # - RASP - #
 # Mqtt client Raspberry(ipbroker, puerto, suscribcion, publica)
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
@@ -254,10 +249,12 @@ segs = date.second
 
 # - Clase Principal Aplicacion - #
 class App(Frame):
+    """
+    Frame principal para la colocacion de elementos secundarios
+    """
     def __init__(self, parent, *args, **kwargs):       
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent: Tk = parent
-        #self.parent.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # - Creacion de Notebook (pestañas) - #
         self.notebook = self._Create_notebook()
@@ -265,12 +262,11 @@ class App(Frame):
         # - Creacion de los objetos - #
         self.init_gui()
     
-    def on_closing(self):
-        stop_node_red()
-        self.destroy()
-    
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
+        """
+        Inicializacion de elementos y colocacion
+        """
         # -- Propiedades de la App principal -- #
         self.parent.title(f'MAPI-Tenshi Control Panel - V1.0. on Robot ID: {ID_bot} with IP: {ip_rasp}')
         # Size del monitor
@@ -287,6 +283,9 @@ class App(Frame):
     
     # - Creacion del Notebook con pestañas - #
     def _Create_notebook(self) -> Notebook:
+        """
+        Menu de seleccion de pesatnas secundarias
+        """
         notebook = Notebook(self)
         
         # Creamos un frame simple para Tab 1
@@ -388,12 +387,12 @@ class Frame_Main_MQTT_Control(Frame):
         # - GIROSCOPIO - #
         self.X_Label = Label(self.positions_frame, text="X:", font=('Z003', 15, 'bold'))
         self.Y_Label = Label(self.positions_frame, text="Y:", font=('Z003', 15, 'bold'))
-        self.X_Data =  Label(self.positions_frame, text="00000", font=('Z003', 15,))
+        self.X_Data = Label(self.positions_frame, text="00000", font=('Z003', 15,))
         self.Y_Data = Label(self.positions_frame,  text="00000", font=('Z003', 15,))
         
         # - GPS - #
-        self.Latitud_Label = Label(self.positions_frame,  text="  Latitud:", font=('Z003', 15, 'bold'))
-        self.Longitud_Label = Label(self.positions_frame, text="Longitud:", font=('Z003', 15, 'bold'))
+        self.Latitud_Label = Label(self.positions_frame,  text=" Latitude:", font=('Z003', 15, 'bold'))
+        self.Longitud_Label = Label(self.positions_frame, text="Longitude:", font=('Z003', 15, 'bold'))
         self.Latitud_Data = Label(self.positions_frame, text="000.000", font=('Z003', 15,))
         self.Longitud_Data = Label(self.positions_frame, text="000.000", font=('Z003', 15,))
         
@@ -416,10 +415,10 @@ class Frame_Main_MQTT_Control(Frame):
         self.back_Infr: Label = self.infr_label()
         
         # Sensores generales
-        self.temp_label = Label(self.recv_data_frame, text="Temperatura:", font=('Z003', 15, 'bold'))
-        self.Hum_label = Label(self.recv_data_frame,  text="    Humedad:", font=('Z003', 15, 'bold'))
-        self.Gas_label = Label(self.recv_data_frame,  text="          Gas:", font=('Z003', 15, 'bold'))
-        self.gas_levels: Progressbar = self._progress_GAS()
+        self.temp_label = Label(self.recv_data_frame, text="Temperature:", font=('Z003', 15, 'bold'))
+        self.Hum_label = Label(self.recv_data_frame,  text="   Humidity:", font=('Z003', 15, 'bold'))
+        self.Gas_label = Label(self.recv_data_frame,  text="        Gas:", font=('Z003', 15, 'bold'))
+        self.gas_levels: Label = self.data_label()
         
         self.data_temp: Label = self.data_label()
         self.data_Hum: Label = self.data_label()
@@ -513,14 +512,14 @@ class Frame_Main_MQTT_Control(Frame):
         self.Latitud_Data.grid(row=1,column=3, columnspan=2)
         self.Longitud_Data.grid(row=2,column=3, columnspan=2)
         
-        self.Google_maps_But.grid(row=3,column=1, columnspan=4,)
+        self.Google_maps_But.grid(row=3,column=0, columnspan=4, padx=5)
         
     def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
-        self.empty_space_recv.grid(row=0,column=0, padx=10)
+        self.empty_space_recv.grid(row=0,column=0, padx=20)
         # Titulos
         self.dist_front_title.grid(row=0, column=1, columnspan=2)
-        self.dist_back_title.grid(row=0, column=3, columnspan=2)
+        self.dist_back_title.grid(row=0, column=3, columnspan=2, padx=20)
         self.sensors_title.grid(row=3, column=1,columnspan=4, pady=5)
         
         # Etiquetas
@@ -540,7 +539,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.data_Dist_InfrB.grid(row=1,column=4)
         self.data_Dist_UltrB.grid(row=2,column=4)
         
-        self.gas_levels.grid(row=5,column=2, columnspan=3)
+        self.gas_levels.grid(row=5,column=2)
         
         self.data_temp.grid(row=4,column=2)
         self.data_Hum.grid(row=4,column=4)
@@ -558,8 +557,8 @@ class Frame_Main_MQTT_Control(Frame):
     def _button_Open_Dev(self) -> Button:
         return Button(self, 
                       text='Open Web Debugger', 
-                      font=("Magneto", 13),
-                      width=20,
+                      font=("Z003", 13, 'bold'),
+                      width=30,
                       command= self.open_debugger)
         
     def _ESP_output(self) -> Entry:
@@ -613,11 +612,11 @@ class Frame_Main_MQTT_Control(Frame):
     # Perifericos
     def _button_Buz(self) -> Button:
         return Button(self.vital_Data_frame, 
-                      font=('Magneto', 14), text="Lamp",width=6,
+                      font=('Z003', 13, 'bold'), text="Lamp",width=7,
                       command=self.send_buttons_info(topic='Buzzer'))
     def _button_lamp(self) -> Button:
         return Button(self.vital_Data_frame, 
-                      font=('Magneto', 14), text="Buzzer",width=6,
+                      font=('Z003', 13, 'bold'), text="Buzzer",width=7,
                       command=self.send_buttons_info(topic='Lamp'))
     
     # Status
@@ -640,8 +639,8 @@ class Frame_Main_MQTT_Control(Frame):
     
     # - Positions - #
     def launch_GM_Butt(self) -> Button:
-        return Button(self.positions_frame, 
-                      font=('Magneto', 14), text="Open on Google Maps",
+        return Button(self.positions_frame, width=30,
+                      font=('Z003', 13, 'bold'), text="Open on Google Maps",
                       command=self.get_and_launch_MAPS)
     # Obtener las coordenadas en google maps
     def get_and_launch_MAPS(self):
@@ -649,14 +648,11 @@ class Frame_Main_MQTT_Control(Frame):
     
     # - Data - #    
     def ultr_label(self) -> Label:
-        return Label(self.recv_data_frame, text="Ultrasonico:", font=('Z003', 15, 'bold'))
+        return Label(self.recv_data_frame, text="Ultrasonic:", font=('Z003', 15, 'bold'))
     def infr_label(self) -> Label:
-        return Label(self.recv_data_frame, text="    Infrarojo:", font=('Z003', 15, 'bold'))
+        return Label(self.recv_data_frame, text="    Infrared:", font=('Z003', 15, 'bold'))
     def data_label(self) -> Label:
         return Label(self.recv_data_frame, text="0000", font=('Z003', 15,))
-    
-    def _progress_GAS(self) -> Progressbar:
-        return Progressbar(self.recv_data_frame, orient='horizontal', mode='determinate', length=300)
     
     # -- OPERATIVO -- #
     def buttons(self):
@@ -774,7 +770,10 @@ class Frame_Main_MQTT_Control(Frame):
             if self.infrarojo1 == 'clear':
                 self.data_Dist_InfrF.config(text='Safe', foreground='Green')
         if self.infrarojo2:
-            self.data_Dist_InfrB.config(text=self.infrarojo2)
+            if self.infrarojo1 == 'collision':
+                self.data_Dist_InfrB.config(text='Danger', foreground='red')
+            if self.infrarojo1 == 'clear':
+                self.data_Dist_InfrB.config(text='Safe', foreground='Green')
             
         # Lectura de los valores del giroscopio
         if self.mensaje_PX:
