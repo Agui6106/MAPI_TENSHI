@@ -186,21 +186,9 @@ mqtt_esp_Y = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/MotorY')
 mqtt_esp_Y.start()
 
 # -- SENSORS -- #
-# Mqtt client MotorY(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Temp = mqtt_coms(ip, 1883, 'ESP/Temperatura', 'PC/Response')
-mqtt_esp_Temp.start()
+mqtt_esp_Data = mqtt_coms(ip, 1883, 'ESP/Sensors', 'ESP/Motors')
+mqtt_esp_Data.start()
 
-# Mqtt client MotorY(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Hum = mqtt_coms(ip, 1883, 'ESP/Humedad', 'PC/Response')
-mqtt_esp_Hum.start()
-
-# Mqtt client Ultrasonico 1(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Ultra1 = mqtt_coms(ip, 1883, 'ESP/Ultra-Distancas1', 'PC/Response')
-mqtt_esp_Ultra1.start()
-
-# Mqtt client Ultrasonico 2(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Ultra2 = mqtt_coms(ip, 1883, 'ESP/Ultra-Distancas2', 'PC/Response')
-mqtt_esp_Ultra2.start()
 
 # Mqtt client Infrarojos 1(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_Infra1 = mqtt_coms(ip, 1883, 'ESP/Infra-1', 'PC/Response')
@@ -707,6 +695,7 @@ class Frame_Main_MQTT_Control(Frame):
     def get_response(self):
         # Respuesta del ESP
         self.response = mqtt_esp_Servo.last_message
+        
         # Perifericos
         self.mensaje_lamp = mqtt_esp_Lamp.last_message
         self.mensaje_buzz = mqtt_esp_Buzzer.last_message
@@ -716,12 +705,10 @@ class Frame_Main_MQTT_Control(Frame):
         # Coordenadas
         self.Lat = mqtt_esp_Lat.last_message
         self.Long = mqtt_esp_Long.last_message
-        # SensoresTemp y Hum
-        self.response_temp = mqtt_esp_Temp.last_message
-        self.response_hum = mqtt_esp_Hum.last_message
-        # Sensores de distancia
-        self.distances1 = mqtt_esp_Ultra1.last_message
-        self.distances2 = mqtt_esp_Ultra2.last_message
+        
+        # -- Sensores -- #
+        self.response_Data = mqtt_esp_Data.last_message
+
         # Sensores Infrarojos
         self.infrarojo1 = mqtt_esp_Infra1.last_message
         self.infrarojo2 = mqtt_esp_Infra2.last_message
@@ -755,12 +742,6 @@ class Frame_Main_MQTT_Control(Frame):
             elif self.mensaje_lamp == 'BSOff':
                 self.lamp_on_label.config(text='Off',foreground='red')
         
-        # Lectura de los valores de los sesnores ultrasonicos
-        if self.distances1:
-            self.data_Dist_UltrF.config(text=self.distances1)
-        if self.distances2:
-            self.data_Dist_UltrB.config(text=self.distances2)
-                
         # Lectura de los valores de los sesnores Infrarojos
         if self.infrarojo1:
             if self.infrarojo1 == 'collision':
@@ -786,10 +767,12 @@ class Frame_Main_MQTT_Control(Frame):
             self.Longitud_Data.config(text=self.Long)
             
         # Lectura de los sensores de temperatura
-        if self.response_hum:
-            self.data_Hum.config(text=self.response_hum)
-        if self.response_temp:
-            self.data_temp.config(text=self.response_temp)
+        if self.response_Data:
+            value = self.response_Data.split(",")
+            self.data_temp.config(text=value[0])
+            self.data_Hum.config(text=value[1])
+            self.data_Dist_UltrF.config(text=value[2])
+            self.data_Dist_UltrB.config(text=value[3])
             
         self.parent.after(500, self.get_response)
             
