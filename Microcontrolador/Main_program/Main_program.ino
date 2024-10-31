@@ -58,9 +58,6 @@ int infrarrojo1 = 5;  // Pin de Sensor Infrarrojo 1
 // Configuración Sensor Infrarrojo 2
 int infrarrojo2 = 25;  // Pin de Sensor Infrarrojo 2
 
-
-
-
 // ==================================================================== //
 
 // -- Instancias de cliente Wi-Fi y MQTT -- //
@@ -118,7 +115,6 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
 
       }
 
-    
     /*
     float angle = message.toFloat();  // Convierte el mensaje a un número entero
     if (angle >= 0 && angle <= 180) {
@@ -127,10 +123,6 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
        Serial.println("Valor no válido para el servo");
     }
     */
-    
-    
-
-    
 
 }
 
@@ -197,8 +189,6 @@ void setup() {
     // - Inicializacion de Sensor Infrarrojo 2 - //
     pinMode(infrarrojo2, INPUT);
 
-
-
     // Conectar a la red Wi-Fi
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
@@ -218,20 +208,34 @@ void loop() { // Datos que recibimos del ESP32
     }
     mqttClient.loop();
     
-    t = dht.readTemperature();  // obtencion de valor de temperatura
-    h = dht.readHumidity();   // obtencion de valor de humedad
+    // -- LECTURA DE SENSORES -- //
+    t = dht.readTemperature();  // Temperatura
+    h = dht.readHumidity();     // Humedad
 
-    // -- ENVIO TEMPÉRATURAS -- //
-    String temp = String(t);
-    mqttClient.publish("ESP/Temperatura", temp.c_str());    
+    // Lectura de Ultrasonico 1
+    digitalWrite(trigPin, HIGH);
+    delayMicroseconds(10);          //Enviamos un pulso de 10us
+    digitalWrite(trigPin, LOW);
+  
+    duration = pulseIn(echoPin, HIGH); //obtenemos el ancho del pulso
+    distance = duration/59;             //escalamos el tiempo a una distancia en cm
+
+    // Lectura de Ultrasonico 2
+    digitalWrite(trigPin2, HIGH);
+    delayMicroseconds(10);          //Enviamos un pulso de 10us
+    digitalWrite(trigPin2, LOW);
+  
+    duration2 = pulseIn(echoPin2, HIGH); //obtenemos el ancho del pulso
+    distance2 = duration2/59;             //escalamos el tiempo a una distancia en cm
+    
+    // -- ENVIO DE DATOS -- //
+    String mensaje = String(t) + "°C," + String(h) + " %," + String(distance) + " cm," + String(distance2) + " cm";
+    mqttClient.publish("ESP/Sensors", mensaje.c_str());    
     Serial.print("Temperatura: ");  
     Serial.print(t);
 
-    String hum = String(h);
-    mqttClient.publish("ESP/Humedad", hum.c_str());
-    Serial.print(" Humedad: ");
-    Serial.println(h);
     delay(500);
+
 /*
     // Motores 
     duty_cycle =   + 10;
@@ -242,25 +246,7 @@ void loop() { // Datos que recibimos del ESP32
     }
     
     ledcWrite(PWM_CHANNEL, duty_cycle);
-*/
-    //delay(500);
-
-    // Lectura de Ultrasonico 1
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);          //Enviamos un pulso de 10us
-    digitalWrite(trigPin, LOW);
-  
-    duration = pulseIn(echoPin, HIGH); //obtenemos el ancho del pulso
-    distance = duration/59;             //escalamos el tiempo a una distancia en cm
-    
-
-    // -- ENVIO DISTANCIA SENSOR ULTRASONICO 1 -- //
-    String dist = String(distance);
-    mqttClient.publish("ESP/Ultra-Distancas1", dist.c_str());
-    Serial.print("Distancia: ");
-    Serial.println(distance);
-    delay(200);
-    
+*/  
     // -- ENVIO DISTANCIA SENSOR ULTRASONICO 2 -- //
     String dist2 = String(distance2);
     mqttClient.publish("ESP/Ultra-Distancas2", dist2.c_str());
@@ -268,7 +254,7 @@ void loop() { // Datos que recibimos del ESP32
     Serial.println(distance2);
     delay(200);
 
-// -- ENVIO ESTADO SENSOR INFRARROJO 1 -- //
+    // -- ENVIO ESTADO SENSOR INFRARROJO 1 -- //
     // Lectura de sensores infrarrojos
     int valueInf1 = 0;
      valueInf1 = digitalRead(infrarrojo1);
@@ -287,16 +273,7 @@ void loop() { // Datos que recibimos del ESP32
 
     // -- ENVIO ESTADO SENSOR INFRARROJO 2 -- //
     /*
-    String infra2 = String(digitalRead(infrarrojo2));
-    mqttClient.publish("ESP/Infra-Distancias2", infr2.c_str());
-    int valueInf2 = 0;
-    value = digitalRead(infrarrojo2);  //lectura digital de pin
 
-    if (value == HIGH) {
-            Serial.println("Detectando obstaculo");
-        }
-
-    delay(2000);
 
     // -- ENVIO ESTADO SENSOR INFRARROJO 2 -- //
     String infra2 = String(digitalRead(infrarrojo2));
