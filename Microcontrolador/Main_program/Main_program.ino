@@ -211,8 +211,10 @@ void loop() { // Datos que recibimos del ESP32
     // -- LECTURA DE SENSORES -- //
     t = dht.readTemperature();  // Temperatura
     h = dht.readHumidity();     // Humedad
+    delay(200);
 
-    // Lectura de Ultrasonico 1
+    // -- SENSOR ULTRASONICO -- //
+    // Sensor 1
     digitalWrite(trigPin, HIGH);
     delayMicroseconds(10);          //Enviamos un pulso de 10us
     digitalWrite(trigPin, LOW);
@@ -220,21 +222,62 @@ void loop() { // Datos que recibimos del ESP32
     duration = pulseIn(echoPin, HIGH); //obtenemos el ancho del pulso
     distance = duration/59;             //escalamos el tiempo a una distancia en cm
 
-    // Lectura de Ultrasonico 2
+    // Sensor 2 
     digitalWrite(trigPin2, HIGH);
     delayMicroseconds(10);          //Enviamos un pulso de 10us
     digitalWrite(trigPin2, LOW);
   
     duration2 = pulseIn(echoPin2, HIGH); //obtenemos el ancho del pulso
     distance2 = duration2/59;             //escalamos el tiempo a una distancia en cm
+    delay(200);
+
+    // -- SENSOR INFRARROJOS -- //
+    int valueInf1 = 0;
+     valueInf1 = digitalRead(infrarrojo1);
+    int valueInf2 = 0;
+     valueInf2 = digitalRead(infrarrojo2);
+
+    String state1 = "";
+    String state2 = "";
+
+    // Procesamiento de las lecturas de infrarrojo para detectar obstáculos
+    // Sensor 1
+    if (valueInf1 == LOW) {
+        //mqttClient.publish("ESP/Infra-1", "collision");
+        state1 = "collision";
+        Serial.println("Peligro de colisión inminente. Sending to Broker...");
+    } else if (valueInf1 == HIGH){
+      //mqttClient.publish("ESP/Infra-1", "clear");
+      state1 = "clear";
+    }
+
+    // Sensor 2
+    if (valueInf2 == LOW) {
+        //mqttClient.publish("ESP/Infra-1", "collision");
+        state2 = "collision";
+        Serial.println("Peligro de colisión inminente. Sending to Broker...");
+    } else if (valueInf2 == HIGH){
+      //mqttClient.publish("ESP/Infra-1", "clear");
+      state2 = "clear";
+    }
+
     
     // -- ENVIO DE DATOS -- //
-    String mensaje = String(t) + "°C," + String(h) + " %," + String(distance) + " cm," + String(distance2) + " cm";
-    mqttClient.publish("ESP/Sensors", mensaje.c_str());    
-    Serial.print("Temperatura: ");  
-    Serial.print(t);
+    String mensaje = String(t) + "°C," + 
+                     String(h) + " %," +
+                     String(distance) + " cm," + 
+                     String(distance2) + " cm";
 
-    delay(500);
+    mqttClient.publish("ESP/Sensors", mensaje.c_str());    
+    
+    Serial.print("Temperatura: ");  Serial.print(t);
+    Serial.println("Humedad: "); Serial.print(h);
+    Serial.pintln("Distancia 1: "); Serial.print(distance);
+    Serial.pintln("Distancia 2: "); Serial.print(distance2);
+    Serial.pintln("Col State 1: "); Serial.print(state1);
+    Serial.pintln("Col State 2: "); Serial.print(state2);
+
+    delay(200);
 
 /*
     // Motores 
@@ -246,33 +289,16 @@ void loop() { // Datos que recibimos del ESP32
     }
     
     ledcWrite(PWM_CHANNEL, duty_cycle);
-*/  
-    // -- ENVIO DISTANCIA SENSOR ULTRASONICO 2 -- //
+
+        // -- ENVIO DISTANCIA SENSOR ULTRASONICO 2 -- //
     String dist2 = String(distance2);
     mqttClient.publish("ESP/Ultra-Distancas2", dist2.c_str());
     Serial.print("Distancia2: ");
     Serial.println(distance2);
     delay(200);
-
-    // -- ENVIO ESTADO SENSOR INFRARROJO 1 -- //
-    // Lectura de sensores infrarrojos
-    int valueInf1 = 0;
-     valueInf1 = digitalRead(infrarrojo1);
-    int valueInf2 = 0;
-     valueInf2 = digitalRead(infrarrojo2);
-
-    // Procesamiento de las lecturas de infrarrojo para detectar obstáculos
-    if (valueInf1 == LOW) {
-        mqttClient.publish("ESP/Infra-1", "collision");
-        Serial.println("Peligro de colisión inminente. Sending to Broker...");
-    } else if (valueInf1 == HIGH){
-      mqttClient.publish("ESP/Infra-1", "clear");
-      }
-
-    delay(2000);
-
+ 
     // -- ENVIO ESTADO SENSOR INFRARROJO 2 -- //
-    /*
+    
 
 
     // -- ENVIO ESTADO SENSOR INFRARROJO 2 -- //
