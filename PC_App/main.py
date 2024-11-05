@@ -11,31 +11,22 @@ from tkinter import filedialog
 from tkinter import LabelFrame
 from tkinter import Scale
 
-from tkinter.ttk import Combobox
 from tkinter.ttk import Notebook
-from tkinter.ttk import Separator
-from tkinter.ttk import Progressbar
 
 import datetime as dt
 import webbrowser
-import time
 
-import threading
-import subprocess
 import psutil
-
-import sys
 import os
 
+# - Imagen de stream - #
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
 
-import math
-from typing import Tuple, Union
-import mediapipe as mp
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
+# - Proccesado de imnagen - #
+import mediapipe as mp 
+import imutils
 
 # - MQTT - #
 from MQTT_con.MQTT_ex import get_ip_Windows
@@ -919,9 +910,8 @@ class Frame_Main_Pros_Camera(Frame):
     # -- OPERATIVO -- #
     # Colores 
     def detect_colors(self):
-        cap = cv2.VideoCapture(self.stream_url)
-
         # Crear ventana de OpenCV
+        cap = cv2.VideoCapture(self.stream_url)
         cv2.namedWindow('Deteccion de colores')
 
         # Crear trackbars para ajustar los valores de HSV
@@ -973,6 +963,8 @@ class Frame_Main_Pros_Camera(Frame):
     def detect_contorns(self): 
         cap = cv2.VideoCapture(self.stream_url)
         
+        cv2.namedWindow('Contorns detection')
+        
         #cv2.namedWindow(f'Contour detection of robot {ID_bot}')
         while True:
             ret, frame = cap.read()
@@ -990,7 +982,7 @@ class Frame_Main_Pros_Camera(Frame):
             # Dibujar contornos
             cv2.drawContours(frame, contours, -1, (0, 255, 0), 2)
             
-            cv2.imshow('Contorns', frame)
+            cv2.imshow('Contorns detection', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             
@@ -999,100 +991,43 @@ class Frame_Main_Pros_Camera(Frame):
     
     # Deteccion de rsotros
     def face_detect(self):
-        """
-        Based on MediaPipe 
-        """
-        MARGIN = 10  # pixels
-        ROW_SIZE = 10  # pixels
-        FONT_SIZE = 1
-        FONT_THICKNESS = 1
-        TEXT_COLOR = (255, 0, 0)  # red
+        # Modelo de dibujo y deteccion de rostros
+        mp_face_detection = mp.solutions.face_detection
+        mp_drawing = mp.solutions.drawing_utils
 
-        def _normalized_to_pixel_coordinates(
-            normalized_x: float, normalized_y: float, image_width: int,
-            image_height: int) -> Union[None, Tuple[int, int]]:
-          """Converts normalized value pair to pixel coordinates."""
+        # Toma de captrua de stream
+        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        #cap = cv2.VideoCapture(self.stream_url)
 
-          # Checks if the float value is between 0 and 1.
-          def is_valid_normalized_value(value: float) -> bool:
-            return (value > 0 or math.isclose(0, value)) and (value < 1 or
-                                                              math.isclose(1, value))
+        # Todos los resultados mayores a 50% de asertividad
+        with mp_face_detection.FaceDetection(
+            min_detection_confidence=0.5) as face_detection:
 
-          if not (is_valid_normalized_value(normalized_x) and
-                  is_valid_normalized_value(normalized_y)):
-            # TODO: Draw coordinates even if it's outside of the image bounds.
-            return None
-          x_px = min(math.floor(normalized_x * image_width), image_width - 1)
-          y_px = min(math.floor(normalized_y * image_height), image_height - 1)
-          return x_px, y_px
+            # Leemos el stream
+            while True:
+                ret, frame = cap.read()
+                if ret == False:
+                    break
+                #frame = imutils.resize(frame, width=720)
+                frame = cv2.flip(frame, 1)
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)        
 
-        def visualize(
-            image,
-            detection_result
-        ) -> np.ndarray:
-          """Draws bounding boxes and keypoints on the input image and return it.
-          Args:
-            image: The input RGB image.
-            detection_result: The list of all "Detection" entities to be visualize.
-          Returns:
-            Image with bounding boxes.
-          """
-          annotated_image = image.copy()
-          height, width, _ = image.shape
+                results = face_detection.process(frame_rgb)
 
-          for detection in detection_result.detections:
-            # Draw bounding_box
-            bbox = detection.bounding_box
-            start_point = bbox.origin_x, bbox.origin_y
-            end_point = bbox.origin_x + bbox.width, bbox.origin_y + bbox.height
-            cv2.rectangle(annotated_image, start_point, end_point, TEXT_COLOR, 3)
+                # Dibujamos en la imagen los resultados
+                if results.detections is not None:
+                    for detection in results.detections:
+                        mp_drawing.draw_detection(frame, detection,
+                            mp_drawing.DrawingSpec(color=(0, 255, 255), circle_radius=2),
+                            mp_drawing.DrawingSpec(color=(255, 0, 255)))
 
-            # Draw keypoints
-            for keypoint in detection.keypoints:
-              keypoint_px = _normalized_to_pixel_coordinates(keypoint.x, keypoint.y,
-                                                             width, height)
-              color, thickness, radius = (0, 255, 0), 2, 2
-              cv2.circle(annotated_image, keypoint_px, thickness, color, radius)
-
-            # Draw label and score
-            category = detection.categories[0]
-            category_name = category.category_name
-            category_name = '' if category_name is None else category_name
-            probability = round(category.score, 2)
-            result_text = category_name + ' (' + str(probability) + ')'
-            text_location = (MARGIN + bbox.origin_x,
-                             MARGIN + ROW_SIZE + bbox.origin_y)
-            cv2.putText(annotated_image, result_text, text_location, cv2.FONT_HERSHEY_PLAIN,
-                        FONT_SIZE, TEXT_COLOR, FONT_THICKNESS)
-
-          return annotated_image
+                cv2.imshow("Frame", frame)
+                # Cerramos la ventana
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+        cap.release()
+        cv2.destroyAllWindows()
         
-        BaseOptions = mp.tasks.BaseOptions
-        FaceDetector = mp.tasks.vision.FaceDetector
-        FaceDetectorOptions = mp.tasks.vision.FaceDetectorOptions
-        FaceDetectorResult = mp.tasks.vision.FaceDetectorResult
-        VisionRunningMode = mp.tasks.vision.RunningMode
-        
-        # STEP 2: Create an FaceDetector object.
-        source_model = os.path.join(os.path.dirname(__file__), 'blaze_face_short_range.tflite')
-        detector_model = PhotoImage(file=source_model)
-        base_options = python.BaseOptions(model_asset_path=detector_model)
-        options = vision.FaceDetectorOptions(base_options=base_options)
-        detector = vision.FaceDetector.create_from_options(options)
-
-        # STEP 3: Load the input image.
-        cap = cv2.VideoCapture(self.stream_url)
-        image = mp.Image.create_from_file(cap)
-
-        # STEP 4: Detect faces in the input image.
-        detection_result = detector.detect(image)
-
-        # STEP 5: Process the detection result. In this case, visualize it.
-        image_copy = np.copy(image.numpy_view())
-        annotated_image = visualize(image_copy, detection_result)
-        rgb_annotated_image = cv2.cvtColor(annotated_image, cv2.COLOR_BGR2RGB)
-        cv2.imshow(rgb_annotated_image)
-
     # Tomar foto
     def save_photo(self):
         cap = cv2.VideoCapture(self.stream_url)
