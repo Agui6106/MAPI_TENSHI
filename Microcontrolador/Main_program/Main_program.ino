@@ -211,7 +211,6 @@ void loop() { // Datos que recibimos del ESP32
     // -- LECTURA DE SENSORES -- //
     t = dht.readTemperature();  // Temperatura
     h = dht.readHumidity();     // Humedad
-    delay(200);
 
     // -- SENSOR ULTRASONICO -- //
     // Sensor 1
