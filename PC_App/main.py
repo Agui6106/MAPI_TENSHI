@@ -161,18 +161,10 @@ mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
 mqtt_client.start()
 
 # - ESP32 - #
-# -- MOTORS -- #
+# -- Servo -- #
 # Mqtt client Servomotor(ipbroker, puerto, suscribcion, publica)
 mqtt_esp_Servo = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/Servo')
 mqtt_esp_Servo.start()
-
-# Mqtt client MotorX(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_X = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/MotorX')
-mqtt_esp_X.start()
-
-# Mqtt client MotorY(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Y = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/MotorY')
-mqtt_esp_Y.start()
 
 # -- SENSORS -- #
 mqtt_esp_Data = mqtt_coms(ip, 1883, 'ESP/Sensors', 'ESP/Motors')
@@ -189,20 +181,12 @@ mqtt_esp_Buzzer.start()
 
 # -- GIROSCOPIO Y GPS -- #
 # Mqtt client GiroscoopioX(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_PX = mqtt_coms(ip, 1883, 'ESP/PX', 'PC/Response')
-mqtt_esp_PX.start()
+mqtt_esp_Giros = mqtt_coms(ip, 1883, 'ESP/GirosXY', 'PC/Response')
+mqtt_esp_Giros.start()
 
 # Mqtt client GiroscoopioY(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_PY = mqtt_coms(ip, 1883, 'ESP/PY', 'PC/Response')
-mqtt_esp_PY.start()
-
-# Mqtt client GiroscoopioY(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Lat = mqtt_coms(ip, 1883, 'ESP/Lat', 'PC/Response')
-mqtt_esp_Lat.start()
-
-# Mqtt client GiroscoopioY(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Long = mqtt_coms(ip, 1883, 'ESP/Long', 'PC/Response')
-mqtt_esp_Long.start()
+mqtt_esp_GPS = mqtt_coms(ip, 1883, 'ESP/Lat/Long', 'PC/Response')
+mqtt_esp_GPS.start()
 
 # Fecha de hoy
 date = dt.datetime.now()
@@ -634,13 +618,41 @@ class Frame_Main_MQTT_Control(Frame):
             xr = round(controller_state['axes'].get('xR', 0), 2)
             yr = round(controller_state['axes'].get('yR', 0), 2)
         
-            # Actualizamos los valores en la interfaz
+            # Obtenemos los valores del control y enviamos x MQTT
             self.cam_scale.set(xr)
-            self.motorX_data.config(text=xl)
-            self.motorY_data.config(text=yl)
+            # Hacia arriba
+            if yl >= 0.25:
+                self.motorY_data.config(text='Down')
+                try:
+                    mqtt_esp_Data.publish_message('Down')
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
             
-            # Enviamos valores por MQTT
-            self.send_motors_vals(MotorX=xl, MotorY=yl)
+            # Hacia abajo
+            if yl <= -0.25:
+                self.motorY_data.config(text='Up')
+                try:
+                    mqtt_esp_Data.publish_message('Up')
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+            
+            # Izquierda
+            if xl >= 0.25:
+                self.motorY_data.config(text='Right')
+                try:
+                    mqtt_esp_Data.publish_message('Right')
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+            
+            # Derecha
+            if xl <= -0.25:
+                self.motorY_data.config(text='Left')
+                try:
+                    mqtt_esp_Data.publish_message('Left')
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+            
+            self.motorX_data.config(text=xl)
             
             # Chequear botones específicos y enviar info por MQTT
             buttons = controller_state['buttons']
@@ -652,16 +664,7 @@ class Frame_Main_MQTT_Control(Frame):
             # Llamada recursiva para actualizar cada 50ms
             self.after(50, self.update_vals)
             
-    # - MQTT PROTOCOL - #
-    # Envio
-    def send_motors_vals(self, MotorX, MotorY):
-        try:
-            #mqtt_esp_Servo.publish_message(Servo)  
-            mqtt_esp_X.publish_message(MotorX)
-            mqtt_esp_Y.publish_message(MotorY)
-        except Exception as e:
-            print(f"Failed to send info due to: {e}")
-            
+    # - MQTT PROTOCOL - #            
     def send_buttons_info(self, topic):
         try:
             if topic == 'Lamp':
@@ -673,21 +676,37 @@ class Frame_Main_MQTT_Control(Frame):
     
     # Recepcion        
     def get_response(self):
-        # Respuesta del ESP
-        self.response = mqtt_esp_Servo.last_message
-        
         # Perifericos
         self.mensaje_lamp = mqtt_esp_Lamp.last_message
         self.mensaje_buzz = mqtt_esp_Buzzer.last_message
         # Giroscopio
-        self.mensaje_PX = mqtt_esp_PX.last_message
-        self.mensaje_PY = mqtt_esp_PY.last_message
+        self.mensaje_Giros = mqtt_esp_Giros.last_message
         # Coordenadas
-        self.Lat = mqtt_esp_Lat.last_message
-        self.Long = mqtt_esp_Long.last_message
+        self.mensaje_GPS = mqtt_esp_GPS.last_message
         
-        # -- Sensores -- #
+        # -- DATA -- #
+        # Respuesta del ESP
+        self.response = mqtt_esp_Servo.last_message
+        # Sensores del ESP
         self.response_Data = mqtt_esp_Data.last_message
+        
+        if self.response_Data:
+            value = self.response_Data.split(",")
+            # Sensores de temperatura y ultrasonico
+            self.data_temp.config(text=value[0])
+            self.data_Hum.config(text=value[1])
+            self.data_Dist_UltrF.config(text=value[2])
+            self.data_Dist_UltrB.config(text=value[3])
+            # verifciamos colision 1
+            if value[4] == 'collision':
+                self.data_Dist_InfrF.config(text='Danger', foreground='red')
+            if value[4] == 'clear':
+                self.data_Dist_InfrF.config(text='Safe', foreground='Green')
+            # Verificamos colision 2
+            if value[5] == 'collision':
+                self.data_Dist_InfrB.config(text='Danger', foreground='red')
+            if value[5] == 'clear':
+                self.data_Dist_InfrB.config(text='Safe', foreground='Green')
         
         # Reescibir output
         self.output_ESP.config(state='normal')
@@ -719,35 +738,12 @@ class Frame_Main_MQTT_Control(Frame):
                 self.lamp_on_label.config(text='Off',foreground='red')
             
         # Lectura de los valores del giroscopio
-        if self.mensaje_PX:
-            self.X_Data.config(text=self.mensaje_PX)
-        if self.mensaje_PY:
-            self.Y_Data.config(text=self.mensaje_PY)
+        if self.mensaje_Giros:
+            self.X_Data.config(text=self.mensaje_Giros)
             
         # Lectura de coordenadas
-        if self.Lat:
-            self.Latitud_Data.config(text=self.Lat)
-        if self.Long:
-            self.Longitud_Data.config(text=self.Long)
-            
-        # Lectura de los sensores de temperatura
-        if self.response_Data:
-            value = self.response_Data.split(",")
-            # Sensores de temperatura y ultrasonico
-            self.data_temp.config(text=value[0])
-            self.data_Hum.config(text=value[1])
-            self.data_Dist_UltrF.config(text=value[2])
-            self.data_Dist_UltrB.config(text=value[3])
-            # verifciamos colision 1
-            if value[4] == 'collision':
-                self.data_Dist_InfrF.config(text='Danger', foreground='red')
-            if value[4] == 'clear':
-                self.data_Dist_InfrF.config(text='Safe', foreground='Green')
-            # Verificamos colision 2
-            if value[5] == 'collision':
-                self.data_Dist_InfrB.config(text='Danger', foreground='red')
-            if value[5] == 'clear':
-                self.data_Dist_InfrB.config(text='Safe', foreground='Green')
+        if self.mensaje_GPS:
+            self.Latitud_Data.config(text=self.mensaje_GPS)
             
         self.parent.after(500, self.get_response)
             
