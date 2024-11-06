@@ -1,17 +1,19 @@
-from SerialCom import serial_sensor
+from SerialCom.serial_sensor import SerialSensor
+from SerialCom.utils import find_available_serial_ports
 
 def connect_serial_device() -> None:
     try:
         # Llamada para encontrar el puerto disponible
-        port = serial_sensor.find_available_serial_ports()
+        port = find_available_serial_ports()
         baudrate = 115200
+        print(f'Starting Serial communications at port: {port} with baudrate: {baudrate}')
 
         if not port:
             print('No available ports... Failed to start.')
             return
 
         # Crear instancia de SerialSensor con el puerto y baudrate
-        serial_device = serial_sensor.SerialSensor(
+        serial_device = SerialSensor(
             port=port,
             baudrate=baudrate
         )
