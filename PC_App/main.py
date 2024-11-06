@@ -26,7 +26,6 @@ from PIL import Image, ImageTk
 
 # - Proccesado de imnagen - #
 import mediapipe as mp 
-import imutils
 
 # - MQTT - #
 from MQTT_con.MQTT_ex import get_ip_Windows
@@ -156,7 +155,6 @@ def open_config_window():
 
 open_config_window()
 
-""" - DEMASIADOS MQTT - OPTIMIZAR """
 # - RASP - #
 # Mqtt client Raspberry(ipbroker, puerto, suscribcion, publica)
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
@@ -179,15 +177,6 @@ mqtt_esp_Y.start()
 # -- SENSORS -- #
 mqtt_esp_Data = mqtt_coms(ip, 1883, 'ESP/Sensors', 'ESP/Motors')
 mqtt_esp_Data.start()
-
-
-# Mqtt client Infrarojos 1(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Infra1 = mqtt_coms(ip, 1883, 'ESP/Infra-1', 'PC/Response')
-mqtt_esp_Infra1.start()
-
-# Mqtt client Infrarojos 2(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Infra2 = mqtt_coms(ip, 1883, 'ESP/Infra-2', 'PC/Response')
-mqtt_esp_Infra2.start()
 
 # -- PERIFERICOS -- #
 # Mqtt client Lamp(ipbroker, puerto, suscribcion, publica)
@@ -513,8 +502,8 @@ class Frame_Main_MQTT_Control(Frame):
         # Data
         self.data_Dist_UltrF.grid(row=1, column=2)
         self.data_Dist_InfrF.grid(row=2, column=2)
-        self.data_Dist_InfrB.grid(row=1,column=4)
-        self.data_Dist_UltrB.grid(row=2,column=4)
+        self.data_Dist_UltrB.grid(row=1,column=4)
+        self.data_Dist_InfrB.grid(row=2,column=4)
         
         self.gas_levels.grid(row=5,column=2)
         
@@ -699,10 +688,6 @@ class Frame_Main_MQTT_Control(Frame):
         
         # -- Sensores -- #
         self.response_Data = mqtt_esp_Data.last_message
-
-        # Sensores Infrarojos
-        self.infrarojo1 = mqtt_esp_Infra1.last_message
-        self.infrarojo2 = mqtt_esp_Infra2.last_message
         
         # Reescibir output
         self.output_ESP.config(state='normal')
@@ -732,18 +717,6 @@ class Frame_Main_MQTT_Control(Frame):
                 self.buz_on_label.config(text='On', foreground='green')
             elif self.mensaje_lamp == 'BSOff':
                 self.lamp_on_label.config(text='Off',foreground='red')
-        
-        # Lectura de los valores de los sesnores Infrarojos
-        if self.infrarojo1:
-            if self.infrarojo1 == 'collision':
-                self.data_Dist_InfrF.config(text='Danger', foreground='red')
-            if self.infrarojo1 == 'clear':
-                self.data_Dist_InfrF.config(text='Safe', foreground='Green')
-        if self.infrarojo2:
-            if self.infrarojo1 == 'collision':
-                self.data_Dist_InfrB.config(text='Danger', foreground='red')
-            if self.infrarojo1 == 'clear':
-                self.data_Dist_InfrB.config(text='Safe', foreground='Green')
             
         # Lectura de los valores del giroscopio
         if self.mensaje_PX:
@@ -760,10 +733,21 @@ class Frame_Main_MQTT_Control(Frame):
         # Lectura de los sensores de temperatura
         if self.response_Data:
             value = self.response_Data.split(",")
+            # Sensores de temperatura y ultrasonico
             self.data_temp.config(text=value[0])
             self.data_Hum.config(text=value[1])
             self.data_Dist_UltrF.config(text=value[2])
             self.data_Dist_UltrB.config(text=value[3])
+            # verifciamos colision 1
+            if value[4] == 'collision':
+                self.data_Dist_InfrF.config(text='Danger', foreground='red')
+            if value[4] == 'clear':
+                self.data_Dist_InfrF.config(text='Safe', foreground='Green')
+            # Verificamos colision 2
+            if value[5] == 'collision':
+                self.data_Dist_InfrB.config(text='Danger', foreground='red')
+            if value[5] == 'clear':
+                self.data_Dist_InfrB.config(text='Safe', foreground='Green')
             
         self.parent.after(500, self.get_response)
             
@@ -991,13 +975,15 @@ class Frame_Main_Pros_Camera(Frame):
     
     # Deteccion de rsotros
     def face_detect(self):
+        """
+        Originally scripted by: Gabriela Solano
+        """
         # Modelo de dibujo y deteccion de rostros
         mp_face_detection = mp.solutions.face_detection
         mp_drawing = mp.solutions.drawing_utils
 
         # Toma de captrua de stream
-        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        #cap = cv2.VideoCapture(self.stream_url)
+        cap = cv2.VideoCapture(self.stream_url)
 
         # Todos los resultados mayores a 50% de asertividad
         with mp_face_detection.FaceDetection(
