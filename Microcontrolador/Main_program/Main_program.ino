@@ -27,11 +27,11 @@ DHT dht(SENSOR, DHT11);   // creacion del objeto, cambiar segundo parametro
 // Motores A
 #define IN1 14      
 #define IN2 12      
-// int ENA = 13;      
+int ENA = 13;      
 // Motores B
 #define IN4 4      
 #define IN3 2      
-// int ENB = 15; 
+int ENB = 15; 
 #define FREQ 5000
 #define PWM_CHANNEL 0 
 #define RESOLUTION 8
@@ -79,27 +79,46 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     Serial.println(message);
 
     // - Control del Motor A basado en el mensaje - //
-    if (message == "MAon") {
-      // Habilita motor A (giro en un sentido)
-      //digitalWrite(ENA, HIGH);  
+    if (message == "Up") {
+      // Habilita motor A (giro hacia adelante)
+      digitalWrite(ENA, HIGH);  
       digitalWrite(IN1, LOW); 
-      digitalWrite(IN2, HIGH);  
-      mqttClient.publish("ESP/Response", "MotorA Encendido");
-    } else if (message == "MAoff") {
-        //digitalWrite(ENA, LOW); 
-        mqttClient.publish("ESP/Response", "MotorA Apagado");
-    }
-
-    // - Control del Motor B basado en el mensaje - //
-    if (message == "MBon") {
-       // Habilita motor B (giro en un sentido)
-      //digitalWrite(ENB, HIGH);  
+      digitalWrite(IN2, HIGH);
+      // Habilita motor B (giro hacia adelante)
+      digitalWrite(ENB, HIGH); 
       digitalWrite(IN3, LOW);
-      digitalWrite(IN4, HIGH);  
-      mqttClient.publish("ESP/Response", "MotorB Encendido");
-    } else if (message == "MBoff") {
-       // digitalWrite(ENB, LOW); 
-        mqttClient.publish("ESP/Response", "MotorB Apagado");
+      digitalWrite(IN4, HIGH);
+    } else if (message == "Down") {
+      // Habilita motor A (giro hacia atras)
+      digitalWrite(ENA, HIGH);  
+      digitalWrite(IN1, HIGH); 
+      digitalWrite(IN2, LOW);
+      // Habilita motor B (giro hacia atras)
+      digitalWrite(ENB, HIGH); 
+      digitalWrite(IN3, HIGH);
+      digitalWrite(IN4, LOW);
+    } else if (message == "Left"){
+      // Habilita motor A (giro hacia atras)
+      digitalWrite(ENA, HIGH);  
+      digitalWrite(IN1, HIGH); 
+      digitalWrite(IN2, LOW);
+      // Habilita motor B (giro hacia adelante)
+      digitalWrite(ENB, HIGH); 
+      digitalWrite(IN3, LOW);
+      digitalWrite(IN4, HIGH);
+    } else if (message == "Right"){
+      // Habilita motor A (giro hacia adelante)
+      digitalWrite(ENA, HIGH);  
+      digitalWrite(IN1, HIGH); 
+      digitalWrite(IN2, LOW);
+      // Habilita motor B (giro hacia atras)
+      digitalWrite(ENB, HIGH); 
+      digitalWrite(IN3, HIGH);
+      digitalWrite(IN4, LOW);
+    } else{
+      // Apagar ambos motores
+      digitalWrite(ENA, LOW);
+      digitalWrite(ENB, LOW);
     }
 
     // - Control del Servo Motor basado en el mensaje - //
