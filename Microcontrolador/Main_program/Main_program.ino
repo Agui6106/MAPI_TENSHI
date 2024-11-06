@@ -266,16 +266,18 @@ void loop() { // Datos que recibimos del ESP32
     String mensaje = String(t) + "°C," + 
                      String(h) + " %," +
                      String(distance) + " cm," + 
-                     String(distance2) + " cm";
+                     String(distance2) + " cm," + 
+                     state1 + "," +
+                     state2 + ",";
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
     
     Serial.print("Temperatura: ");  Serial.print(t);
     Serial.println("Humedad: "); Serial.print(h);
-    Serial.pintln("Distancia 1: "); Serial.print(distance);
-    Serial.pintln("Distancia 2: "); Serial.print(distance2);
-    Serial.pintln("Col State 1: "); Serial.print(state1);
-    Serial.pintln("Col State 2: "); Serial.print(state2);
+    Serial.println("Distancia 1: "); Serial.print(distance);
+    Serial.println("Distancia 2: "); Serial.print(distance2);
+    Serial.println("Col State 1: "); Serial.print(state1);
+    Serial.println("Col State 2: "); Serial.print(state2);
 
     delay(200);
 
