@@ -48,17 +48,17 @@ def read_serial(device: serial_sensor.SerialSensor):
 def communicate_with_device(device: serial_sensor.SerialSensor):
     try:
         while True:
-            # Leer datos del dispositivo
-            data_received = read_serial(device)
-            if data_received:
-                print(f"Data received: {data_received}")
-
             # Solicitar entrada del usuario y enviar
             user_input = input("Enter message to send to device (or type 'exit' to quit): ")
             if user_input.lower() == 'exit':
                 break
             elif user_input:
                 device.send_data(user_input)
+            
+            # Leer datos del dispositivo
+            data_received = read_serial(device)
+            if data_received:
+                print(f"Data received: {data_received}")
     except KeyboardInterrupt:
         print("\nCommunication terminated by user.")
     finally:
@@ -70,7 +70,12 @@ if __name__ == "__main__":
     if ports:
         device = connect_serial_device()
         if device:
-            communicate_with_device(device)
+            while True:
+                user_in = input("Message: ")
+                ans = device.send(user_in)
+                print(ans)
+            
+            #communicate_with_device(device)
         else:
             print('No available device to connect.')
     else:

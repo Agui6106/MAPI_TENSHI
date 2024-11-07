@@ -73,23 +73,19 @@ class SerialSensor:
         time.sleep(connection_time)
     
     def send_data(self, data: str) -> None:
-        """
-        Envía un mensaje al dispositivo serial.
-        
-        Args:
-            data (str): El mensaje que se desea enviar.
-        """
+        """Envía un mensaje al dispositivo serial."""
         try:
             self._serial.write(data.encode('utf-8'))  # Codifica el mensaje y lo envía
             print(f"Sent to device: {data}")
         except Exception as e:
             print(f"Failed to send data: {e}")
-            
-    def send(self, to_send:str) -> str:
-        self._serial.write(to_send.encode('utf-8')) #Codificar
-        time.sleep(self.reception_time) #Tiempo de espera para que se puedan sincronzar ambos dispositivos
-        recieved = self._serial.readline()
-        return recieved.decode(encoding='utf-8') #Decodificar
+    
+    def send(self, to_send: str) -> str:
+        """Envía datos al dispositivo y espera una respuesta."""
+        self._serial.write(to_send.encode('utf-8'))  # Codificar
+        #time.sleep(self.reception_time)  # Tiempo de espera para sincronizar
+        received = self._serial.readline()
+        return received.decode(encoding='utf-8')  # Decodificar
     
     def reception(self,) -> str:
         recieved = self._serial.readline()
