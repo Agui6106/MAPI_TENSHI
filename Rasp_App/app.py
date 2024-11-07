@@ -9,9 +9,6 @@ import os
 
 import mqtt
 
-import tkinter as tk
-from tkinter import filedialog
-
 import datetime as dt
 
 import cv2
@@ -125,8 +122,6 @@ def save_cam(url):
 
     cap.release()
 
-    
-    
 # -- Funciones vitales -- #
 def send_response(cmd_in):
     if cmd_in:
@@ -134,7 +129,6 @@ def send_response(cmd_in):
             mqtt_client.publish_message(cmd_in)  # Envía el comando por MQTT
         except Exception as e:
                 print("MQTT Error", f"Failed to send command: {e}")
-
 
 # - Aplicacion principal basada en comandos -#
 if __name__ == "__main__":
@@ -153,8 +147,6 @@ if __name__ == "__main__":
     serial_proc = iniciar_Serial()
     # - Stream - #
     transmision_proc = iniciar_transmision()
-
-    #print(f"Video stream available in url: http://{ip}:8000/index.html\n")
     print(f"Video stream available in url: {url_stream}\n")
     
     last_processed_command = ''
