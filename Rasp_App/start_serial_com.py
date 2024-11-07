@@ -33,40 +33,45 @@ def connect_serial_device() -> None:
         if 'serial_device' in locals() and serial_device.is_open():
             serial_device.close()
             print("Serial device closed.")"""
-  
-# -- LOOP INFINITO -- #
+
 # - Leemos el dispositivo - #
-def read_serial(device):
-    if device.in_waiting > 0:
+def read_serial(device: serial_sensor.SerialSensor):
+    if device.in_waiting() > 0:
         try:
-            data = device.readline().decode().strip()
+            data = device.reception()
             return data
         except:
             return None
     return None
 
 # - Escribimos el dispositivo - #
-"""
-Opcion A:
-    # Comunicación constante hasta interrupción manual
-    while True:
-        # Solicitar entrada del usuario para enviar un mensaje
-        user_input = input("Enter message to send to Arduino (or type 'exit' to quit): ")
+def communicate_with_device(device: serial_sensor.SerialSensor):
+    try:
+        while True:
+            # Leer datos del dispositivo
+            data_received = read_serial(device)
+            if data_received:
+                print(f"Data received: {data_received}")
 
-        if user_input.lower() == 'exit':
-            print("Exiting communication...")
-            break  # Salir del bucle si el usuario escribe 'exit'
-        elif user_input:
-            # Enviar el mensaje ingresado por el usuario
-            device.send(user_input)
-            print(f"Sent to Arduino: {user_input}")
-            #print(f'Arduino Response: {command}')
+            # Solicitar entrada del usuario y enviar
+            user_input = input("Enter message to send to device (or type 'exit' to quit): ")
+            if user_input.lower() == 'exit':
+                break
+            elif user_input:
+                device.send_data(user_input)
+    except KeyboardInterrupt:
+        print("\nCommunication terminated by user.")
+    finally:
+        if device and device.is_open():
+            device.close()
+            print("Serial device closed.")
 
-Opcion B
-while True:
-    if serial_device.in_waiting() > 0:
-        data_received = serial_device.reception()
-        print(f"Data received: {data_received}"
-        # Ejemplo de respuesta: envía "ACK" al dispositivo
-        serial_device.send("ACK")
-"""
+if __name__ == "__main__":
+    if ports:
+        device = connect_serial_device()
+        if device:
+            communicate_with_device(device)
+        else:
+            print('No available device to connect.')
+    else:
+        print('Not aviable ports')

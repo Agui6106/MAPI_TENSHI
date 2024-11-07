@@ -71,37 +71,44 @@ class SerialSensor:
         self.connection_time = connection_time
         self.reception_time = reception_time
         time.sleep(connection_time)
-
-    def send(self, to_send: str) -> str:
-        if self._serial and self._serial.is_open:
-            self._serial.write(to_send.encode('utf-8'))
-            time.sleep(self.reception_time)
-            received = self._serial.readline()
-            return received.decode('utf-8')
-        return ''
-
-    def reception(self) -> str:
-        if self._serial and self._serial.is_open:
-            received = self._serial.readline()
-            return received.decode('utf-8')
-        return ''
-
-    def is_open(self) -> bool:
-        return self._serial.is_open if self._serial else False
-
-    def in_waiting(self) -> int:
-        return self._serial.in_waiting if self._serial else 0
-
+    
+    def send_data(self, data: str) -> None:
+        """
+        Envía un mensaje al dispositivo serial.
+        
+        Args:
+            data (str): El mensaje que se desea enviar.
+        """
+        try:
+            self._serial.write(data.encode('utf-8'))  # Codifica el mensaje y lo envía
+            print(f"Sent to device: {data}")
+        except Exception as e:
+            print(f"Failed to send data: {e}")
+            
+    def send(self, to_send:str) -> str:
+        self._serial.write(to_send.encode('utf-8')) #Codificar
+        time.sleep(self.reception_time) #Tiempo de espera para que se puedan sincronzar ambos dispositivos
+        recieved = self._serial.readline()
+        return recieved.decode(encoding='utf-8') #Decodificar
+    
+    def reception(self,) -> str:
+        recieved = self._serial.readline()
+        return recieved.decode('utf-8')
+    
+    def is_open(self):
+        return self._serial.is_open
+    
+    def in_waiting(self):
+        return self._serial.in_waiting
+    
     def close(self) -> None:
-        if self._serial and self._serial.is_open:
-            self._serial.close()
+        self._serial.close()
             
     def __str__(self) -> str:
-        return f"Serial Sensor(port={self._serial.port}, connection_time={self.connection_time}, reception_time={self.reception_time})"
+        return f"Serial Sensor({self._serial=}, {self.connection_time=},{self.reception_time=})"
     
     def __repr__(self) -> str:
-        return self.__str__()
+        return f"Serial Sensor({self._serial=}, {self.connection_time=},{self.reception_time=})"
     
     def __del__(self) -> None:
-        if self._serial:
-            self.close()
+        self.close()
