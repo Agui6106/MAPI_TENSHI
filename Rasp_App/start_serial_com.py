@@ -1,8 +1,9 @@
-from SerialCom.serial_sensor import SerialSensor
-from SerialCom.utils import find_available_serial_ports
+from SerialCom import serial_sensor
 
-ports = find_available_serial_ports()
+# - Obtener todos los ports - #
+ports = serial_sensor.find_available_serial_ports()
 
+# - Conectamos con el dispositvo - #
 def connect_serial_device() -> None:
     try:
         # Selección del primer puerto disponible
@@ -15,7 +16,7 @@ def connect_serial_device() -> None:
             return
 
         # Crear instancia de SerialSensor
-        serial_device = SerialSensor(port=port, baudrate=baudrate)
+        serial_device = serial_sensor.SerialSensor(port=port, baudrate=baudrate)
 
         # Verificar si el dispositivo serial está abierto
         if serial_device.is_open():
@@ -27,13 +28,14 @@ def connect_serial_device() -> None:
         
     except ValueError:
         print('Invalid baudrate specified')
-    except KeyboardInterrupt:
-        print("\nCommunication terminated by user.")
-    finally:
+        
+    """finally:
         if 'serial_device' in locals() and serial_device.is_open():
             serial_device.close()
-            print("Serial device closed.")
+            print("Serial device closed.")"""
   
+# -- LOOP INFINITO -- #
+# - Leemos el dispositivo - #
 def read_serial(device):
     if device.in_waiting > 0:
         try:
@@ -43,20 +45,9 @@ def read_serial(device):
             return None
     return None
 
-# Comunicación constante hasta interrupción manual
+# - Escribimos el dispositivo - #
 """
-while True:
-    if serial_device.in_waiting() > 0:
-        data_received = serial_device.reception()
-        print(f"Data received: {data_received}"
-        # Ejemplo de respuesta: envía "ACK" al dispositivo
-        serial_device.send("ACK")
-"""
-        
-
-
-if __name__ == "__main__":
-    device = connect_serial_device()
+Opcion A:
     # Comunicación constante hasta interrupción manual
     while True:
         # Solicitar entrada del usuario para enviar un mensaje
@@ -69,4 +60,13 @@ if __name__ == "__main__":
             # Enviar el mensaje ingresado por el usuario
             device.send(user_input)
             print(f"Sent to Arduino: {user_input}")
-            print(f'Arduino Response: {command}')
+            #print(f'Arduino Response: {command}')
+
+Opcion B
+while True:
+    if serial_device.in_waiting() > 0:
+        data_received = serial_device.reception()
+        print(f"Data received: {data_received}"
+        # Ejemplo de respuesta: envía "ACK" al dispositivo
+        serial_device.send("ACK")
+"""
