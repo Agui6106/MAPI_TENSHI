@@ -70,13 +70,23 @@ if __name__ == "__main__":
     if ports:
         device = connect_serial_device()
         if device:
-            while True:
-                user_in = input("Message: ")
-                ans = device.send(user_in)
-                print(ans)
+            try:
+                while True:
+                    user_in = input("Message: ")
+                    if user_in.lower() == 'exit':
+                        break
+                    elif user_in:
+                        ans = device.send(user_in)
+                    print(ans)
+            except KeyboardInterrupt:
+                print("\nCommunication terminated by user.")
+            finally:
+                if device and device.is_open():
+                    device.close()
+                    print("Serial device closed.")
             
             #communicate_with_device(device)
         else:
-            print('No available device to connect.')
+            print('No available device to connect... Leaving Serial Protocol')
     else:
-        print('Not aviable ports')
+        print('Not aviable ports... Leaving Serial Protocol')
