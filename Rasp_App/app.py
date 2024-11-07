@@ -1,3 +1,6 @@
+# - EMISOR - #
+import socket
+
 import threading
 import time
 
@@ -99,7 +102,6 @@ def pong(ip, ip_host):
     return x
 
 def save_cam(url):
-    
     cap = cv2.VideoCapture(url)
     
     ret, frame = cap.read()
@@ -149,58 +151,69 @@ if __name__ == "__main__":
     transmision_proc = iniciar_transmision()
     print(f"Video stream available in url: {url_stream}\n")
     
-    last_processed_command = ''
-    # - Interfaz de consola - #
-    while True:
-        comando = mqtt_client.last_message
+    # - Socket - #
+    # Ruta del archivo de socket
+    SOCKET_PATH = '/tmp/uds_socket'
+    with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as client_socket:
+        last_processed_command = ''
+    
+        # - Interfaz de consola - #
+        while True:
+            comando = mqtt_client.last_message
 
-        if comando != last_processed_command:
-            # Verifcamos si el comadno es el mismo 
-            last_processed_command = comando
-            
-            # - Comandos principales - #
-            if comando == 'stop.MQTT':
-                mqtt_client.stop() 
-                send_response('Mqtt Stopped')
+            if comando != last_processed_command:
+                # Verifcamos si el comadno es el mismo 
+                last_processed_command = comando
 
-            elif comando == 'stop.serial':
-                detener_proceso(serial_proc)
-                send_response('Serial Stopped')
+                # - Comandos principales - #
+                if comando == 'stop.MQTT':
+                    mqtt_client.stop() 
+                    send_response('Mqtt Stopped')
 
-            elif comando == 'stop.transmision':
-                detener_proceso(transmision_proc)
-                send_response('Transmission Stopped')
-                
-            elif comando == 'info.stream':
-                send_response(url_stream)
+                elif comando == 'stop.serial':
+                    detener_proceso(serial_proc)
+                    send_response('Serial Stopped')
 
-            # - Comandos auxilaires - #
-            elif comando == 'help':
-                help()
-            elif comando == 'ping':
-                send_response(pong(ip, ip_host))
-            
-            elif comando == 'info':
-                send_response('MAPI-Tenshi R01 - Run Stable V1.0')
-                
-            elif comando == 'save.local':
-                save_cam(url_stream)
-                send_response('Image saved locally in: /home/Azuki/Pictures')
+                elif comando == 'stop.transmision':
+                    detener_proceso(transmision_proc)
+                    send_response('Transmission Stopped')
 
-            # - Comando de salida - #
-            elif comando == 'exit':
-                print("Leaving program...")
-                #detener_proceso(mqtt_proc)
-                detener_proceso(serial_proc)
-                detener_proceso(transmision_proc)
-                send_response('Leaving program...')
+                elif comando == 'info.stream':
+                    send_response(url_stream)
 
-                print("\nThanks for choosing MAPI software.inc")
-                break
+                # - ESP commands - #
+                elif comando == 'esp.info':
+                        # Enviamos un mensaje al servidor
+                        message = "esp.info "
+                        client_socket.sendto(message.encode(), SOCKET_PATH)
+                        print("Mensaje 'esp.info' enviado al servidor.")
+
+                # - Comandos auxilaires - #
+                elif comando == 'help':
+                    help()
+                elif comando == 'ping':
+                    send_response(pong(ip, ip_host))
+
+                elif comando == 'info':
+                    send_response('MAPI-Tenshi R01 - Run Stable V1.0')
+
+                elif comando == 'save.local':
+                    save_cam(url_stream)
+                    send_response('Image saved locally in: /home/Azuki/Pictures')
+
+                # - Comando de salida - #
+                elif comando == 'exit':
+                    print("Leaving program...")
+                    #detener_proceso(mqtt_proc)
+                    detener_proceso(serial_proc)
+                    detener_proceso(transmision_proc)
+                    send_response('Leaving program...')
+
+                    print("\nThanks for choosing MAPI software.inc")
+                    break
+                else:
+                    send_response('Command not found')
+                    print(f"Command not found. Use help to list all commands.\n")
+
             else:
-                send_response('Command not found')
-                print(f"Command not found. Use help to list all commands.\n")
-            
-        else:
-            time.sleep(0.5)
-            
+                time.sleep(0.5)

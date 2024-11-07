@@ -1,4 +1,15 @@
+# - RECEPTOR - #
+import socket
+import os
+
 from SerialCom import serial_sensor
+
+# - Inicializacion de socket - #
+SOCKET_PATH = '/tmp/uds_socket'
+
+# Eliminamos el socket si ya existe
+if os.path.exists(SOCKET_PATH):
+    os.remove(SOCKET_PATH)
 
 # - Obtener todos los ports - #
 ports = serial_sensor.find_available_serial_ports()
@@ -67,25 +78,41 @@ def communicate_with_device(device: serial_sensor.SerialSensor):
             print("Serial device closed.")
 
 if __name__ == "__main__":
+    # - Verifcacion de puerto y dispositivo serial - #
     if ports:
         device = connect_serial_device()
         if device:
-            try:
-                while True:
-                    user_in = input("Message: ")
-                    if user_in.lower() == 'exit':
-                        break
-                    elif user_in:
-                        ans = device.send(user_in)
-                    print(ans)
-            except KeyboardInterrupt:
-                print("\nCommunication terminated by user.")
-            finally:
-                if device and device.is_open():
-                    device.close()
-                    print("Serial device closed.")
-            
-            #communicate_with_device(device)
+            # - Socket - #
+            with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as server_socket:
+                server_socket.bind(SOCKET_PATH)
+                print("Servidor listo para recibir mensajes...")
+                
+                try:
+                    while True:
+                        # Recibimos el mensaje y la dirección del cliente
+                        data, _ = server_socket.recvfrom(1024)
+                        user_in = data.decode()
+                        print(f"Mensaje recibido: {user_in}")
+                        
+                        # Enviamos por serial
+                        if user_in.lower() == 'exit':
+                            break
+                        elif user_in:
+                            ans = device.send(user_in)
+                        print(ans)
+                        
+                # Hasta ser interrumpidos por el teclado
+                except KeyboardInterrupt:
+                    print("\nCommunication terminated by user.")
+                    print("\nClosing Socket server.")
+                    
+                finally:
+                    # Eliminamos el socket del sistema de archivos y Cerramos objeto tipo serial
+                    os.remove(SOCKET_PATH)
+                    if device and device.is_open():
+                        device.close()
+                        print("Serial device closed.")
+                        
         else:
             print('No available device to connect... Leaving Serial Protocol')
     else:
