@@ -315,10 +315,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.lamp_on_label = Label(self.vital_Data_frame, text="Off", font=('Z003', 15, 'bold'), foreground='red')
         
         # - MOTORES - #
-        self.motorX_label = Label(self.vital_Data_frame, text="Motor X: ", font=('Z003', 14))
-        self.motorY_label = Label(self.vital_Data_frame, text="Motor Y: ", font=('Z003', 14))
-        self.motorX_data: Label = self._motorX_Data()
-        self.motorY_data: Label = self._motorY_Data()
+        self.direction = Canvas(self.vital_Data_frame, width=180, height=80,bg='black')
         
         # - PERIFERICOS - #
         self.cam_scale: Scale = self._create_joystick_slider()
@@ -415,10 +412,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.status_label.grid(row=0,column=6,columnspan=4)
         
         # Elementos Motor
-        self.motorX_label.grid(row=1,column=0, padx=10)
-        self.motorY_label.grid(row=2,column=0, padx=10)
-        self.motorX_data.grid(row=1,column=1)
-        self.motorY_data.grid(row=2,column=1)
+        self.direction.grid(row=1,column=0, columnspan=2, rowspan=2)
         
         # Servo
         self.cam_scale.grid(row=1,column=2,columnspan=2,padx=5)
