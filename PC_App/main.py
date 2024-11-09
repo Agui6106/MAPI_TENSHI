@@ -294,6 +294,23 @@ class Frame_Main_MQTT_Control(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
+        
+        # - Imagenes de direccion - #
+        # Arriba
+        GUp= os.path.join(os.path.dirname(__file__), './Directions/Up.png')
+        self.GUp = PhotoImage(file=GUp)
+        # Abajo
+        GDown= os.path.join(os.path.dirname(__file__), './Directions/Down.png')
+        self.GDown = PhotoImage(file=GDown)
+        # Izquierda
+        GLeft= os.path.join(os.path.dirname(__file__), './Directions/Left.png')
+        self.GLeft = PhotoImage(file=GLeft)
+        # Derecha
+        GRight= os.path.join(os.path.dirname(__file__), './Directions/Right.png')
+        self.GRight = PhotoImage(file=GRight)
+        # Quieto
+        Still= os.path.join(os.path.dirname(__file__), './Directions/Still.png')
+        self.Still = PhotoImage(file=Still)
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -316,6 +333,7 @@ class Frame_Main_MQTT_Control(Frame):
         
         # - MOTORES - #
         self.direction = Canvas(self.vital_Data_frame, width=180, height=80,bg='black')
+        self.direction.create_image((0,0),image=self.Still, anchor='nw')
         
         # - PERIFERICOS - #
         self.cam_scale: Scale = self._create_joystick_slider()
@@ -614,39 +632,47 @@ class Frame_Main_MQTT_Control(Frame):
         
             # Obtenemos los valores del control y enviamos x MQTT
             self.cam_scale.set(xr)
-            # Hacia arriba
+            # Hacia Abajo
             if yl >= 0.25:
-                self.motorY_data.config(text='Down')
+                self.direction.create_image((0,0),image=self.GDown, anchor='nw')
                 try:
                     mqtt_esp_Data.publish_message('Down')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
             
-            # Hacia abajo
+            # Hacia Arriba
             if yl <= -0.25:
-                self.motorY_data.config(text='Up')
+                self.direction.create_image((0,0),image=self.GUp, anchor='nw')
                 try:
                     mqtt_esp_Data.publish_message('Up')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
             
-            # Izquierda
+            # Derecha
             if xl >= 0.25:
-                self.motorY_data.config(text='Right')
+                self.direction.create_image((0,0),image=self.GRight, anchor='nw')
                 try:
                     mqtt_esp_Data.publish_message('Right')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
             
-            # Derecha
+            # Izquierda
             if xl <= -0.25:
-                self.motorY_data.config(text='Left')
+                self.direction.create_image((0,0),image=self.GLeft, anchor='nw')
                 try:
                     mqtt_esp_Data.publish_message('Left')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
             
-            self.motorX_data.config(text=xl)
+            # Sin Movimiento
+            """if xl == 0 and yl == 0:
+                self.direction.create_image((0,0),image=self.Still, anchor='nw')
+                try:
+                    mqtt_esp_Data.publish_message('Left')
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")"""
+            
+            #self.motorX_data.config(text=xl)
             
             # Chequear botones específicos y enviar info por MQTT
             buttons = controller_state['buttons']
