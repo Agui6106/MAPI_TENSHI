@@ -46,14 +46,14 @@ def connect_serial_device() -> None:
             print("Serial device closed.")"""
 
 # - Leemos el dispositivo - #
-def read_serial(device: serial_sensor.SerialSensor):
+"""def read_serial(device: serial_sensor.SerialSensor):
     if device.in_waiting() > 0:
         try:
             data = device.reception()
             return data
         except:
             return None
-    return None
+    return None"""
 
 # - Escribimos el dispositivo - #
 def communicate_with_device(device: serial_sensor.SerialSensor):
@@ -98,13 +98,19 @@ if __name__ == "__main__":
                         if user_in.lower() == 'exit':
                             break
                         elif user_in:
+                            # Intento 1
                             ans = device.send(user_in)
-                        print(ans)
+                            print(ans)
+                            """
+                            # Intenton 2
+                            device.send_data(user_in)
+                            ans = device.read_serial()
+                            print(ans)"""
                         
                 # Hasta ser interrumpidos por el teclado
                 except KeyboardInterrupt:
                     print("\nCommunication terminated by user.")
-                    print("\nClosing Socket server.")
+                    print("\nClosing local Socket server.")
                     
                 finally:
                     # Eliminamos el socket del sistema de archivos y Cerramos objeto tipo serial

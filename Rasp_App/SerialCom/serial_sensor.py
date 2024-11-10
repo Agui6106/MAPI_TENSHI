@@ -83,9 +83,18 @@ class SerialSensor:
     def send(self, to_send: str) -> str:
         """Envía datos al dispositivo y espera una respuesta."""
         self._serial.write(to_send.encode('utf-8'))  # Codificar
-        #time.sleep(self.reception_time)  # Tiempo de espera para sincronizar
+        time.sleep(self.reception_time)  # Tiempo de espera para sincronizar
         received = self._serial.readline()
         return received.decode(encoding='utf-8')  # Decodificar
+    
+    def read_serial(self):
+        if self.in_waiting() > 0:
+            try:
+                data = self._serial.readline()
+                return data
+            except:
+                return None
+        return None
     
     def reception(self,) -> str:
         recieved = self._serial.readline()
