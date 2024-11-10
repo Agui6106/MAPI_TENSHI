@@ -83,14 +83,16 @@ class SerialSensor:
     def send(self, to_send: str) -> str:
         """Envía datos al dispositivo y espera una respuesta."""
         self._serial.write(to_send.encode('utf-8'))  # Codificar
-        time.sleep(self.reception_time)  # Tiempo de espera para sincronizar
+        #time.sleep(self.reception_time)  # Tiempo de espera para sincronizar
+        while self._serial.in_waiting == 0:
+            time.sleep(0.01)  # Breve espera para no saturar la CPU
         received = self._serial.readline()
         return received.decode(encoding='utf-8')  # Decodificar
     
     def read_serial(self):
         if self.in_waiting() > 0:
             try:
-                data = self.readline().decode().strip()
+                data = self._serial.readline().decode().strip()
                 return data
             except:
                 return None
@@ -117,3 +119,25 @@ class SerialSensor:
     
     def __del__(self) -> None:
         self.close()
+    
+    # - Testing rutine - #
+    def communicate_with_device(self):
+        try:
+            while True:
+                # Solicitar entrada del usuario y enviar
+                user_input = input("Enter message to send to device (or type 'exit' to quit): ")
+                if user_input.lower() == 'exit':
+                    break
+                elif user_input:
+                    self.send_data(user_input)
+
+                # Leer datos del dispositivo
+                data_received = self.read_serial()
+                if data_received:
+                    print(f"Data received: {data_received}")
+        except KeyboardInterrupt:
+            print("\nCommunication terminated by user.")
+        finally:
+            if self and self.is_open():
+                self.close()
+                print("Serial device closed.")
