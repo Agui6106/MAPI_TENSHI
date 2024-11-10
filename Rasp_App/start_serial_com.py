@@ -54,10 +54,11 @@ if __name__ == "__main__":
             atempts = 0
             correct = 0
             print(f'Checking Serial connection...')
-            test_ans = device.send("A ")
-            print(f'Received from test: {test_ans}')
             
             while atempts != 4:
+                test_ans = device.send("A ")
+                #print(f'Received from test: {test_ans}')
+                
                 if test_ans is None:
                     print(f'Attempt {atempts} of 4 failed. Retrying...')
                 else:
