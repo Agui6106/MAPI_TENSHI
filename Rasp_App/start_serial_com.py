@@ -51,13 +51,13 @@ if __name__ == "__main__":
         device = connect_serial_device()
         if device:
             # - Initial ping  - #
-            atempts = 1
+            atempts = 0
             correct = 0
             print(f'Checking Serial connection...')
             test_ans = device.send("A ")
             print(f'Received from test: {test_ans}')
             
-            while atempts != 5:
+            while atempts != 4:
                 if test_ans is None:
                     print(f'Attempt {atempts} of 4 failed. Retrying...')
                 else:
@@ -76,7 +76,7 @@ if __name__ == "__main__":
                 try:
                     while True:
                         # Recibimos el mensaje y la dirección del cliente
-                        data, _ = server_socket.recvfrom(1024)
+                        data, client_address = server_socket.recvfrom(1024)
                         user_in = data.decode()
                         print(f"Message rom socket: {user_in}")
                         
