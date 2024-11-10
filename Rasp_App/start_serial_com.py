@@ -45,33 +45,29 @@ def connect_serial_device() -> None:
             serial_device.close()
             print("Serial device closed.")"""
 
-# - Escribimos el dispositivo - #
-def communicate_with_device(device: serial_sensor.SerialSensor):
-    try:
-        while True:
-            # Solicitar entrada del usuario y enviar
-            user_input = input("Enter message to send to device (or type 'exit' to quit): ")
-            if user_input.lower() == 'exit':
-                break
-            elif user_input:
-                device.send_data(user_input)
-            
-            # Leer datos del dispositivo
-            data_received = device.read_serial()
-            if data_received:
-                print(f"Data received: {data_received}")
-    except KeyboardInterrupt:
-        print("\nCommunication terminated by user.")
-    finally:
-        if device and device.is_open():
-            device.close()
-            print("Serial device closed.")
-
 if __name__ == "__main__":
     # - Verifcacion de puerto y dispositivo serial - #
     if ports:
         device = connect_serial_device()
         if device:
+            # - Initial ping  - #
+            atempts = 1
+            correct = 0
+            print(f'Checking Serial connection...')
+            test_ans = device.send("A ")
+            print(f'Received from test: {test_ans}')
+            
+            while atempts != 5:
+                if test_ans is None:
+                    print(f'Attempt {atempts} of 4 failed. Retrying...')
+                else:
+                    print(f'Attempt {atempts} of 4 succesfull. Retrying...')
+                    correct += 1
+                atempts += 1
+            
+            if correct == 4:
+                print(f'{atempts} of 4 succesfull... Connection Ok')
+                
             # - Socket - #
             with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as server_socket:
                 server_socket.bind(SOCKET_PATH)
@@ -82,18 +78,13 @@ if __name__ == "__main__":
                         # Recibimos el mensaje y la dirección del cliente
                         data, _ = server_socket.recvfrom(1024)
                         user_in = data.decode()
-                        print(f"Mensaje recibido: {user_in}")
+                        print(f"Message rom socket: {user_in}")
                         
                         # Enviamos por serial
-                        if user_in.lower() == 'exit':
-                            break
-                        elif user_in:
-                            device.send_data(user_in)
-                        # Leemos el serial
-                        ans = device.read_serial()
-                        
-                        print(f'Recieved: {ans}')
-                        
+                        if user_in:
+                            ans = device.send(user_in)
+                            print(f'Recieved from serial: {ans}')
+                                        
                 # Hasta ser interrumpidos por el teclado
                 except KeyboardInterrupt:
                     print("\nCommunication terminated by user.")
