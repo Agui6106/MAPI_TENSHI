@@ -45,16 +45,6 @@ def connect_serial_device() -> None:
             serial_device.close()
             print("Serial device closed.")"""
 
-# - Leemos el dispositivo - #
-"""def read_serial(device: serial_sensor.SerialSensor):
-    if device.in_waiting() > 0:
-        try:
-            data = device.reception()
-            return data
-        except:
-            return None
-    return None"""
-
 # - Escribimos el dispositivo - #
 def communicate_with_device(device: serial_sensor.SerialSensor):
     try:
@@ -67,7 +57,7 @@ def communicate_with_device(device: serial_sensor.SerialSensor):
                 device.send_data(user_input)
             
             # Leer datos del dispositivo
-            data_received = read_serial(device)
+            data_received = device.read_serial()
             if data_received:
                 print(f"Data received: {data_received}")
     except KeyboardInterrupt:
@@ -98,14 +88,11 @@ if __name__ == "__main__":
                         if user_in.lower() == 'exit':
                             break
                         elif user_in:
-                            # Intento 1
-                            ans = device.send(user_in)
-                            print(ans)
-                            """
-                            # Intenton 2
                             device.send_data(user_in)
-                            ans = device.read_serial()
-                            print(ans)"""
+                        # Leemos el serial
+                        ans = device.read_serial()
+                        
+                        print(f'Recieved: {ans}')
                         
                 # Hasta ser interrumpidos por el teclado
                 except KeyboardInterrupt:

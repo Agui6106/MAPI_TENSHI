@@ -76,7 +76,7 @@ class SerialSensor:
         """Envía un mensaje al dispositivo serial."""
         try:
             self._serial.write(data.encode('utf-8'))  # Codifica el mensaje y lo envía
-            print(f"Sent to device: {data}")
+            print(f"Sent to Serial device: {data}")
         except Exception as e:
             print(f"Failed to send data: {e}")
     
@@ -90,7 +90,7 @@ class SerialSensor:
     def read_serial(self):
         if self.in_waiting() > 0:
             try:
-                data = self._serial.readline()
+                data = self.readline().decode().strip()
                 return data
             except:
                 return None
