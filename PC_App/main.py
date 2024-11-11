@@ -161,32 +161,21 @@ mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
 mqtt_client.start()
 
 # - ESP32 - #
-# -- Servo -- #
-# Mqtt client Servomotor(ipbroker, puerto, suscribcion, publica)
+# -- SERVO -- #
 mqtt_esp_Servo = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/Servo')
 mqtt_esp_Servo.start()
 
-# -- SENSORS -- #
+# -- SENSORS AND MAIN MOTORS -- #
 mqtt_esp_Data = mqtt_coms(ip, 1883, 'ESP/Sensors', 'ESP/Motors')
 mqtt_esp_Data.start()
 
 # -- PERIFERICOS -- #
-# Mqtt client Lamp(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Lamp = mqtt_coms(ip, 1883, 'ESP/LampState', 'ESP/Lamp')
-mqtt_esp_Lamp.start()
-
-# Mqtt client Buzzer(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Buzzer = mqtt_coms(ip, 1883, 'ESP/BuzState', 'ESP/Buzz')
-mqtt_esp_Buzzer.start()
+mqtt_esp_Perif = mqtt_coms(ip, 1883, 'ESP/Lamp/Buzz', 'ESP/Perifericals')
+mqtt_esp_Perif.start()
 
 # -- GIROSCOPIO Y GPS -- #
-# Mqtt client GiroscoopioX(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_Giros = mqtt_coms(ip, 1883, 'ESP/GirosXY', 'PC/Response')
-mqtt_esp_Giros.start()
-
-# Mqtt client GiroscoopioY(ipbroker, puerto, suscribcion, publica)
-mqtt_esp_GPS = mqtt_coms(ip, 1883, 'ESP/Lat/Long', 'PC/Response')
-mqtt_esp_GPS.start()
+mqtt_esp_Locations = mqtt_coms(ip, 1883, 'ESP/Lat/Long/GX/GY', 'PC/Response')
+mqtt_esp_Locations.start()
 
 # Fecha de hoy
 date = dt.datetime.now()
@@ -684,32 +673,32 @@ class Frame_Main_MQTT_Control(Frame):
             # Llamada recursiva para actualizar cada 50ms
             self.after(50, self.update_vals)
             
-    # - MQTT PROTOCOL - #            
+    # - MQTT PROTOCOL - #     
+    # Envio       
     def send_buttons_info(self, topic):
         try:
             if topic == 'Lamp':
-                mqtt_esp_Lamp.publish_message('lamp')
+                mqtt_esp_Perif.publish_message('lamp')
             elif topic == 'Buzzer':
-                mqtt_esp_Buzzer.publish_message('buzz')
+                pass
+                #mqtt_esp_Buzzer.publish_message('buzz')
         except Exception as e:
             print(f"Failed to send info due to: {e}")
     
     # Recepcion        
     def get_response(self):
         # Perifericos
-        self.mensaje_lamp = mqtt_esp_Lamp.last_message
-        self.mensaje_buzz = mqtt_esp_Buzzer.last_message
-        # Giroscopio
-        self.mensaje_Giros = mqtt_esp_Giros.last_message
-        # Coordenadas
-        self.mensaje_GPS = mqtt_esp_GPS.last_message
+        self.mensaje_Perifs = mqtt_esp_Perif.last_message
+
+        # Giroscopio y Coordenadas
+        self.mensaje_Locations = mqtt_esp_Locations.last_message
         
-        # -- DATA -- #
         # Respuesta del ESP
         self.response = mqtt_esp_Servo.last_message
         # Sensores del ESP
         self.response_Data = mqtt_esp_Data.last_message
         
+        # -- DATA -- #
         if self.response_Data:
             value = self.response_Data.split(",")
             # Sensores de temperatura y ultrasonico
@@ -744,26 +733,15 @@ class Frame_Main_MQTT_Control(Frame):
         self.output_ESP.config(state='readonly')
         
         # Verificar respuesta en lampara
-        if self.mensaje_lamp:
-            if self.mensaje_lamp == 'LPOn':
+        if self.mensaje_Perifs:
+            if self.mensaje_Perifs == 'LPOn':
                 self.buz_on_label.config(text='On', foreground='green')
-            elif self.mensaje_lamp == 'LPOff':
-                self.lamp_on_label.config(text='Off',foreground='red')
-        
-        # Verificar respuesta del buzzer
-        if self.mensaje_buzz:
-            if self.mensaje_lamp == 'BSOn':
-                self.buz_on_label.config(text='On', foreground='green')
-            elif self.mensaje_lamp == 'BSOff':
+            elif self.mensaje_Perifs == 'LPOff':
                 self.lamp_on_label.config(text='Off',foreground='red')
             
         # Lectura de los valores del giroscopio
-        if self.mensaje_Giros:
-            self.X_Data.config(text=self.mensaje_Giros)
-            
-        # Lectura de coordenadas
-        if self.mensaje_GPS:
-            self.Latitud_Data.config(text=self.mensaje_GPS)
+        if self.mensaje_Locations:
+            self.X_Data.config(text=self.mensaje_Locations)
             
         self.parent.after(500, self.get_response)
             
