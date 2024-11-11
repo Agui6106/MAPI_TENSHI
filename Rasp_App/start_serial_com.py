@@ -1,6 +1,7 @@
 # - RECEPTOR - #
 import socket
 import os
+import time
 
 from SerialCom import serial_sensor
 
@@ -50,12 +51,13 @@ if __name__ == "__main__":
     if ports:
         device = connect_serial_device()
         if device:
-            # - Initial ping  - #
+            # - Initial ping in func? - #
             atempts = 0
             correct = 0
             print(f'Checking Serial connection...')
             
             while atempts != 4:
+                time.sleep(0.5)
                 test_ans = device.send("A ")
                 #print(f'Received from test: {test_ans}')
                 
