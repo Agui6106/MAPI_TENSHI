@@ -11,6 +11,9 @@
 // Importa la libreria para el giroscopio
 #include <Wire.h>
 
+// Importa la libreria para el GPS
+#include <TinyGPS++.h>
+
 // Configuración de la red Wi-Fi
 const char* ssid = "OPPO Reno7";
 const char* password = "ingesitos#1";
@@ -86,6 +89,18 @@ String valores;
 
 long tiempo_prev;
 float dt;
+
+// Configuración del GPS
+TinyGPSPlus gps;
+
+#define RXD2 16  // Cambia al pin que usas para RX del ESP32
+#define TXD2 17  // Cambia al pin que usas para TX del ESP32
+
+double LATITUDE , LONGITUDE;
+String latitude="", longitude="";
+double SPEED;
+String speed="";
+String MSG;
 
 // ==================================================================== //
 
@@ -244,6 +259,9 @@ void setup() {
     Wire.write(0);     // despierta el modulo
     Wire.endTransmission(true);
 
+    // - Inicializacion de GPS - //
+    Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);  // Configuramos Serial con los pines RX y TX);
+
     // Conectar a la red Wi-Fi
     WiFi.begin(ssid, password);
     while (WiFi.status() != WL_CONNECTED) {
@@ -354,6 +372,52 @@ void loop() { // Datos que recibimos del ESP32
    //Integración respecto del tiempo paras calcular el YAW
    Angle[2] = Angle[2]+Gy[2]*dt;
 
+   // -- LECTURA DE GPS -- //
+   while (Serial2.available() > 0)  {
+     gps.encode(Serial2.read());
+   }
+
+    if (millis() > 5000 && gps.charsProcessed() < 10)
+      {
+        Serial.println(F("No GPS detected: check wiring."));
+        while(true);
+      }  
+      
+
+    if (gps.location.isValid())
+        {
+          LATITUDE = gps.location.lat(), 6 ;
+          latitude = String(LATITUDE,6);
+          
+          LONGITUDE = gps.location.lng(), 6 ;
+          longitude = String(LONGITUDE,6);
+          SPEED = gps.speed.kmph();
+          speed = String(SPEED,3);
+
+          Serial.print("Latitud: ");
+          Serial.print(latitude);
+          Serial.print("   Longitud: ");
+          Serial.print(longitude);
+          Serial.print("   Velocidad: ");
+          Serial.println(speed);
+
+          MSG="";
+          MSG = MSG + "https://www.google.com/maps/search/?api=1&query=";
+          MSG = MSG + latitude;
+          MSG = MSG + ",";
+          MSG = MSG + longitude;
+          MSG = MSG + "\n";
+          
+          Serial.println(MSG);
+        }
+
+    else
+    {
+      Serial.println("INVALID");
+    }
+    
+    // delay(2000);
+
     
     // -- ENVIO DE DATOS -- //
     String mensaje = String(t) + "°C," + 
@@ -379,7 +443,7 @@ void loop() { // Datos que recibimos del ESP32
     Serial.println("Angulo Y: "); Serial.print(Angle[1]);
     Serial.println("Angulo Z: "); Serial.print(Angle[2]);
 
-    delay(200);
+    delay(500);
 
 /*
     // Motores 
