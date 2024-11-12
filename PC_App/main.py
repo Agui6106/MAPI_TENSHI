@@ -213,7 +213,7 @@ class App(Frame):
         # Size del monitor
         screen_width = root.winfo_screenwidth()
         screen_height = root.winfo_screenheight()
-        root.geometry(f'{screen_width-50}x{screen_height-140}')
+        root.geometry(f'{screen_width-30}x{screen_height-140}')
         root.resizable(False, False)
 
         # -- Colocacion de widgets -- #
@@ -237,7 +237,7 @@ class App(Frame):
         # Agregamos las pestañas al Notebook
         notebook.add(self.tab1, text='Main')
         notebook.add(self.tab3, text='Options')
-        notebook.add(self.tab4, text='Web Control')
+        notebook.add(self.tab4, text='Matlab Analysis')
         notebook.add(self.tab5, text='About')
 
         # - Atributos y elementos de aplicacion - #
@@ -330,10 +330,10 @@ class Frame_Main_MQTT_Control(Frame):
         self.lamp_but: Button = self._button_lamp()
         
         # - STATUS - #
-        self.statuts1_label = Label(self.vital_Data_frame, text="Status 1", font=('Z003', 13))
-        self.statuts2_label = Label(self.vital_Data_frame, text="Status 2", font=('Z003', 13))
-        self.statuts3_label = Label(self.vital_Data_frame, text="Status 3", font=('Z003', 13))
-        self.statuts4_label = Label(self.vital_Data_frame, text="Status 4", font=('Z003', 13))
+        self.statuts1_label = Label(self.vital_Data_frame, text=" Motors", font=('Z003', 13))
+        self.statuts2_label = Label(self.vital_Data_frame, text="Battery", font=('Z003', 13))
+        self.statuts3_label = Label(self.vital_Data_frame, text=" Serial", font=('Z003', 13))
+        self.statuts4_label = Label(self.vital_Data_frame, text="  MQTT ", font=('Z003', 13))
         self.status1: Button = self.stat_1()
         self.status2: Button = self.stat_2()
         self.status3: Button = self.stat_3()
@@ -433,9 +433,9 @@ class Frame_Main_MQTT_Control(Frame):
         # Status
         self.statuts1_label.grid(row=2,column=6, padx=10)
         
-        self.status1.grid(row=1,column=6, padx=10)
+        self.status1.grid(row=1,column=8, padx=10)
         self.status2.grid(row=1,column=7, padx=10)
-        self.status3.grid(row=1,column=8, padx=10)
+        self.status3.grid(row=1,column=6, padx=10)
         self.status4.grid(row=1,column=9, padx=10)
         self.statuts2_label.grid(row=2,column=7)
         self.statuts3_label.grid(row=2,column=8)
@@ -1218,6 +1218,7 @@ class FrameOptions(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
+        # - JOYSTICKS AND NETWORK - #
         self.title.grid(row=0, column=0, columnspan=2)
         
         # - IP - #
@@ -1252,8 +1253,10 @@ class FrameOptions(Frame):
         
         # - BUTTONS - #
         self.joys_updated.grid(row=13, column=0, columnspan=2, pady=2)
+        
+        # - INFO AND HELP - #
 
-    # - Atributos y elementos de aplicacion - #
+    # - JOYSTICKS AND NETWORK - #
     # - TITULO - #
     def _Create_title(self) -> Label:
         return Label(
