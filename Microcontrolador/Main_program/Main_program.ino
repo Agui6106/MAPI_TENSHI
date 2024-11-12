@@ -428,7 +428,9 @@ void loop() { // Datos que recibimos del ESP32
                      state2 + "," +
                      String(Angle[0]) + "°," +
                      String(Angle[1]) + "°," +
-                     String(Angle[2]) + "°";
+                     String(Angle[2]) + "°" +
+                     latitude + "," + 
+                     longitude;
 
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
@@ -442,6 +444,8 @@ void loop() { // Datos que recibimos del ESP32
     Serial.println("Angulo X: "); Serial.print(Angle[0]);
     Serial.println("Angulo Y: "); Serial.print(Angle[1]);
     Serial.println("Angulo Z: "); Serial.print(Angle[2]);
+    Serial.println("Latitud: "); Serial.print(latitude);
+    Serial.println("Longitud: "); Serial.print(longitude);
 
     delay(500);
 
