@@ -5,12 +5,15 @@ import time
 
 from SerialCom import serial_sensor
 
-# - Inicializacion de socket - #
-SOCKET_PATH = '/tmp/uds_socket'
+# Ruta del socket en el sistema de archivos
+SOCKET_PATH = "/tmp/uds_socket"
+CLIENT_SOCKET_PATH = "/tmp/uds_client_socket"
 
-# Eliminamos el socket si ya existe
+# Eliminamos los sockets si ya existen
 if os.path.exists(SOCKET_PATH):
     os.remove(SOCKET_PATH)
+if os.path.exists(CLIENT_SOCKET_PATH):
+    os.remove(CLIENT_SOCKET_PATH)
 
 # - Obtener todos los ports - #
 ports = serial_sensor.find_available_serial_ports()
@@ -81,14 +84,18 @@ if __name__ == "__main__":
                 try:
                     while True:
                         # Recibimos el mensaje y la dirección del cliente
-                        data, client_address = server_socket.recvfrom(1024)
+                        data, _ = server_socket.recvfrom(1024)
                         user_in = data.decode()
                         print(f"Message from socket: {user_in}")
                         
                         # Enviamos por serial
                         if user_in:
                             ans = device.send(user_in)
-                            print(f'Recieved from serial: {ans}')
+                            x = f'Recieved from serial: {ans}'
+                            print(x)
+                        
+                        #server_socket.sendto(x.encode(), CLIENT_SOCKET_PATH)  # Enviamos directamente al cliente
+                        #print("Respuesta enviada al cliente.\n")
                                         
                 # Hasta ser interrumpidos por el teclado
                 except KeyboardInterrupt:

@@ -194,6 +194,9 @@ if __name__ == "__main__":
                         message = "esp.info "
                         client_socket.sendto(message.encode(), SOCKET_PATH)
                         print("Mensaje 'esp.info' sent to server.")
+                        
+                        #response, _ = client_socket.recvfrom(1024)
+                        #print(f"Respuesta del servidor: {response.decode()}\n")
 
                 # - Comandos auxilaires - #
                 elif comando == 'help':
@@ -212,6 +215,7 @@ if __name__ == "__main__":
                 elif comando == 'exit':
                     send_response('Leaving program...')
                     print("Leaving program...")
+                    #os.remove(CLIENT_SOCKET_PATH)
                     
                     #detener_proceso(mqtt_proc)
                     detener_proceso(serial_proc)
