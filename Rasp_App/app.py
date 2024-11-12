@@ -220,6 +220,25 @@ if __name__ == "__main__":
                         
                 except KeyboardInterrupt:
                     print("\nCommunication terminated by user in main.")
+                
+            elif comando == 'esp.status':
+                # Enviamos un mensaje al servidor
+                try:
+                    # Send a response back to the client
+                    response = 'esp.status '
+                    connection.sendall(response.encode())
+                    print("Mensaje 'esp.status' sent to Client.")
+                    
+                    # receive data from the client
+                    data = connection.recv(1024)
+                    if data:
+                        print('Received data:', data.decode())
+                    else:
+                        print("No data received from client.")
+                        break
+                        
+                except KeyboardInterrupt:
+                    print("\nCommunication terminated by user in main.")
                     
             # - Comandos auxilaires - #
             elif comando == 'help':

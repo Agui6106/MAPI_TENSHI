@@ -101,6 +101,9 @@ if __name__ == "__main__":
                             x = f'{ans}'
                             print(x)
                             client.sendall(x.encode())
+                    else:
+                        TS_Data = device.send('data ')
+                        print(TS_Data)
                                         
                 # Hasta ser interrumpidos por el teclado
                 except KeyboardInterrupt:
