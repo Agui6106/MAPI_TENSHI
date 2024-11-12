@@ -205,13 +205,12 @@ if __name__ == "__main__":
             elif comando == 'esp.info':
                 # Enviamos un mensaje al servidor
                 try:
-                    # receive data from the client
-                    #while True
                     # Send a response back to the client
                     response = "esp.info "
                     connection.sendall(response.encode())
                     print("Mensaje 'esp.info' sent to Client.")
                     
+                    # receive data from the client
                     data = connection.recv(1024)
                     if data:
                         print('Received data:', data.decode())

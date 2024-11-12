@@ -41,38 +41,46 @@ def connect_serial_device() -> None:
         
     except ValueError:
         print('Invalid baudrate specified')
+            
+# - Verificamos conexion - #
+def check_connections(device: serial_sensor.SerialSensor):
+    # - Initial ping  - #
+    atempts = 0
+    correct = 0
+    incorrect = 0
+    print(f'Checking Serial connection...')
+    
+    while atempts != 4:
+        time.sleep(1)
+        test_ans = device.send("A ")
+        #print(f'Received from test: {test_ans}')
         
-    """finally:
-        if 'serial_device' in locals() and serial_device.is_open():
-            serial_device.close()
-            print("Serial device closed.")"""
+        if test_ans is None:
+            print(f'Attempt {atempts} of 4 failed. Retrying in 1 sec...')
+            incorrect += 1
+        else:
+            print(f'Attempt {atempts} of 4 succesfull. Retrying in 1 sec...')
+            correct += 1
+        atempts += 1
+    
+    if correct == 4 and incorrect == 0:
+        print(f'{atempts} of 4 succesfull... Connection Ok')
+        return 'Ok'
+    
+    if correct != 4 and incorrect > 0:
+        print(f'{atempts} of 4 succesfull... Connection unstable')
+        return 'Unstable'
+
+    if correct == 0 and incorrect == 4: 
+        print(f'{atempts} of 4 succesfull... Connection Unsuccessful')
+        return 'Unsuccessful'
 
 if __name__ == "__main__":
     # - Verifcacion de puerto y dispositivo serial - #
     if ports:
         device = connect_serial_device()
         if device:
-            # - Initial ping in func? - #
-            atempts = 0
-            correct = 0
-            incorrect = 0
-            print(f'Checking Serial connection...')
-            
-            while atempts != 4:
-                time.sleep(0.5)
-                test_ans = device.send("A ")
-                #print(f'Received from test: {test_ans}')
-                
-                if test_ans is None:
-                    print(f'Attempt {atempts} of 4 failed. Retrying...')
-                    incorrect += 1
-                else:
-                    print(f'Attempt {atempts} of 4 succesfull. Retrying...')
-                    correct += 1
-                atempts += 1
-            
-            if correct == 4 and incorrect == 0:
-                print(f'{atempts} of 4 succesfull... Connection Ok')
+            test1 = check_connections(device=device)
             
             # Lectura de serial y recepcion por socket   
             while True:
@@ -85,10 +93,14 @@ if __name__ == "__main__":
                     
                     # Enviamos por serial
                     if user_in:
-                        ans = device.send(user_in)
-                        x = f'Recieved from serial: {ans}'
-                        print(x)
-                        client.sendall(x.encode())
+                        if user_in == 'esp.test ':
+                             results = check_connections(device=device)
+                             print(results)
+                        else:
+                            ans = device.send(user_in)
+                            x = f'{ans}'
+                            print(x)
+                            client.sendall(x.encode())
                                         
                 # Hasta ser interrumpidos por el teclado
                 except KeyboardInterrupt:
