@@ -7,13 +7,11 @@ from SerialCom import serial_sensor
 
 # Ruta del socket en el sistema de archivos
 SOCKET_PATH = "/tmp/uds_socket"
-CLIENT_SOCKET_PATH = "/tmp/uds_client_socket"
 
-# Eliminamos los sockets si ya existen
-if os.path.exists(SOCKET_PATH):
-    os.remove(SOCKET_PATH)
-if os.path.exists(CLIENT_SOCKET_PATH):
-    os.remove(CLIENT_SOCKET_PATH)
+# Create the Unix socket client
+client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+# Connect to the server
+client.connect(SOCKET_PATH)
 
 # - Obtener todos los ports - #
 ports = serial_sensor.find_available_serial_ports()
@@ -75,36 +73,30 @@ if __name__ == "__main__":
             
             if correct == 4 and incorrect == 0:
                 print(f'{atempts} of 4 succesfull... Connection Ok')
-                
-            # - Socket - #
-            with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as server_socket:
-                server_socket.bind(SOCKET_PATH)
-                print("Unix Domain Socket - Server ready...")
-                
+            
+            # Lectura de serial y recepcion por socket   
+            while True:
                 try:
-                    while True:
-                        # Recibimos el mensaje y la dirección del cliente
-                        data, _ = server_socket.recvfrom(1024)
-                        user_in = data.decode()
-                        print(f"Message from socket: {user_in}")
-                        
-                        # Enviamos por serial
-                        if user_in:
-                            ans = device.send(user_in)
-                            x = f'Recieved from serial: {ans}'
-                            print(x)
-                        
-                        #server_socket.sendto(x.encode(), CLIENT_SOCKET_PATH)  # Enviamos directamente al cliente
-                        #print("Respuesta enviada al cliente.\n")
+                    #while True:
+                    # Recibimos el mensaje y la dirección del cliente
+                    data, _ = client.recvfrom(1024)
+                    user_in = data.decode()
+                    print(f"Message from socket: {user_in}")
+                    
+                    # Enviamos por serial
+                    if user_in:
+                        ans = device.send(user_in)
+                        x = f'Recieved from serial: {ans}'
+                        print(x)
+                        client.sendall(x.encode())
                                         
                 # Hasta ser interrumpidos por el teclado
                 except KeyboardInterrupt:
                     print("\nCommunication terminated by user.")
                     print("\nClosing local Socket server.")
-                    
-                finally:
+
                     # Eliminamos el socket del sistema de archivos y Cerramos objeto tipo serial
-                    os.remove(SOCKET_PATH)
+                    client.close()
                     if device and device.is_open():
                         device.close()
                         print("Serial device closed.")
