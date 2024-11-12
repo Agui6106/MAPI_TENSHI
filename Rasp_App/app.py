@@ -63,7 +63,7 @@ def iniciar_Mqtt():
     
 # 3)  Conexion serial a ESP32 por puerto USB 
 def iniciar_Serial():
-    print("Starting serial comunications...")
+    print("Starting serial comunications...\n")
     try:
         proc = subprocess.Popen(["python3", "./start_serial_com.py"])
         return proc
@@ -135,9 +135,9 @@ def send_response(cmd_in):
 # - Aplicacion principal basada en comandos -#
 if __name__ == "__main__":
     # - Inicialización - #
-    print(f"MAPI-Tenshi Robot. Software Version 1.0\nDesarrollado en Santiago de Queretaro, México. 2024\n")
+    print(f"MAPI-Tenshi Robot. Software Version 1.0\nDeveloped in Santiago de Queretaro, Mexico. 2024\n")
     ip = get_ip()
-    print(f"Actual IP: {ip}")
+    print(f"Actual IP: {ip}\n")
     url_stream = f"http://{ip}:8000/stream.mjpg"
 
     # -- SECUENCIA DE INICIALZIACION -- #  
@@ -154,7 +154,14 @@ if __name__ == "__main__":
     # - Socket - #
     # Ruta del archivo de socket
     SOCKET_PATH = '/tmp/uds_socket'
+    CLIENT_SOCKET_PATH = "/tmp/uds_client_socket"
+    
+    # Eliminamos el socket del cliente si ya existe
+    if os.path.exists(CLIENT_SOCKET_PATH):
+        os.remove(CLIENT_SOCKET_PATH)
+
     with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as client_socket:
+        client_socket.bind(CLIENT_SOCKET_PATH)
         last_processed_command = ''
     
         # - Interfaz de consola - #
@@ -186,7 +193,7 @@ if __name__ == "__main__":
                         # Enviamos un mensaje al servidor
                         message = "esp.info "
                         client_socket.sendto(message.encode(), SOCKET_PATH)
-                        print("Mensaje 'esp.info' enviado al servidor.")
+                        print("Mensaje 'esp.info' sent to server.")
 
                 # - Comandos auxilaires - #
                 elif comando == 'help':
@@ -203,11 +210,12 @@ if __name__ == "__main__":
 
                 # - Comando de salida - #
                 elif comando == 'exit':
+                    send_response('Leaving program...')
                     print("Leaving program...")
+                    
                     #detener_proceso(mqtt_proc)
                     detener_proceso(serial_proc)
                     detener_proceso(transmision_proc)
-                    send_response('Leaving program...')
 
                     print("\nThanks for choosing MAPI software.inc")
                     break

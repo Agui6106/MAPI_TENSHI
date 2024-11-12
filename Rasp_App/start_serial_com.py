@@ -54,6 +54,7 @@ if __name__ == "__main__":
             # - Initial ping in func? - #
             atempts = 0
             correct = 0
+            incorrect = 0
             print(f'Checking Serial connection...')
             
             while atempts != 4:
@@ -63,25 +64,26 @@ if __name__ == "__main__":
                 
                 if test_ans is None:
                     print(f'Attempt {atempts} of 4 failed. Retrying...')
+                    incorrect += 1
                 else:
                     print(f'Attempt {atempts} of 4 succesfull. Retrying...')
                     correct += 1
                 atempts += 1
             
-            if correct == 4:
+            if correct == 4 and incorrect == 0:
                 print(f'{atempts} of 4 succesfull... Connection Ok')
                 
             # - Socket - #
             with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as server_socket:
                 server_socket.bind(SOCKET_PATH)
-                print("Servidor listo para recibir mensajes...")
+                print("Unix Domain Socket - Server ready...")
                 
                 try:
                     while True:
                         # Recibimos el mensaje y la dirección del cliente
                         data, client_address = server_socket.recvfrom(1024)
                         user_in = data.decode()
-                        print(f"Message rom socket: {user_in}")
+                        print(f"Message from socket: {user_in}")
                         
                         # Enviamos por serial
                         if user_in:
