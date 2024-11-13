@@ -356,8 +356,8 @@ class Frame_Main_MQTT_Control(Frame):
         
         # -- DATA ELEMENTS -- #
         # Titulos
-        self.dist_front_title = Label(self.recv_data_frame, text="Frontal Distance", font=('Z003', 15, 'bold'))
-        self.dist_back_title = Label(self.recv_data_frame, text="Back Distance", font=('Z003', 15, 'bold'))
+        self.dist_front_title = Label(self.recv_data_frame, text="Frontal ", font=('Z003', 15, 'bold'))
+        self.dist_back_title = Label(self.recv_data_frame, text="Back", font=('Z003', 15, 'bold'))
         self.sensors_title = Label(self.recv_data_frame, text="Sensors", font=('Z003', 15, 'bold'))
         
         # Sensores distancias
@@ -394,14 +394,11 @@ class Frame_Main_MQTT_Control(Frame):
     # - Colocamos los elementos visuales - #
     def init_main_gui(self)-> None:
         self.title.grid(row=0, column=0, columnspan=3)
-        
-        #self.grid_rowconfigure(1, weight=1)
-        #self.grid_columnconfigure(0, weight=1)
 
         # - LABEL FRAMES -#
         self.vital_Data_frame.grid(row=1, column=0, columnspan=3, sticky="nsew", ipadx=10, pady=10) # 10x3
-        self.positions_frame.grid(row=2, column=2, sticky="nsew", ) # 7x2
-        self.recv_data_frame.grid(row=2, column=0, sticky="nsew", columnspan=2)
+        self.recv_data_frame.grid(row=2, column=0, sticky="nsew",)
+        self.positions_frame.grid(row=3, column=0, sticky="nsew", ) # 7x2
         
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
@@ -456,7 +453,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.Latitud_Data.grid(row=1,column=3, columnspan=2)
         self.Longitud_Data.grid(row=2,column=3, columnspan=2)
         
-        self.Google_maps_But.grid(row=3,column=0, columnspan=4, padx=5)
+        self.Google_maps_But.grid(row=1,column=5, padx=5)
         
     def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
@@ -464,7 +461,7 @@ class Frame_Main_MQTT_Control(Frame):
         # Titulos
         self.dist_front_title.grid(row=0, column=1, columnspan=2)
         self.dist_back_title.grid(row=0, column=3, columnspan=2, padx=20)
-        self.sensors_title.grid(row=3, column=1,columnspan=4, pady=5)
+        self.sensors_title.grid(row=0, column=5, columnspan=4)
         
         # Etiquetas
         self.frontal_Ultr.grid(row=1, column=1, pady=10)
@@ -473,9 +470,9 @@ class Frame_Main_MQTT_Control(Frame):
         self.back_Ultr.grid(row=1,column=3)
         self.back_Infr.grid(row=2,column=3)
         
-        self.temp_label.grid(row=4,column=1)
-        self.Hum_label.grid(row=4,column=3)
-        self.Gas_label.grid(row=5,column=1)
+        self.temp_label.grid(row=1,column=5)
+        self.Hum_label.grid(row=2,column=5)
+        self.Gas_label.grid(row=3,column=5)
         
         # Data
         self.data_Dist_UltrF.grid(row=1, column=2)
@@ -483,10 +480,10 @@ class Frame_Main_MQTT_Control(Frame):
         self.data_Dist_UltrB.grid(row=1,column=4)
         self.data_Dist_InfrB.grid(row=2,column=4)
         
-        self.gas_levels.grid(row=5,column=2)
+        self.data_temp.grid(row=1,column=6)
+        self.data_Hum.grid(row=2,column=6)
         
-        self.data_temp.grid(row=4,column=2)
-        self.data_Hum.grid(row=4,column=4)
+        self.gas_levels.grid(row=3,column=6)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
