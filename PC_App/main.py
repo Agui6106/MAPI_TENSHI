@@ -353,6 +353,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.Google_maps_But: Button = self.launch_GM_Butt()
         self.empty_space_positions = Label(self.positions_frame, text=" ", font=('Z003', 15, 'bold'))
         self.empty_space_recv = Label(self.recv_data_frame, text=" ", font=('Z003', 15, 'bold'))
+        self.empty_space_recv2 = Label(self.recv_data_frame, text=" ", font=('Z003', 15, 'bold'))
         
         # -- DATA ELEMENTS -- #
         # Titulos
@@ -457,20 +458,21 @@ class Frame_Main_MQTT_Control(Frame):
         
     def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
-        self.empty_space_recv.grid(row=0,column=0, padx=20)
+        self.empty_space_recv.grid(row=0,column=0, padx=35)
+        self.empty_space_recv2.grid(row=0,column=7, padx=35)
         # Titulos
-        self.dist_front_title.grid(row=0, column=1, columnspan=2)
-        self.dist_back_title.grid(row=0, column=3, columnspan=2, padx=20)
-        self.sensors_title.grid(row=0, column=5, columnspan=4)
+        self.dist_front_title.grid(row=0, column=1, columnspan=2, padx=10)
+        self.dist_back_title.grid(row=0, column=3, columnspan=2, padx=30)
+        self.sensors_title.grid(row=0, column=5, columnspan=4,  padx=20)
         
         # Etiquetas
-        self.frontal_Ultr.grid(row=1, column=1, pady=10)
+        self.frontal_Ultr.grid(row=1, column=1, pady=10,)
         self.frontal_Infr.grid(row=2, column=1, )
         
-        self.back_Ultr.grid(row=1,column=3)
+        self.back_Ultr.grid(row=1,column=3, padx=10)
         self.back_Infr.grid(row=2,column=3)
         
-        self.temp_label.grid(row=1,column=5)
+        self.temp_label.grid(row=1,column=5, padx=20)
         self.Hum_label.grid(row=2,column=5)
         self.Gas_label.grid(row=3,column=5)
         
@@ -688,7 +690,15 @@ class Frame_Main_MQTT_Control(Frame):
                 self.data_Dist_InfrB.config(text='Danger', foreground='red')
             if value[5] == 'clear':
                 self.data_Dist_InfrB.config(text='Safe', foreground='Green')
-        
+            
+            # Giroscopios
+            self.X_Data.config(text=value[6])
+            self.Y_Data.config(text=value[7])
+            
+            # Coordenadas
+            self.Latitud_Data.config(text=value[8])
+            self.Longitud_Data.config(text=value[9])
+            
         # Verificar respuesta en lampara
         if self.mensaje_Perifs:
             if self.mensaje_Perifs == 'LPOn':
