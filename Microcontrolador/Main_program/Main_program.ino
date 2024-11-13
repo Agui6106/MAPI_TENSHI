@@ -421,7 +421,7 @@ void loop() { // Datos que recibimos del ESP32
                      state2 + "," +
                      String(Angle[0]) + "°," +
                      String(Angle[1]) + "°," +
-                     String(Angle[2]) + "°" +
+                     String(Angle[2]) + "°," +
                      latitude + "," + 
                      longitude;
 
