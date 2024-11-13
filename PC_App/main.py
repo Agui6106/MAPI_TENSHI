@@ -257,7 +257,7 @@ class App(Frame):
         """
         # Control MQTT
         frame_mqtt_control = Frame_Main_MQTT_Control(self.tab1)  # Instanciar el frame aquí
-        frame_mqtt_control.grid(row=1, column=0, sticky='nsew')
+        frame_mqtt_control.grid(row=1, column=0, rowspan=2, sticky='nsew')
 
         # Camara sin proceso
         frame_Raw_camera = Frame_Main_Raw_Camera(self.tab1)  # Instanciar el frame aquí
@@ -268,9 +268,9 @@ class App(Frame):
         frame_pros_camera.grid(row=2, column=1, sticky='nsew')
         
         # Command Prompt
-        frame_CMD_promt = Frame_CMD(self.tab1)
-        frame_CMD_promt.grid(row=2,column=0,sticky='nsew')
-        frame_CMD_promt.config(bg='black')
+        #frame_CMD_promt = Frame_CMD(self.tab1)
+        #frame_CMD_promt.grid(row=2,column=0,sticky='nsew')
+        #frame_CMD_promt.config(bg='black')
         
         return notebook
 
@@ -307,9 +307,6 @@ class Frame_Main_MQTT_Control(Frame):
         self.vital_Data_frame: LabelFrame = self._create_VitalData()
         self.positions_frame: LabelFrame = self._create_Pos()
         self.recv_data_frame: LabelFrame = self._create_Data()
-        self.out_ESP_Label = Label(self, text="ESP Output:", font=('Consolas', 15))
-        self.dev_button: Button = self._button_Open_Dev()
-        self.output_ESP: Entry = self._ESP_output()
         
         # -- VITAL-DATA ELEMENTS -- #
         # - TITULOS - #
@@ -406,10 +403,6 @@ class Frame_Main_MQTT_Control(Frame):
         self.positions_frame.grid(row=2, column=2, sticky="nsew", ) # 7x2
         self.recv_data_frame.grid(row=2, column=0, sticky="nsew", columnspan=2)
         
-        self.out_ESP_Label.grid(row=3,column=0, pady=10)
-        self.dev_button.grid(row=3,column=2)
-        self.output_ESP.grid(row=3,column=1)
-        
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
         # Ttitulos
@@ -504,24 +497,6 @@ class Frame_Main_MQTT_Control(Frame):
             foreground='black',
             font=("Z003", 20, "bold")
         )
-    
-    def _button_Open_Dev(self) -> Button:
-        return Button(self, 
-                      text='Open Web Debugger', 
-                      font=("Z003", 13, 'bold'),
-                      width=30,
-                      command= self.open_debugger)
-        
-    def _ESP_output(self) -> Entry:
-        return Entry(self, 
-                     font=('consolas', 14),  
-                     justify='left',
-                     state='readonly',
-                     width=35)
-        
-    def open_debugger(self):
-        nav1 = webbrowser.get()
-        nav1.open(f"http://{ip}:1880/ui")
     
     # - Sub Frames -#
     def _create_VitalData(self) -> LabelFrame:
@@ -716,21 +691,6 @@ class Frame_Main_MQTT_Control(Frame):
                 self.data_Dist_InfrB.config(text='Danger', foreground='red')
             if value[5] == 'clear':
                 self.data_Dist_InfrB.config(text='Safe', foreground='Green')
-        
-        # Reescibir output
-        self.output_ESP.config(state='normal')
-        if self.response:
-            self.output_ESP.delete(0, 'end')
-            self.output_ESP.insert(0, self.response)
-        self.output_ESP.config(state='readonly')
-        
-        # Insertar el mensaje en el Entry
-        if self.response:
-            print(f'ESP Output: {self.response}')
-            self.output_ESP.delete(0, 'end')  
-            self.output_ESP.insert(0, self.response) 
-        # Volver a hacer el Entry de solo lectura
-        self.output_ESP.config(state='readonly')
         
         # Verificar respuesta en lampara
         if self.mensaje_Perifs:
@@ -1046,10 +1006,10 @@ class Frame_CMD(Frame):
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
         self.content: Label = self._In_label()
-        self.command: Label = self._commands()
-        self.send: Button = self._comman_send_button()
         self.out: Label = self._out_label()
+        self.send: Button = self._comman_send_button()
         self.cmd_out: Entry = self._command_output()
+        self.command: Entry = self._commands()
         
         # - Diccionario de comandos internos - #
         self.internal_commands = {
@@ -1181,35 +1141,41 @@ class FrameOptions(Frame):
         self.title: Label = self._Create_title()
         
         # - IPs - #
-        self.content: Label = self._Ip_Opt_Label()
-        self.HIP_label: Label = self._hostIP_Label()
-        self.EsIP_label: Label = self._espIP_Label()
-        self.RasIP_label: Label = self._raspIP_Label()
+        self.content =     Label(self, text="Actual IPs", font=("Z003", 15, "bold"))
+        self.HIP_label =   Label(self, text="        Host Ip: ", font=("Z003", 15))
+        self.EsIP_label =  Label(self, text="     ESP32 Ip: ", font=("Z003", 15))
+        self.RasIP_label = Label(self, text="Raspberry Ip: ", font=("Z003", 15))    
         
-        self.host_ip: Entry = self._ip_host()
-        self.esp_ip: Entry = self._ip_esp_in()
-        self.rasp_ip: Entry = self._ip_rasp_in()
+        self.host_ip: Entry = self.options_entry()
+        self.esp_ip: Entry = self.options_entry()
+        self.rasp_ip: Entry = self.options_entry()
         
         # - SERVER -#
-        self.server_label: Label = self._Server_tag()
-        self.server_URL: Entry = self._server_url()
+        self.server_label = Label(self, text="URL stream: ", font=("Z003", 15))
+        self.server_URL: Entry = self.options_entry()
         
         # - D-PAD - #
-        self.title_joys: Label = self._controls_title_()
+        self.title_joys = Label(master=self, text='Joystick', foreground='black', font=("Z003", 15, "bold"))
         
-        self.lable_name: Label = self._joy_name_()
-        self.lable_id: Label = self._joy_pc_id_()
-        self.lable_power: Label = self._joy_power_()
-        self.lable_buttons: Label = self._joy_buttons_()
-        self.lable_axes: Label = self._joy_axes_()
+        self.lable_name =    Label(self, text="         Name: ", font=("Z003", 15))
+        self.lable_id =      Label(self, text="     ID on PC: ", font=("Z003", 15))
+        self.lable_power =   Label(self, text="       Power: ", font=("Z003", 15))
+        self.lable_buttons = Label(self, text="Total Buttons: ", font=("Z003", 15))
+        self.lable_axes =    Label(self, text="   Total Axes: ", font=("Z003", 15))
         
-        self.name: Entry = self.name_label()
-        self.id: Entry = self.id_label()
-        self.power: Entry = self.power_label()
-        self.buttons: Entry = self.buts_label()
-        self.axes: Entry = self.axes_label()
+        self.name: Entry = self.options_entry()
+        self.id: Entry = self.options_entry()
+        self.power: Entry = self.options_entry()
+        self.buttons: Entry = self.options_entry()
+        self.axes: Entry = self.options_entry()
         
+        self.actions_label = Label(self, text="Quick Actions", font=("Z003", 15, "bold"))
         self.joys_updated: Button = self.but_refresh()
+        self.dev_button: Button = self._button_Open_Dev()
+        
+        # Command Prompt
+        self.frame_CMD_promt = Frame_CMD(self)
+        self.frame_CMD_promt.config(bg='black')
         
         # Creamos los objetos
         self.init_gui()
@@ -1252,11 +1218,16 @@ class FrameOptions(Frame):
         self.axes.grid(row=12,column=1)
         
         # - BUTTONS - #
-        self.joys_updated.grid(row=13, column=0, columnspan=2, pady=2)
+        self.actions_label.grid(row=13, column=0, columnspan=2, pady=2)
+        self.joys_updated.grid(row=14, column=0, columnspan=2)
+        self.dev_button.grid(row=15,column=0,columnspan=2)
+        
+        self.frame_CMD_promt.grid(row=14,column=2, columnspan=2, rowspan=2,sticky='nsew')
         
         # - INFO AND HELP - #
 
     # - JOYSTICKS AND NETWORK - #
+    # - VISUALS - #
     # - TITULO - #
     def _Create_title(self) -> Label:
         return Label(
@@ -1266,60 +1237,15 @@ class FrameOptions(Frame):
             font=("Magneto", 20, "bold")
         )
     
-    # - ELEMENTOS VISUALES IPs - #
-    def _Ip_Opt_Label(self) -> Label:
-        return Label(self, text="Actual IPs", font=("Z003", 15, "bold"))
-    
-    def _hostIP_Label(self) -> Label:
-        return Label(self, 
-                     text="        Host Ip: ", 
-                     font=("Z003", 15))
-
-    def _espIP_Label(self) -> Label:
-        return Label(self, 
-                     text="     ESP32 Ip: ", 
-                     font=("Z003", 15))
-    
-    def _raspIP_Label(self) -> Label:
-        return Label(self, 
-                     text="Raspberry Ip: ", 
-                     font=("Z003", 15))    
-    
-    # - Mostrar Ips correspondientes -#
-    def _ip_host(self) -> Entry:
-        return Entry(self, 
-                     font=('consolas', 14),  
-                     justify='left',
-                     state='readonly',
-                     width=40)
-                     
-    def _ip_esp_in(self) -> Entry:
+    # - Valores - #
+    def options_entry(self) -> Entry:
         return Entry(self, 
                      font=('consolas', 14),  
                      justify='left',
                      state='readonly',
                      width=40)
     
-    def _ip_rasp_in(self) -> Entry:
-        return Entry(self, 
-                     font=('consolas', 14),  
-                     justify='left',
-                     state='readonly',
-                     width=40)
-
-    # - ELEMENTOS VISUALES SERVIDOR - #
-    def _Server_tag(self) -> Label:
-        return Label(self, 
-                     text="URL stream: ", 
-                     font=("Z003", 15))
-    
-    def _server_url(self) -> Entry:
-        return Entry(self, 
-                     font=('consolas', 14),  
-                     justify='left',
-                     state='readonly',
-                     width=40)
-    
+    # - OPERATIVO - #
     # - Reinicamos valores - #
     def update_configs_connect(self):
         self.esp_ip.config(state='normal')
@@ -1347,77 +1273,6 @@ class FrameOptions(Frame):
         self.server_URL.insert(0, server_stream)  # Insertar el nuevo mensaje
         self.server_URL.config(state='readonly')
     
-    # -- CONFIG CONTROLS -- #
-    def _controls_title_(self) -> Label:
-        return Label(
-            master=self,
-            text='Joystick',
-            foreground='black',
-            font=("Z003", 15, "bold")
-        )
-    
-    # - Etiquetado - #
-    def _joy_name_(self) -> Label:
-        return Label(self, 
-                     text="         Name: ", 
-                     font=("Z003", 15))
-    
-    def _joy_pc_id_(self) -> Label:
-        return Label(self, 
-                     text="     ID on PC: ", 
-                     font=("Z003", 15))
-        
-    def _joy_power_(self) -> Label:
-        return Label(self, 
-                     text="       Power: ", 
-                     font=("Z003", 15))
-        
-    def _joy_buttons_(self) -> Label:
-        return Label(self, 
-                     text="Total Buttons: ", 
-                     font=("Z003", 15))
-        
-    def _joy_axes_(self) -> Label:
-        return Label(self, 
-                     text="   Total Axes: ", 
-                     font=("Z003", 15))
-        
-    # - Valores - #
-    def name_label(self) -> Entry:
-        return Entry(self, 
-                     font=('consolas', 14),  
-                     justify='left',
-                     state='readonly',
-                     width=40)
-    
-    def id_label(self) -> Entry:
-        return Entry(self, 
-                     font=('consolas', 14),  
-                     justify='left',
-                     state='readonly',
-                     width=40)
-    
-    def power_label(self) -> Entry:
-        return Entry(self, 
-                     font=('consolas', 14),  
-                     justify='left',
-                     state='readonly',
-                     width=40)
-    
-    def buts_label(self) -> Entry:
-        return Entry(self, 
-                     font=('consolas', 14),  
-                     justify='left',
-                     state='readonly',
-                     width=40)
-        
-    def axes_label(self) -> Entry:
-        return Entry(self, 
-                     font=('consolas', 14),  
-                     justify='left',
-                     state='readonly',
-                     width=40)
-    
     # - BOTONES - #
     def but_refresh(self) -> Button:
         return Button(self,
@@ -1425,8 +1280,7 @@ class FrameOptions(Frame):
                       command=self.get_joy_stats,
                       text='Refresh Control',
                       font=('Z003', 15, 'bold'))
-    
-    # - OPERATIVO - #
+    # - Obtenemos los valores del control - #
     def get_joy_stats(self):
         joysticks = ps4.refresh_joys()
         
@@ -1479,6 +1333,18 @@ class FrameOptions(Frame):
         self.axes.delete(0, 'end')  # Borrar el contenido anterior
         self.axes.insert(0, axes)  # Insertar el nuevo mensaje
         self.axes.config(state='readonly')
+    
+    # - Open web debugger - #
+    def _button_Open_Dev(self) -> Button:
+        return Button(self, 
+                      text='Open Web Debugger', 
+                      font=("Z003", 15, 'bold'),
+                      width=40,
+                      command= self.open_debugger)
+    # - Abrimos el navegador - #
+    def open_debugger(self):
+        nav1 = webbrowser.get()
+        nav1.open(f"http://{ip}:1880/ui")
            
 # ---- Clase ventana de WebControl ---- #
 class FrameWebControl(Frame):
