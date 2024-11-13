@@ -5,12 +5,13 @@ import time
 
 from SerialCom import serial_sensor
 
-# - Inicializacion de socket - #
-SOCKET_PATH = '/tmp/uds_socket'
+# Ruta del socket en el sistema de archivos
+SOCKET_PATH = "/tmp/uds_socket"
 
-# Eliminamos el socket si ya existe
-if os.path.exists(SOCKET_PATH):
-    os.remove(SOCKET_PATH)
+# Create the Unix socket client
+client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+# Connect to the server
+client.connect(SOCKET_PATH)
 
 # - Obtener todos los ports - #
 ports = serial_sensor.find_available_serial_ports()
@@ -40,62 +41,77 @@ def connect_serial_device() -> None:
         
     except ValueError:
         print('Invalid baudrate specified')
+            
+# - Verificamos conexion - #
+def check_connections(device: serial_sensor.SerialSensor):
+    # - Initial ping  - #
+    atempts = 0
+    correct = 0
+    incorrect = 0
+    print(f'Checking Serial connection...')
+    
+    while atempts != 4:
+        time.sleep(1)
+        test_ans = device.send("A ")
+        #print(f'Received from test: {test_ans}')
         
-    """finally:
-        if 'serial_device' in locals() and serial_device.is_open():
-            serial_device.close()
-            print("Serial device closed.")"""
+        if test_ans is None:
+            print(f'Attempt {atempts} of 4 failed. Retrying in 1 sec...')
+            incorrect += 1
+        else:
+            print(f'Attempt {atempts} of 4 succesfull. Retrying in 1 sec...')
+            correct += 1
+        atempts += 1
+    
+    if correct == 4 and incorrect == 0:
+        print(f'{atempts} of 4 succesfull... Connection Ok')
+        return 'Ok'
+    
+    if correct != 4 and incorrect > 0:
+        print(f'{atempts} of 4 succesfull... Connection unstable')
+        return 'Unstable'
+
+    if correct == 0 and incorrect == 4: 
+        print(f'{atempts} of 4 succesfull... Connection Unsuccessful')
+        return 'Unsuccessful'
 
 if __name__ == "__main__":
     # - Verifcacion de puerto y dispositivo serial - #
     if ports:
         device = connect_serial_device()
         if device:
-            # - Initial ping in func? - #
-            atempts = 0
-            correct = 0
-            print(f'Checking Serial connection...')
+            test1 = check_connections(device=device)
             
-            while atempts != 4:
-                time.sleep(0.5)
-                test_ans = device.send("A ")
-                #print(f'Received from test: {test_ans}')
-                
-                if test_ans is None:
-                    print(f'Attempt {atempts} of 4 failed. Retrying...')
-                else:
-                    print(f'Attempt {atempts} of 4 succesfull. Retrying...')
-                    correct += 1
-                atempts += 1
-            
-            if correct == 4:
-                print(f'{atempts} of 4 succesfull... Connection Ok')
-                
-            # - Socket - #
-            with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as server_socket:
-                server_socket.bind(SOCKET_PATH)
-                print("Servidor listo para recibir mensajes...")
-                
+            # Lectura de serial y recepcion por socket   
+            while True:
                 try:
-                    while True:
-                        # Recibimos el mensaje y la dirección del cliente
-                        data, client_address = server_socket.recvfrom(1024)
-                        user_in = data.decode()
-                        print(f"Message rom socket: {user_in}")
-                        
-                        # Enviamos por serial
-                        if user_in:
+                    #while True:
+                    # Recibimos el mensaje y la dirección del cliente
+                    data, _ = client.recvfrom(1024)
+                    user_in = data.decode()
+                    print(f"Message from socket: {user_in}")
+                    
+                    # Enviamos por serial
+                    if user_in:
+                        if user_in == 'esp.test ':
+                             results = check_connections(device=device)
+                             print(results)
+                        else:
                             ans = device.send(user_in)
-                            print(f'Recieved from serial: {ans}')
+                            x = f'{ans}'
+                            print(x)
+                            client.sendall(x.encode())
+                    else:
+                        TS_Data = device.send('data ')
+                        print(TS_Data)
                                         
                 # Hasta ser interrumpidos por el teclado
                 except KeyboardInterrupt:
                     print("\nCommunication terminated by user.")
                     print("\nClosing local Socket server.")
-                    
-                finally:
+
                     # Eliminamos el socket del sistema de archivos y Cerramos objeto tipo serial
-                    os.remove(SOCKET_PATH)
+                    client.close()
                     if device and device.is_open():
                         device.close()
                         print("Serial device closed.")

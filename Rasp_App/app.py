@@ -63,7 +63,7 @@ def iniciar_Mqtt():
     
 # 3)  Conexion serial a ESP32 por puerto USB 
 def iniciar_Serial():
-    print("Starting serial comunications...")
+    print("Starting serial comunications...\n")
     try:
         proc = subprocess.Popen(["python3", "./start_serial_com.py"])
         return proc
@@ -135,10 +135,27 @@ def send_response(cmd_in):
 # - Aplicacion principal basada en comandos -#
 if __name__ == "__main__":
     # - Inicialización - #
-    print(f"MAPI-Tenshi Robot. Software Version 1.0\nDesarrollado en Santiago de Queretaro, México. 2024\n")
+    print(f"MAPI-Tenshi Robot. Software Version 1.0\nDeveloped in Santiago de Queretaro, Mexico. 2024\n")
     ip = get_ip()
-    print(f"Actual IP: {ip}")
+    print(f"Actual IP: {ip}\n")
     url_stream = f"http://{ip}:8000/stream.mjpg"
+    
+    # - Socket - #
+    # Ruta del archivo de socket
+    SOCKET_PATH = '/tmp/uds_socket'
+    
+    # Eliminamos el socket del cliente si ya existe
+    try:
+        os.unlink(SOCKET_PATH)
+    except OSError:
+        if os.path.exists(SOCKET_PATH):
+            raise
+    
+    # Create the Unix socket server
+    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    
+    # Bind the socket to the path
+    server.bind(SOCKET_PATH)
 
     # -- SECUENCIA DE INICIALZIACION -- #  
     # - MQTT - #
@@ -151,69 +168,107 @@ if __name__ == "__main__":
     transmision_proc = iniciar_transmision()
     print(f"Video stream available in url: {url_stream}\n")
     
-    # - Socket - #
-    # Ruta del archivo de socket
-    SOCKET_PATH = '/tmp/uds_socket'
-    with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as client_socket:
-        last_processed_command = ''
+    # Listen for incoming connections
+    server.listen(1)
+    print('Unix Socket Server listening...\n')
     
-        # - Interfaz de consola - #
-        while True:
-            comando = mqtt_client.last_message
+    connection, client_address = server.accept()
+    print('Connection from', client_address)
+    
+    last_processed_command = ''
+    
+    # - Interfaz de consola - #
+    while True:
+        comando = mqtt_client.last_message
 
-            if comando != last_processed_command:
-                # Verifcamos si el comadno es el mismo 
-                last_processed_command = comando
-
-                # - Comandos principales - #
-                if comando == 'stop.MQTT':
-                    mqtt_client.stop() 
-                    send_response('Mqtt Stopped')
-
-                elif comando == 'stop.serial':
-                    detener_proceso(serial_proc)
-                    send_response('Serial Stopped')
-
-                elif comando == 'stop.transmision':
-                    detener_proceso(transmision_proc)
-                    send_response('Transmission Stopped')
-
-                elif comando == 'info.stream':
-                    send_response(url_stream)
-
-                # - ESP commands - #
-                elif comando == 'esp.info':
-                        # Enviamos un mensaje al servidor
-                        message = "esp.info "
-                        client_socket.sendto(message.encode(), SOCKET_PATH)
-                        print("Mensaje 'esp.info' enviado al servidor.")
-
-                # - Comandos auxilaires - #
-                elif comando == 'help':
-                    help()
-                elif comando == 'ping':
-                    send_response(pong(ip, ip_host))
-
-                elif comando == 'info':
-                    send_response('MAPI-Tenshi R01 - Run Stable V1.0')
-
-                elif comando == 'save.local':
-                    save_cam(url_stream)
-                    send_response('Image saved locally in: /home/Azuki/Pictures')
-
-                # - Comando de salida - #
-                elif comando == 'exit':
-                    print("Leaving program...")
-                    #detener_proceso(mqtt_proc)
-                    detener_proceso(serial_proc)
-                    detener_proceso(transmision_proc)
-                    send_response('Leaving program...')
-
-                    print("\nThanks for choosing MAPI software.inc")
-                    break
-                else:
-                    send_response('Command not found')
-                    print(f"Command not found. Use help to list all commands.\n")
-
+        if comando != last_processed_command:
+            # Verifcamos si el comadno es el mismo 
+            last_processed_command = comando
+            
+            # - Comandos principales - #
+            if comando == 'stop.MQTT':
+                mqtt_client.stop() 
+                send_response('Mqtt Stopped')
+                
+            elif comando == 'stop.serial':
+            #    detener_proceso(serial_proc)
+                send_response('Serial Stopped')
+                
+            elif comando == 'stop.transmision':
+                detener_proceso(transmision_proc)
+                send_response('Transmission Stopped')
+                
+            elif comando == 'info.stream':
+                send_response(url_stream)
+                
+            # - ESP commands - #
+            elif comando == 'esp.info':
+                # Enviamos un mensaje al servidor
+                try:
+                    # Send a response back to the client
+                    response = "esp.info "
+                    connection.sendall(response.encode())
+                    print("Mensaje 'esp.info' sent to Client.")
+                    
+                    # receive data from the client
+                    data = connection.recv(1024)
+                    if data:
+                        print('Received data:', data.decode())
+                    else:
+                        print("No data received from client.")
+                        break
+                        
+                except KeyboardInterrupt:
+                    print("\nCommunication terminated by user in main.")
+                
+            elif comando == 'esp.status':
+                # Enviamos un mensaje al servidor
+                try:
+                    # Send a response back to the client
+                    response = 'esp.status '
+                    connection.sendall(response.encode())
+                    print("Mensaje 'esp.status' sent to Client.")
+                    
+                    # receive data from the client
+                    data = connection.recv(1024)
+                    if data:
+                        print('Received data:', data.decode())
+                    else:
+                        print("No data received from client.")
+                        break
+                        
+                except KeyboardInterrupt:
+                    print("\nCommunication terminated by user in main.")
+                    
+            # - Comandos auxilaires - #
+            elif comando == 'help':
+                help()
+                
+            elif comando == 'ping':
+                send_response(pong(ip, ip_host))
+                
+            elif comando == 'info':
+                send_response('MAPI-Tenshi R01 - Run Stable V1.0')
+                
+            elif comando == 'save.local':
+                save_cam(url_stream)
+                send_response('Image saved locally in: /home/Azuki/Pictures')
+                
+            # - Comando de salida - #
+            elif comando == 'exit':
+                send_response('Leaving program...')
+                print("Leaving program...")
+            
+                connection.close()
+                os.unlink(SOCKET_PATH)
+                
+                #detener_proceso(mqtt_proc)
+                detener_proceso(serial_proc)
+                detener_proceso(transmision_proc)
+                print("\nThanks for choosing MAPI software.inc")
+                break
             else:
-                time.sleep(0.5)
+                send_response('Command not found')
+                print(f"Command not found. Use help to list all commands.\n")
+        else:
+            time.sleep(0.5)
