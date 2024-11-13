@@ -2,7 +2,7 @@
 // Importa las librerias WiFi
 #include <WiFi.h>
 #include <PubSubClient.h>
-#include <ESP Servo.h>
+#include <ESP32Servo.h>
 
 // importa la Librerias DHT
 #include <DHT.h>    
@@ -394,13 +394,6 @@ void loop() { // Datos que recibimos del ESP32
           SPEED = gps.speed.kmph();
           speed = String(SPEED,3);
 
-          Serial.print("Latitud: ");
-          Serial.print(latitude);
-          Serial.print("   Longitud: ");
-          Serial.print(longitude);
-          Serial.print("   Velocidad: ");
-          Serial.println(speed);
-
           MSG="";
           MSG = MSG + "https://www.google.com/maps/search/?api=1&query=";
           MSG = MSG + latitude;
@@ -435,17 +428,17 @@ void loop() { // Datos que recibimos del ESP32
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
     
-    Serial.print("Temperatura: ");  Serial.print(t);
-    Serial.println("Humedad: "); Serial.print(h);
-    Serial.println("Distancia 1: "); Serial.print(distance);
-    Serial.println("Distancia 2: "); Serial.print(distance2);
-    Serial.println("Col State 1: "); Serial.print(state1);
-    Serial.println("Col State 2: "); Serial.print(state2);
-    Serial.println("Angulo X: "); Serial.print(Angle[0]);
-    Serial.println("Angulo Y: "); Serial.print(Angle[1]);
-    Serial.println("Angulo Z: "); Serial.print(Angle[2]);
-    Serial.println("Latitud: "); Serial.print(latitude);
-    Serial.println("Longitud: "); Serial.print(longitude);
+    Serial.println("Temperatura: " + String(t));
+    Serial.println("Humedad: " + String(h));
+    Serial.println("Distancia 1: " + String(distance));
+    Serial.println("Distancia 2: " + String(distance2));
+    Serial.println("Col State 1: " + String(state1));
+    Serial.println("Col State 2: "  + String(state2));
+    Serial.println("Angulo X: " + String(Angle[0]));
+    Serial.println("Angulo Y: " + String(Angle[1]));
+    Serial.println("Angulo Z: " + String(Angle[2]));
+    Serial.println("Latitud: " + String(latitude));
+    Serial.println("Longitud: " + String(longitude));
 
     delay(500);
 
