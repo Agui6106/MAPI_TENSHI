@@ -47,15 +47,15 @@ int duty_cycle = 200; //seria el 100 porciento, registro de 8 bits
 Servo myServo;
 
 // Configuración Sensor Ultrasónico
-#define trigPin 16    // Pin de Trigger
-#define echoPin 17    // Pin de Echo
+#define trigPin 18     // Pin de Trigger
+#define echoPin 19    // Pin de Echo
 long duration;
 float distance;
 
 // Configuración Sensor Ultrasónico 2
 #define trigPin2 26   // Pin de Trigger
 #define echoPin2 27   // Pin de Echo
-long duration2;
+long duration2; 
 float distance2;
 
 // Coniguración Sensor Infrarrojo 1
@@ -260,7 +260,7 @@ void setup() {
     Wire.endTransmission(true);
 
     // - Inicializacion de GPS - //
-    Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);  // Configuramos Serial con los pines RX y TX);
+    Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);  // Configuramos Serial con los pines RX y TX);
 
     // Conectar a la red Wi-Fi
     WiFi.begin(ssid, password);
@@ -394,13 +394,6 @@ void loop() { // Datos que recibimos del ESP32
           SPEED = gps.speed.kmph();
           speed = String(SPEED,3);
 
-          Serial.print("Latitud: ");
-          Serial.print(latitude);
-          Serial.print("   Longitud: ");
-          Serial.print(longitude);
-          Serial.print("   Velocidad: ");
-          Serial.println(speed);
-
           MSG="";
           MSG = MSG + "https://www.google.com/maps/search/?api=1&query=";
           MSG = MSG + latitude;
@@ -435,17 +428,17 @@ void loop() { // Datos que recibimos del ESP32
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
     
-    Serial.print("Temperatura: ");  Serial.print(t);
-    Serial.println("Humedad: "); Serial.print(h);
-    Serial.println("Distancia 1: "); Serial.print(distance);
-    Serial.println("Distancia 2: "); Serial.print(distance2);
-    Serial.println("Col State 1: "); Serial.print(state1);
-    Serial.println("Col State 2: "); Serial.print(state2);
-    Serial.println("Angulo X: "); Serial.print(Angle[0]);
-    Serial.println("Angulo Y: "); Serial.print(Angle[1]);
-    Serial.println("Angulo Z: "); Serial.print(Angle[2]);
-    Serial.println("Latitud: "); Serial.print(latitude);
-    Serial.println("Longitud: "); Serial.print(longitude);
+    Serial.println("Temperatura: " + String(t));
+    Serial.println("Humedad: " + String(h));
+    Serial.println("Distancia 1: " + String(distance));
+    Serial.println("Distancia 2: " + String(distance2));
+    Serial.println("Col State 1: " + String(state1));
+    Serial.println("Col State 2: "  + String(state2));
+    Serial.println("Angulo X: " + String(Angle[0]));
+    Serial.println("Angulo Y: " + String(Angle[1]));
+    Serial.println("Angulo Z: " + String(Angle[2]));
+    Serial.println("Latitud: " + String(latitude));
+    Serial.println("Longitud: " + String(longitude));
 
     delay(500);
 
