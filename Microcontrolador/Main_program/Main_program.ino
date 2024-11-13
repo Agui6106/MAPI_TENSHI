@@ -2,7 +2,7 @@
 // Importa las librerias WiFi
 #include <WiFi.h>
 #include <PubSubClient.h>
-#include <ESP32Servo.h>
+#include <ESP Servo.h>
 
 // importa la Librerias DHT
 #include <DHT.h>    
@@ -47,15 +47,15 @@ int duty_cycle = 200; //seria el 100 porciento, registro de 8 bits
 Servo myServo;
 
 // Configuración Sensor Ultrasónico
-#define trigPin 16    // Pin de Trigger
-#define echoPin 17    // Pin de Echo
+#define trigPin 18     // Pin de Trigger
+#define echoPin 19    // Pin de Echo
 long duration;
 float distance;
 
 // Configuración Sensor Ultrasónico 2
 #define trigPin2 26   // Pin de Trigger
 #define echoPin2 27   // Pin de Echo
-long duration2;
+long duration2; 
 float distance2;
 
 // Coniguración Sensor Infrarrojo 1
@@ -260,7 +260,7 @@ void setup() {
     Wire.endTransmission(true);
 
     // - Inicializacion de GPS - //
-    Serial2.begin(115200, SERIAL_8N1, RXD2, TXD2);  // Configuramos Serial con los pines RX y TX);
+    Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);  // Configuramos Serial con los pines RX y TX);
 
     // Conectar a la red Wi-Fi
     WiFi.begin(ssid, password);
