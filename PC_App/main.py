@@ -10,6 +10,7 @@ from tkinter import Entry
 from tkinter import filedialog
 from tkinter import LabelFrame
 from tkinter import Scale
+from tkinter import Text
 
 from tkinter.ttk import Notebook
 
@@ -354,6 +355,9 @@ class Frame_Main_MQTT_Control(Frame):
         self.empty_space_positions = Label(self.positions_frame, text=" ", font=('Z003', 15, 'bold'))
         self.empty_space_recv = Label(self.recv_data_frame, text=" ", font=('Z003', 15, 'bold'))
         self.empty_space_recv2 = Label(self.recv_data_frame, text=" ", font=('Z003', 15, 'bold'))
+        self.empty_space_recv3 = Label(self.recv_data_frame, text=" ", font=('Z003', 15, 'bold'))
+        self.empty_space_recv4 = Label(self.recv_data_frame, text=" ", font=('Z003', 15, 'bold'))
+        
         
         # -- DATA ELEMENTS -- #
         # Titulos
@@ -398,7 +402,7 @@ class Frame_Main_MQTT_Control(Frame):
 
         # - LABEL FRAMES -#
         self.vital_Data_frame.grid(row=1, column=0, columnspan=3, sticky="nsew", ipadx=10, pady=10) # 10x3
-        self.recv_data_frame.grid(row=2, column=0, sticky="nsew",)
+        self.recv_data_frame.grid(row=2, column=0, sticky="nsew", )
         self.positions_frame.grid(row=3, column=0, sticky="nsew", ) # 7x2
         
     def init_gui_of_VitalData(self) -> None:
@@ -458,34 +462,36 @@ class Frame_Main_MQTT_Control(Frame):
         
     def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
-        self.empty_space_recv.grid(row=0,column=0, padx=35)
-        self.empty_space_recv2.grid(row=0,column=7, padx=35)
+        self.empty_space_recv.grid(row=0,column=0, padx=40)
+        self.empty_space_recv2.grid(row=0,column=10, padx=40)
+        self.empty_space_recv3.grid(row=0,column=3, padx=17)
+        self.empty_space_recv4.grid(row=0,column=7, padx=17)
         # Titulos
-        self.dist_front_title.grid(row=0, column=1, columnspan=2, padx=10)
-        self.dist_back_title.grid(row=0, column=3, columnspan=2, padx=30)
-        self.sensors_title.grid(row=0, column=5, columnspan=4,  padx=20)
+        self.dist_front_title.grid(row=0, column=1, columnspan=2,)
+        self.dist_back_title.grid(row=0, column=4, columnspan=2,)
+        self.sensors_title.grid(row=0, column=8, columnspan=2, )
         
         # Etiquetas
         self.frontal_Ultr.grid(row=1, column=1, pady=10,)
         self.frontal_Infr.grid(row=2, column=1, )
         
-        self.back_Ultr.grid(row=1,column=3, padx=10)
-        self.back_Infr.grid(row=2,column=3)
+        self.back_Ultr.grid(row=1,column=4)
+        self.back_Infr.grid(row=2,column=4)
         
-        self.temp_label.grid(row=1,column=5, padx=20)
-        self.Hum_label.grid(row=2,column=5)
-        self.Gas_label.grid(row=3,column=5)
+        self.temp_label.grid(row=1,column=8,)
+        self.Hum_label.grid(row=2,column=8)
+        self.Gas_label.grid(row=3,column=8, pady=10)
         
         # Data
         self.data_Dist_UltrF.grid(row=1, column=2)
         self.data_Dist_InfrF.grid(row=2, column=2)
-        self.data_Dist_UltrB.grid(row=1,column=4)
-        self.data_Dist_InfrB.grid(row=2,column=4)
+        self.data_Dist_UltrB.grid(row=1,column=5)
+        self.data_Dist_InfrB.grid(row=2,column=5)
         
-        self.data_temp.grid(row=1,column=6)
-        self.data_Hum.grid(row=2,column=6)
+        self.data_temp.grid(row=1,column=9)
+        self.data_Hum.grid(row=2,column=9)
         
-        self.gas_levels.grid(row=3,column=6)
+        self.gas_levels.grid(row=3,column=9)
         
     # - Atributos y elementos de aplicacion - #
     # - TITULO - #
@@ -564,8 +570,8 @@ class Frame_Main_MQTT_Control(Frame):
     
     # - Positions - #
     def launch_GM_Butt(self) -> Button:
-        return Button(self.positions_frame, width=30,
-                      font=('Z003', 13, 'bold'), text="Open on Google Maps",
+        return Button(self.positions_frame, width=40,
+                      font=('Z003', 15, 'bold'), text="Open on Google Maps",
                       command=self.get_and_launch_MAPS)
     # Obtener las coordenadas en google maps
     def get_and_launch_MAPS(self):
@@ -573,9 +579,9 @@ class Frame_Main_MQTT_Control(Frame):
     
     # - Data - #    
     def ultr_label(self) -> Label:
-        return Label(self.recv_data_frame, text="Ultrasonic:", font=('Z003', 15, 'bold'))
+        return Label(self.recv_data_frame, text=" Distance:", font=('Z003', 15, 'bold'))
     def infr_label(self) -> Label:
-        return Label(self.recv_data_frame, text="    Infrared:", font=('Z003', 15, 'bold'))
+        return Label(self.recv_data_frame, text="Collision:", font=('Z003', 15, 'bold'))
     def data_label(self) -> Label:
         return Label(self.recv_data_frame, text="0000", font=('Z003', 15,))
     
@@ -696,8 +702,8 @@ class Frame_Main_MQTT_Control(Frame):
             self.Y_Data.config(text=value[7])
             
             # Coordenadas
-            self.Latitud_Data.config(text=value[8])
-            self.Longitud_Data.config(text=value[9])
+            self.Latitud_Data.config(text=value[9])
+            self.Longitud_Data.config(text=value[10])
             
         # Verificar respuesta en lampara
         if self.mensaje_Perifs:
@@ -1069,7 +1075,7 @@ class Frame_CMD(Frame):
                      background='black',
                      foreground='white',
                      font=('consolas', 14),
-                     width=57)
+                     width=60)
         
     def _comman_send_button(self) -> Button:
         return Button(self,
@@ -1118,7 +1124,7 @@ class Frame_CMD(Frame):
                      font=('consolas', 14),  
                      justify='left',
                      state='readonly',
-                     width=57)
+                     width=60)
     
     # - Operativo - #
     def update_cmd_output(self):
@@ -1146,6 +1152,7 @@ class FrameOptions(Frame):
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
+        self.notebook_set = self._create_settings_Notebook()
         
         # - IPs - #
         self.content =     Label(self, text="Actual IPs", font=("Z003", 15, "bold"))
@@ -1176,7 +1183,7 @@ class FrameOptions(Frame):
         self.buttons: Entry = self.options_entry()
         self.axes: Entry = self.options_entry()
         
-        self.actions_label = Label(self, text="Quick Actions", font=("Z003", 15, "bold"))
+        self.actions_label = Label(self, text="Quick Actions", font=("Magneto", 20, "bold"))
         self.joys_updated: Button = self.but_refresh()
         self.dev_button: Button = self._button_Open_Dev()
         
@@ -1193,6 +1200,7 @@ class FrameOptions(Frame):
     def init_gui(self)-> None:
         # - JOYSTICKS AND NETWORK - #
         self.title.grid(row=0, column=0, columnspan=2)
+        self.notebook_set.grid(row=0,column=2, rowspan=13,padx=20 ,sticky='nsew')
         
         # - IP - #
         # - TItulos - #
@@ -1229,7 +1237,7 @@ class FrameOptions(Frame):
         self.joys_updated.grid(row=14, column=0, columnspan=2)
         self.dev_button.grid(row=15,column=0,columnspan=2)
         
-        self.frame_CMD_promt.grid(row=14,column=2, columnspan=2, rowspan=2,sticky='nsew')
+        self.frame_CMD_promt.grid(row=14,column=2, rowspan=2, padx=20, sticky='nsew')
         
         # - INFO AND HELP - #
 
@@ -1243,6 +1251,34 @@ class FrameOptions(Frame):
             foreground='black',
             font=("Magneto", 20, "bold")
         )
+    
+    # - Notebook - #
+    def _create_settings_Notebook(self):
+        # Creación del Notebook y sus pestañas
+        notebook = Notebook(self)
+        tab1 = Frame(notebook)
+        tab2 = Frame(notebook)
+        notebook.add(tab1, text='Help')
+        notebook.add(tab2, text='About')
+        
+        # - Titulos - #
+        Label(tab1, text="Commands", foreground='black', font=("Magneto", 20, "bold")).grid(row=0, 
+                                                                                            column=0, 
+                                                
+                                                                                            padx=15
+                                                                                            )
+        
+        Label(tab2, text="About us", foreground='black', font=("Magneto", 20, "bold")).grid(row=0, 
+                                                                                            column=0, 
+                                                                                            columnspan=2,
+                                                                                            padx=15
+                                                                                            )
+        
+        # - Text - #
+        Text(tab1, width=110,height=20).grid(row=1,column=0, padx=15)
+        
+        
+        return notebook  # Retornar el Notebook correctamente
     
     # - Valores - #
     def options_entry(self) -> Entry:
