@@ -1,0 +1,22 @@
+#----------------------------------------------------------------------------------------#
+# ------------------------------ List of aviable commands ------------------------------ #
+#----------------------------------------------------------------------------------------#
+
+You can copy and paste the commands into the command prompt:
+
+    # ------------------------------- Stopping Processes ------------------------------- #
+    stop.MQTT           - Stops MQTT communications in the robot.
+    stop.serial         - Stops serial communications in the robot.
+    stop.transmission   - Stops the camera stream of the robot.
+
+    # ----------------------------- Information and Status ----------------------------- #
+    info                - Gets the current version of the robot software.
+    info.stream         - Gets the URL of the camera stream.
+    esp.info            - Retrieves information from the microcontroller.
+    esp.status          - Checks serial communications with the microcontroller.
+
+    # ----------------------------------- Utilities ------------------------------------ #
+    help                - Prints all commands in the robot terminal.
+    ping                - Performs a ping between the app and the robot.
+    save.local          - Saves a photo in the directory: /home/Azuki/Pictures.
+    exit                - Closes the robot software.
