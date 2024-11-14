@@ -249,19 +249,19 @@ class Frame_Main_MQTT_Control(Frame):
         
         # - Imagenes de direccion - #
         # Arriba
-        GUp= os.path.join(os.path.dirname(__file__), './Directions/Up.png')
+        GUp= os.path.join(os.path.dirname(__file__), './sprites/Directions/Up.png')
         self.GUp = PhotoImage(file=GUp)
         # Abajo
-        GDown= os.path.join(os.path.dirname(__file__), './Directions/Down.png')
+        GDown= os.path.join(os.path.dirname(__file__), './sprites/Directions/Down.png')
         self.GDown = PhotoImage(file=GDown)
         # Izquierda
-        GLeft= os.path.join(os.path.dirname(__file__), './Directions/Left.png')
+        GLeft= os.path.join(os.path.dirname(__file__), './sprites/Directions/Left.png')
         self.GLeft = PhotoImage(file=GLeft)
         # Derecha
-        GRight= os.path.join(os.path.dirname(__file__), './Directions/Right.png')
+        GRight= os.path.join(os.path.dirname(__file__), './sprites/Directions/Right.png')
         self.GRight = PhotoImage(file=GRight)
         # Quieto
-        Still= os.path.join(os.path.dirname(__file__), './Directions/Still.png')
+        Still= os.path.join(os.path.dirname(__file__), './sprites/Directions/Still.png')
         self.Still = PhotoImage(file=Still)
     
         # - Creacion de objetos TKinter - #
@@ -347,10 +347,9 @@ class Frame_Main_MQTT_Control(Frame):
         self.data_Dist_UltrB: Label = self.data_label()
         
         # - INFORMATION - #
-        self.importnat_info = Label(self, text="Info", font=('Z003', 15, 'bold'))
         self.important_info_msg = Text(self, foreground='black',
                                         font=('consolas', 14), 
-                                        width=85,height=5, state='disabled')
+                                        width=85,height=6, state='disabled')
         
         #texto = f'# --------------------------------------------------------------------------------- #'
         texto = f'# --------------------------- Mappi - Tenshi Robot info --------------------------- #'
@@ -484,33 +483,25 @@ class Frame_Main_MQTT_Control(Frame):
         return LabelFrame(
             self,
             text="Vital Data",
-            font=("Magneto", 17,),
+            font=("Z003", 17, 'bold'),
             
         )
     def _create_Pos(self) -> LabelFrame:
         return LabelFrame(
             self,
             text="Actual Positions",
-            font=("Magneto", 17,),
+            font=("Z003", 17, 'bold'),
         )
     def _create_Data(self) -> LabelFrame:
         return LabelFrame(
             self,
             text="General Data",
-            font=("Magneto", 17,),
+            font=("Z003", 17, 'bold'),
             
         )
     
     # - CONTENIDOS SUBFRAMES - #
     # - Vital Data - #
-    # Motors 
-    def _motorX_Data(self) -> Label:
-        #x,y = self.update_Motors_val()
-        return Label(self.vital_Data_frame, font=('Z003', 14), text=f'0000')
-    def _motorY_Data(self) -> Label:
-        #x,y = self.update_Motors_val()
-        return Label(self.vital_Data_frame, font=('Z003', 14), text=f'0000')
-   
     # Slider
     def _create_joystick_slider(self) -> Scale:
         return Scale(self.vital_Data_frame, from_=-1, to=1, 
@@ -1162,6 +1153,7 @@ class FrameOptions(Frame):
         self.actions_label = Label(self, text="Quick Actions", font=("Magneto", 20, "bold"))
         self.joys_updated: Button = self.but_refresh()
         self.dev_button: Button = self._button_Open_Dev()
+        self.TSP_Button: Button = self._button_Open_TSP()
         
         # Command Prompt
         self.frame_CMD_promt = Frame_CMD(self)
@@ -1176,7 +1168,7 @@ class FrameOptions(Frame):
     def init_gui(self)-> None:
         # - JOYSTICKS AND NETWORK - #
         self.title.grid(row=0, column=0, columnspan=2)
-        self.notebook_set.grid(row=0,column=2, rowspan=13,padx=20 ,sticky='nsew')
+        self.notebook_set.grid(row=0,column=2, rowspan=15,padx=20, pady=10 ,sticky='nsew')
         
         # - IP - #
         # - TItulos - #
@@ -1209,14 +1201,15 @@ class FrameOptions(Frame):
         self.axes.grid(row=12,column=1)
         
         # - BUTTONS - #
-        self.actions_label.grid(row=13, column=0, columnspan=2, pady=2)
-        self.joys_updated.grid(row=14, column=0, columnspan=2)
-        self.dev_button.grid(row=15,column=0,columnspan=2)
+        self.actions_label.grid(row=13, column=0, columnspan=2, pady=3)
+        self.joys_updated.grid(row=14, column=0, columnspan=2, pady=3)
+        self.dev_button.grid(row=15,column=0,columnspan=2, pady=3)
+        self.TSP_Button.grid(row=16,column=0, columnspan=2, pady=3)
         
-        self.frame_CMD_promt.grid(row=14,column=2, rowspan=2, padx=20, sticky='nsew')
+        self.frame_CMD_promt.grid(row=15,column=2, rowspan=2, padx=20, sticky='nsew')
         
         # - INFO AND HELP - #
-
+    
     # - JOYSTICKS AND NETWORK - #
     # - VISUALS - #
     # - TITULO - #
@@ -1237,26 +1230,44 @@ class FrameOptions(Frame):
         notebook.add(tab1, text='Help')
         notebook.add(tab2, text='About')
         
-        # - TAB 1 - #
+        # ---------- TAB 1 ---------- #
         # - Titulos - #
         Label(tab1, text="Commands", foreground='black', 
-              font=("Magneto", 20, "bold"), justify='left').grid(row=0, column=0, padx=15,)
-        Label(tab1, text="History", foreground='black', 
-              font=("Magneto", 20, "bold"), justify='left').grid(row=0, column=1, padx=15,)
+              font=("Magneto", 20, "bold"), justify='left',).grid(row=0, column=0, padx=15,)
         
         # - Text - #
-        Text(tab1, width=50,height=20).grid(row=1,column=0, padx=15)
-        Text(tab1, width=50,height=20).grid(row=1,column=1, padx=15)
+        commands = Text(tab1, width=90,height=19,
+                        font=('consolas', 14), state='disabled' )
+
+        commands.grid(row=1,column=0, padx=15)
         
-        # - TAB 2 - #
+        # ---------- TAB 2 ---------- #
         Label(tab2, text="About us", foreground='black', 
               font=("Magneto", 20, "bold")).grid(row=0, column=0, 
                                                  columnspan=2, padx=15)
         
-        Text(tab2, width=100,height=20).grid(row=1,column=1, padx=15)
+        about = Text(tab2, width=90,height=19,
+                        font=('consolas', 14), state='disabled' )
+        about.grid(row=1,column=0, padx=15)
+
+        # Lee el contenido para commands
+        file_commands= os.path.join(os.path.dirname(__file__), './sprites/commands.txt')
+        commands.config(state='normal')
+        try:
+            with open(file_commands, "r") as archivo:
+                contenido = archivo.read()
+                # Inserta el contenido en el Text
+                commands.delete("1.0", 'end')  # Limpia el Text antes de insertar texto
+                commands.insert('end', contenido)
+        except FileNotFoundError:
+            commands.insert('end', "Archivo no encontrado.")
         
+        commands.config(state='disabled')
         
-        return notebook  # Retornar el Notebook correctamente
+        # Lee el contenido para about us
+
+        
+        return notebook 
     
     # - Valores - #
     def options_entry(self) -> Entry:
@@ -1366,6 +1377,18 @@ class FrameOptions(Frame):
     def open_debugger(self):
         nav1 = webbrowser.get()
         nav1.open(f"http://{ip}:1880/ui")
+        
+    # - Open ThingSpeak - #
+    def _button_Open_TSP(self) -> Button:
+        return Button(self, 
+                  text='Open ThingSpeak', 
+                  font=("Z003", 15, 'bold'),
+                  width=40,
+                  command= self.open_TSP)
+    # - Abrimos el navegador - #
+    def open_TSP(self):
+        nav1 = webbrowser.get()
+        nav1.open('https://thingspeak.mathworks.com/channels/2739749')
            
 # ------------------------------------------------------ #
 # -------------- Inicializacion de la app -------------- #
