@@ -38,36 +38,6 @@ import controls.ps4_control as ps4
 # IP Local
 ip = get_ip_Windows()
 
-# - Verificacion de ejecucion de Node-Red - #
-def is_node_red_running():
-    for process in psutil.process_iter(['pid', 'name']):
-        if 'node-red' in process.info['name']:  # Busca node-red en los procesos
-            return True
-    return False
-
-# Inicializacion de Node-RED 
-def start_node_red():
-    if not is_node_red_running():
-        print(f"Node-RED not running. Initializing using {ip} as broker...")
-        os.system('node-red')
-    else:
-        print("Node-RED already running.")
-
-# Función para detener Node-RED
-def stop_node_red():
-    try:
-        # Ejecutar el comando 'taskkill' para detener Node-RED en Windows
-        os.system("taskkill /F /IM node-red.exe")
-        print("Node-RED detenido exitosamente.")
-    except Exception as e:
-        print(f"Error al detener Node-RED: {e}")
-        
-"""if not is_node_red_running():
-    print("Node-RED no está en ejecución. Iniciando...")
-    os.system('node-red')
-else:
-    print("Node-RED ya está en ejecución.")"""
-
 # - Ventan de configuracion inicial - #
 def open_config_window():
     # -- VARIABLES GLOBALES -- #
@@ -156,6 +126,7 @@ def open_config_window():
 
 open_config_window()
 
+# -- MQTT TOPICS -- #
 # - RASP - #
 # Mqtt client Raspberry(ipbroker, puerto, suscribcion, publica)
 mqtt_client = mqtt_coms(ip, 1883, "Rasp/CmdOut", "Rasp/CmdIn")
@@ -178,7 +149,7 @@ mqtt_esp_Perif.start()
 mqtt_esp_Locations = mqtt_coms(ip, 1883, 'ESP/Lat/Long/GX/GY', 'PC/Response')
 mqtt_esp_Locations.start()
 
-# Fecha de hoy
+# - FECHA DE HOY - #
 date = dt.datetime.now()
         
 year = date.year
@@ -349,7 +320,6 @@ class Frame_Main_MQTT_Control(Frame):
         self.empty_space_recv3 = Label(self.recv_data_frame, text=" ", font=('Z003', 15, 'bold'))
         self.empty_space_recv4 = Label(self.recv_data_frame, text=" ", font=('Z003', 15, 'bold'))
         
-        
         # -- DATA ELEMENTS -- #
         # Titulos
         self.dist_front_title = Label(self.recv_data_frame, text="Frontal ", font=('Z003', 15, 'bold'))
@@ -376,6 +346,19 @@ class Frame_Main_MQTT_Control(Frame):
         self.data_Dist_InfrB: Label = self.data_label()
         self.data_Dist_UltrB: Label = self.data_label()
         
+        # - INFORMATION - #
+        self.importnat_info = Label(self, text="Info", font=('Z003', 15, 'bold'))
+        self.important_info_msg = Text(self, foreground='black',
+                                        font=('consolas', 14), 
+                                        width=85,height=5, state='disabled')
+        
+        #texto = f'# --------------------------------------------------------------------------------- #'
+        texto = f'# --------------------------- Mappi - Tenshi Robot info --------------------------- #'
+        
+        self.important_info_msg.config(state='normal')
+        self.important_info_msg.insert('1.0', texto)
+        self.important_info_msg.config(state='disabled')
+        
         # - MQTT - #
         self.get_response()
         # - Obtenemos lso valores del control - #        
@@ -389,12 +372,14 @@ class Frame_Main_MQTT_Control(Frame):
         
     # - Colocamos los elementos visuales - #
     def init_main_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=3)
+        self.title.grid(row=0, column=0,)
 
         # - LABEL FRAMES -#
-        self.vital_Data_frame.grid(row=1, column=0, columnspan=3, sticky="nsew", ipadx=10, pady=10) # 10x3
-        self.recv_data_frame.grid(row=2, column=0, sticky="nsew", )
-        self.positions_frame.grid(row=3, column=0, sticky="nsew", ) # 7x2
+        self.vital_Data_frame.grid(row=1, column=0,  sticky="nsew", ipadx=10, pady=10) # 10x3
+        self.recv_data_frame.grid(row=2, column=0,  sticky="nsew", )
+        self.positions_frame.grid(row=3, column=0,  sticky="nsew", ) # 7x2
+        #self.importnat_info.grid(row=4, column=0, )
+        self.important_info_msg.grid(row=4, column=0, pady=4)
         
     def init_gui_of_VitalData(self) -> None:
         # - CONTENTS VITAL- #
@@ -1256,7 +1241,7 @@ class FrameOptions(Frame):
         # - Titulos - #
         Label(tab1, text="Commands", foreground='black', 
               font=("Magneto", 20, "bold"), justify='left').grid(row=0, column=0, padx=15,)
-        Label(tab1, text="Functions", foreground='black', 
+        Label(tab1, text="History", foreground='black', 
               font=("Magneto", 20, "bold"), justify='left').grid(row=0, column=1, padx=15,)
         
         # - Text - #
@@ -1382,7 +1367,6 @@ class FrameOptions(Frame):
         nav1 = webbrowser.get()
         nav1.open(f"http://{ip}:1880/ui")
            
-    
 # ------------------------------------------------------ #
 # -------------- Inicializacion de la app -------------- #
 # ------------------------------------------------------ #
