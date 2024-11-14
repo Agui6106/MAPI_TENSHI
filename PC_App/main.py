@@ -233,13 +233,9 @@ class App(Frame):
         # Creamos un frame simple para Tab 1
         self.tab1 = Frame(notebook)
         self.tab3 = FrameOptions(notebook)
-        self.tab4 = FrameWebControl(notebook)
-        self.tab5 = FrameAbout(notebook)
         # Agregamos las pestañas al Notebook
         notebook.add(self.tab1, text='Main')
         notebook.add(self.tab3, text='Options')
-        notebook.add(self.tab4, text='Matlab Analysis')
-        notebook.add(self.tab5, text='About')
 
         # - Atributos y elementos de aplicacion - #
         # - TITULO - #
@@ -267,11 +263,6 @@ class App(Frame):
         # Camara procesada
         frame_pros_camera = Frame_Main_Pros_Camera(self.tab1)
         frame_pros_camera.grid(row=2, column=1, sticky='nsew')
-        
-        # Command Prompt
-        #frame_CMD_promt = Frame_CMD(self.tab1)
-        #frame_CMD_promt.grid(row=2,column=0,sticky='nsew')
-        #frame_CMD_promt.config(bg='black')
         
         return notebook
 
@@ -443,27 +434,27 @@ class Frame_Main_MQTT_Control(Frame):
     
     def init_gui_of_Positions(self) -> None:
         # - CONTENTS POSITIONS - #
-        #self.empty_space_positions.grid(row=1, column=0, padx=70)
+        self.empty_space_positions.grid(row=1, column=0, padx=20)
         # Giroscopio
-        self.X_Label.grid(row=1, column=0, pady=5, ipadx=15)
-        self.Y_Label.grid(row=2, column=0, pady=5)
+        self.X_Label.grid(row=1, column=1, pady=5, ipadx=15)
+        self.Y_Label.grid(row=2, column=1, pady=5)
         
-        self.X_Data.grid(row=1,column=1, )
-        self.Y_Data.grid(row=2,column=1, )
+        self.X_Data.grid(row=1,column=2, )
+        self.Y_Data.grid(row=2,column=2, )
         
         # Coordenadas
-        self.Latitud_Label.grid(row=1, column=2, )
-        self.Longitud_Label.grid(row=2,column=2, )
+        self.Latitud_Label.grid(row=1, column=3, )
+        self.Longitud_Label.grid(row=2,column=3, )
         
-        self.Latitud_Data.grid(row=1,column=3, columnspan=2)
-        self.Longitud_Data.grid(row=2,column=3, columnspan=2)
+        self.Latitud_Data.grid(row=1,column=4, columnspan=2)
+        self.Longitud_Data.grid(row=2,column=4, columnspan=2)
         
-        self.Google_maps_But.grid(row=1,column=5, padx=5)
+        self.Google_maps_But.grid(row=1,column=6, padx=20)
         
     def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
-        self.empty_space_recv.grid(row=0,column=0, padx=40)
-        self.empty_space_recv2.grid(row=0,column=10, padx=40)
+        self.empty_space_recv.grid(row=0,column=0, padx=45)
+        #self.empty_space_recv2.grid(row=0,column=10, padx=15)
         self.empty_space_recv3.grid(row=0,column=3, padx=17)
         self.empty_space_recv4.grid(row=0,column=7, padx=17)
         # Titulos
@@ -570,7 +561,7 @@ class Frame_Main_MQTT_Control(Frame):
     
     # - Positions - #
     def launch_GM_Butt(self) -> Button:
-        return Button(self.positions_frame, width=40,
+        return Button(self.positions_frame, width=35,
                       font=('Z003', 15, 'bold'), text="Open on Google Maps",
                       command=self.get_and_launch_MAPS)
     # Obtener las coordenadas en google maps
@@ -1261,21 +1252,23 @@ class FrameOptions(Frame):
         notebook.add(tab1, text='Help')
         notebook.add(tab2, text='About')
         
+        # - TAB 1 - #
         # - Titulos - #
-        Label(tab1, text="Commands", foreground='black', font=("Magneto", 20, "bold")).grid(row=0, 
-                                                                                            column=0, 
-                                                
-                                                                                            padx=15
-                                                                                            )
-        
-        Label(tab2, text="About us", foreground='black', font=("Magneto", 20, "bold")).grid(row=0, 
-                                                                                            column=0, 
-                                                                                            columnspan=2,
-                                                                                            padx=15
-                                                                                            )
+        Label(tab1, text="Commands", foreground='black', 
+              font=("Magneto", 20, "bold"), justify='left').grid(row=0, column=0, padx=15,)
+        Label(tab1, text="Functions", foreground='black', 
+              font=("Magneto", 20, "bold"), justify='left').grid(row=0, column=1, padx=15,)
         
         # - Text - #
-        Text(tab1, width=110,height=20).grid(row=1,column=0, padx=15)
+        Text(tab1, width=50,height=20).grid(row=1,column=0, padx=15)
+        Text(tab1, width=50,height=20).grid(row=1,column=1, padx=15)
+        
+        # - TAB 2 - #
+        Label(tab2, text="About us", foreground='black', 
+              font=("Magneto", 20, "bold")).grid(row=0, column=0, 
+                                                 columnspan=2, padx=15)
+        
+        Text(tab2, width=100,height=20).grid(row=1,column=1, padx=15)
         
         
         return notebook  # Retornar el Notebook correctamente
@@ -1389,71 +1382,6 @@ class FrameOptions(Frame):
         nav1 = webbrowser.get()
         nav1.open(f"http://{ip}:1880/ui")
            
-# ---- Clase ventana de WebControl ---- #
-class FrameWebControl(Frame):
-    def __init__(self, parent, *args, **kwargs):
-        Frame.__init__(self, parent, *args, **kwargs)
-        self.parent = parent
-    
-        # - Creacion de objetos TKinter - #
-        self.title: Label = self._Create_title()
-        self.content: Label = self._content()
-        
-        # Creamos los objetos
-        self.init_gui()
-        
-    # - Colocamos los elementos visuales - #
-    def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2, padx=40)
-        
-        # Añadimos un Label en FrameOne usando grid()
-        self.content.grid(row=1, column=0)
-        
-    # - Atributos y elementos de aplicacion - #
-    # - TITULO - #
-    def _Create_title(self) -> Label:
-        return Label(
-            master=self,
-            text='Titulo Ventana Web Control',
-            foreground='black',
-            font=("Z003", 20, "bold")
-        )
-    
-    def _content(self) -> Label:
-        return Label(self, text="Contenido de la Pestaña 4 (Aqui se abrirar un dcontrol directo MQTT)")
-    
-# ---- Clase ventana de About ---- #
-class FrameAbout(Frame):
-    def __init__(self, parent, *args, **kwargs):
-        Frame.__init__(self, parent, *args, **kwargs)
-        self.parent = parent
-    
-        # - Creacion de objetos TKinter - #
-        self.title: Label = self._Create_title()
-        self.content: Label = self._content()
-        
-        # Creamos los objetos
-        self.init_gui()
-        
-    # - Colocamos los elementos visuales - #
-    def init_gui(self)-> None:
-        self.title.grid(row=0, column=0, columnspan=2, padx=40)
-        
-        # Añadimos un Label en FrameOne usando grid()
-        self.content.grid(row=1, column=0)
-        
-    # - Atributos y elementos de aplicacion - #
-    # - TITULO - #
-    def _Create_title(self) -> Label:
-        return Label(
-            master=self,
-            text='About this software',
-            foreground='black',
-            font=("Z003", 20, "bold")
-        )
-    
-    def _content(self) -> Label:
-        return Label(self, text="Runing App Stable Version 0.2")
     
 # ------------------------------------------------------ #
 # -------------- Inicializacion de la app -------------- #
