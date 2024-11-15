@@ -110,8 +110,8 @@ PubSubClient mqttClient(wifiClient);
 
 // -- Función de callback para mensajes MQTT. Recibimos Datos -- //
 void callback(char* topic, byte* payload, unsigned int length) {      //Datos que mandamos desde la app
-    Serial.print("Mensaje recibido en el tópico: ");
-    Serial.println(topic);
+    //Serial.print("Mensaje recibido en el tópico: ");
+    //Serial.println(topic);
 
     // Cambiar a vool
     String message;
@@ -119,8 +119,8 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
         message += (char)payload[i];
     }
     
-    Serial.print("Mensaje: ");
-    Serial.println(message);
+    //Serial.print("Mensaje: ");
+    //Serial.println(message);
 
     // - Control del Motor A basado en el mensaje - //
     if (message == "Up") {
@@ -192,7 +192,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
 // Funcion de Conectar al broker MQTT
 void reconnect() {
     while (!mqttClient.connected()) {
-        Serial.print("Intentando conectar al broker MQTT...");
+        //Serial.print("Intentando conectar al broker MQTT...");
         if (mqttClient.connect("ESP32Client")) {
             Serial.println("Conectado");
             // Control Motores
@@ -200,9 +200,9 @@ void reconnect() {
             //mqttClient.subscribe("ESP/MotorY");
             mqttClient.subscribe("ESP/Servo");
         } else {
-            Serial.print("Fallido, rc=");
-            Serial.print(mqttClient.state());
-            Serial.println(" Intentando de nuevo en 5 segundos");
+            //Serial.print("Fallido, rc=");
+            //Serial.print(mqttClient.state());
+            //Serial.println(" Intentando de nuevo en 5 segundos");
             delay(5000);
         }
     }
@@ -317,7 +317,7 @@ void loop() { // Datos que recibimos del ESP32
     if (valueInf1 == LOW) {
         //mqttClient.publish("ESP/Infra-1", "collision");
         state1 = "collision";
-        Serial.println("Peligro de colisión inminente. Sending to Broker...");
+        //Serial.println("Peligro de colisión inminente. Sending to Broker...");
     } else if (valueInf1 == HIGH){
       //mqttClient.publish("ESP/Infra-1", "clear");
       state1 = "clear";
@@ -327,7 +327,7 @@ void loop() { // Datos que recibimos del ESP32
     if (valueInf2 == LOW) {
         //mqttClient.publish("ESP/Infra-1", "collision");
         state2 = "collision";
-        Serial.println("Peligro de colisión inminente. Sending to Broker...");
+        //Serial.println("Peligro de colisión inminente. Sending to Broker...");
     } else if (valueInf2 == HIGH){
       //mqttClient.publish("ESP/Infra-1", "clear");
       state2 = "clear";
@@ -379,7 +379,7 @@ void loop() { // Datos que recibimos del ESP32
 
     if (millis() > 5000 && gps.charsProcessed() < 10)
       {
-        Serial.println(F("No GPS detected: check wiring."));
+        //Serial.println(F("No GPS detected: check wiring."));
         while(true);
       }  
       
@@ -401,12 +401,12 @@ void loop() { // Datos que recibimos del ESP32
           MSG = MSG + longitude;
           MSG = MSG + "\n";
           
-          Serial.println(MSG);
+          //Serial.println(MSG);
         }
 
     else
     {
-      Serial.println("INVALID");
+      //Serial.println("INVALID");
     }
     
     // delay(2000);
@@ -423,11 +423,12 @@ void loop() { // Datos que recibimos del ESP32
                      String(Angle[1]) + "°," +
                      String(Angle[2]) + "°," +
                      latitude + "," + 
-                     longitude;
+                     longitude + "\n";
 
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
-    
+    Serial.print(mensaje);
+    /*
     Serial.println("Temperatura: " + String(t));
     Serial.println("Humedad: " + String(h));
     Serial.println("Distancia 1: " + String(distance));
@@ -439,6 +440,7 @@ void loop() { // Datos que recibimos del ESP32
     Serial.println("Angulo Z: " + String(Angle[2]));
     Serial.println("Latitud: " + String(latitude));
     Serial.println("Longitud: " + String(longitude));
+    */
 
     delay(500);
 

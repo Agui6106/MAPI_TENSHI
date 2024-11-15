@@ -688,15 +688,18 @@ class Frame_Main_MQTT_Control(Frame):
             Long = value[10]
             
             # - Llamado de emergencia - #
-            temp = int(value[0])
-            hum = int(value[1])
+            temp = value[0]
+            hum = value[1]
             # Gas
+
+            numeric_temp_value = float(temp.replace("°C", ""))
+            numeric_Hum_value = float(hum.replace("%", ""))
 
             # - Hora actual - #
             hora_actual = dt.datetime.now().strftime("%H:%M:%S")
             Htemp = f'{hora_actual} - [Info]: Danger of fire... Calling firefighters at location {Lat}, {Long}'
             
-            if temp >= 40 and hum <= 20:
+            if numeric_temp_value >= 40 and numeric_Hum_value <= 20:
                 print('Danger of fire... Calling firefighters')
                 self.enters += 1
                 self.important_info_msg.config(state='normal')
