@@ -357,7 +357,20 @@ class Frame_Main_MQTT_Control(Frame):
         self.important_info_msg.config(state='normal')
         self.important_info_msg.insert('1.0', texto)
         self.important_info_msg.config(state='disabled')
+        self.enters = 1
         
+        """hora_actual = dt.datetime.now().strftime("%H:%M:%S")
+        temp = 50
+        hum = 5
+        location = 'xd'
+        Htemp = f'{hora_actual} - [Info]: Danger of fire... Calling firefighters at location {location}'
+        
+        if temp >= 40 and hum <= 20:
+            self.enters += 1
+            self.important_info_msg.config(state='normal')
+            self.important_info_msg.insert(f'{self.enters}.0', Htemp)
+            self.important_info_msg.config(state='disabled')"""
+            
         # - MQTT - #
         self.get_response()
         # - Obtenemos lso valores del control - #        
@@ -671,6 +684,24 @@ class Frame_Main_MQTT_Control(Frame):
             # Coordenadas
             self.Latitud_Data.config(text=value[9])
             self.Longitud_Data.config(text=value[10])
+            Lat = value[9]
+            Long = value[10]
+            
+            # - Llamado de emergencia - #
+            temp = int(value[0])
+            hum = int(value[1])
+            # Gas
+
+            # - Hora actual - #
+            hora_actual = dt.datetime.now().strftime("%H:%M:%S")
+            Htemp = f'{hora_actual} - [Info]: Danger of fire... Calling firefighters at location {Lat}, {Long}'
+            
+            if temp >= 40 and hum <= 20:
+                print('Danger of fire... Calling firefighters')
+                self.enters += 1
+                self.important_info_msg.config(state='normal')
+                self.important_info_msg.insert(f'{self.enters}.0', Htemp)
+                self.important_info_msg.config(state='disabled')
             
         # Verificar respuesta en lampara
         if self.mensaje_Perifs:
