@@ -1,1 +1,19 @@
 #----------------------------------------------------------------------------------------#
+# -------------------------------- About this software --------------------------------- #
+#----------------------------------------------------------------------------------------#
+
+Developed in Santiago de Queretaro, Mexico. 2024 By MAPI-Team
+    - Jose Alberto Aguilar Sanchez
+    - Mario Godinez Chavero
+    - Guadalupe Paulina Lopez Cuevas
+    - Jorge Israel Sandoval Sanchez
+
+References:
+    - Camera stream originally. Originally developed by: Can Berk from GitHub:
+        https://github.com/canberkdurmus/pi_stream.git
+    
+    - Face detection algorithm. Originally developed by: Gabriela Solano from web:
+        https://omes-va.com/deteccion-de-rostros-mediapipe-python/
+    
+
+

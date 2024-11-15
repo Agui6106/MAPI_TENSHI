@@ -1260,11 +1260,23 @@ class FrameOptions(Frame):
                 commands.delete("1.0", 'end')  # Limpia el Text antes de insertar texto
                 commands.insert('end', contenido)
         except FileNotFoundError:
-            commands.insert('end', "Archivo no encontrado.")
+            commands.insert('end', "No file found.")
         
         commands.config(state='disabled')
         
         # Lee el contenido para about us
+        file_about= os.path.join(os.path.dirname(__file__), './sprites/about.txt')
+        about.config(state='normal')
+        try:
+            with open(file_about, "r") as archivo:
+                contenido = archivo.read()
+                # Inserta el contenido en el Text
+                about.delete("1.0", 'end')  # Limpia el Text antes de insertar texto
+                about.insert('end', contenido)
+        except FileNotFoundError:
+            about.insert('end', "No file found.")
+        
+        about.config(state='disabled')
 
         
         return notebook 
