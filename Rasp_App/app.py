@@ -142,20 +142,20 @@ if __name__ == "__main__":
     
     # - Socket - #
     # Ruta del archivo de socket
-    SOCKET_PATH = '/tmp/uds_socket'
+    #SOCKET_PATH = '/tmp/uds_socket'
     
-    # Eliminamos el socket del cliente si ya existe
-    try:
-        os.unlink(SOCKET_PATH)
-    except OSError:
-        if os.path.exists(SOCKET_PATH):
-            raise
+    ## Eliminamos el socket del cliente si ya existe
+    #try:
+    #    os.unlink(SOCKET_PATH)
+    #except OSError:
+    #    if os.path.exists(SOCKET_PATH):
+    #        raise
     
     # Create the Unix socket server
-    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    #server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     
     # Bind the socket to the path
-    server.bind(SOCKET_PATH)
+    #server.bind(SOCKET_PATH)
 
     # -- SECUENCIA DE INICIALZIACION -- #  
     # - MQTT - #
@@ -169,19 +169,19 @@ if __name__ == "__main__":
     print(f"Video stream available in url: {url_stream}\n")
     
     # Listen for incoming connections
-    server.listen(1)
-    print('Unix Socket Server listening...\n')
+    #server.listen(1)
+    #print('Unix Socket Server listening...\n')
     
-    connection, client_address = server.accept()
-    print('Connection from', client_address)
+    #connection, client_address = server.accept()
+    #print('Connection from', client_address)
     
-    data = connection.recv(1024)
-    serial_status = True
-    if data.decode() == 'Not Ports':
-        serial_status = False
-        detener_proceso(serial_proc)
-        print('Serial Processes stopped before expected... Check connections')
-        send_response('No Serial')
+    #data = connection.recv(1024)
+    #serial_status = True
+    #if data.decode() == 'Not Ports':
+    #    serial_status = False
+    #    detener_proceso(serial_proc)
+    #    print('Serial Processes stopped before expected... Check connections')
+    #    send_response('No Serial')
     
     last_processed_command = ''
     
@@ -210,41 +210,41 @@ if __name__ == "__main__":
                 send_response(url_stream)
                 
             # - ESP commands - #
-            elif comando == 'esp.info' and serial_status == True:
-                # Enviamos un mensaje al servidor
-                try:
-                    # Send a response back to the client
-                    response = "esp.info "
-                    connection.sendall(response.encode())
-                    print("Mensaje 'esp.info' sent to Client.")
-                    
-                    # receive data from the client
-                    if data:
-                        print('Received data:', data.decode())
-                    else:
-                        print("No data received from client.")
-                        break
-                        
-                except KeyboardInterrupt:
-                    print("\nCommunication terminated by user in main.")
-                
-            elif comando == 'esp.status' and serial_status == True:
-                # Enviamos un mensaje al servidor
-                try:
-                    # Send a response back to the client
-                    response = 'esp.status '
-                    connection.sendall(response.encode())
-                    print("Mensaje 'esp.status' sent to Client.")
-                    
-                    # receive data from the client
-                    if data:
-                        print('Received data:', data.decode())
-                    else:
-                        print("No data received from client.")
-                        break
-                        
-                except KeyboardInterrupt:
-                    print("\nCommunication terminated by user in main.")
+            #elif comando == 'esp.info' and serial_status == True:
+            #    # Enviamos un mensaje al servidor
+            #    try:
+            #        # Send a response back to the client
+            #        response = "esp.info "
+            #        connection.sendall(response.encode())
+            #        print("Mensaje 'esp.info' sent to Client.")
+            #        
+            #        # receive data from the client
+            #        if data:
+            #            print('Received data:', data.decode())
+            #        else:
+            #            print("No data received from client.")
+            #            break
+            #            
+            #    except KeyboardInterrupt:
+            #        print("\nCommunication terminated by user in main.")
+            #    
+            #elif comando == 'esp.status' and serial_status == True:
+            #    # Enviamos un mensaje al servidor
+            #    try:
+            #        # Send a response back to the client
+            #        response = 'esp.status '
+            #        connection.sendall(response.encode())
+            #        print("Mensaje 'esp.status' sent to Client.")
+            #        
+            #        # receive data from the client
+            #        if data:
+            #            print('Received data:', data.decode())
+            #        else:
+            #            print("No data received from client.")
+            #            break
+            #            
+            #    except KeyboardInterrupt:
+            #        print("\nCommunication terminated by user in main.")
                     
             # - Comandos auxilaires - #
             elif comando == 'help':
@@ -265,8 +265,8 @@ if __name__ == "__main__":
                 send_response('Leaving program...')
                 print("Leaving program...")
             
-                connection.close()
-                os.unlink(SOCKET_PATH)
+                #connection.close()
+                #os.unlink(SOCKET_PATH)
                 
                 #detener_proceso(mqtt_proc)
                 detener_proceso(serial_proc)
