@@ -219,7 +219,6 @@ if __name__ == "__main__":
                     print("Mensaje 'esp.info' sent to Client.")
                     
                     # receive data from the client
-                    data = connection.recv(1024)
                     if data:
                         print('Received data:', data.decode())
                     else:
@@ -238,7 +237,6 @@ if __name__ == "__main__":
                     print("Mensaje 'esp.status' sent to Client.")
                     
                     # receive data from the client
-                    data = connection.recv(1024)
                     if data:
                         print('Received data:', data.decode())
                     else:
