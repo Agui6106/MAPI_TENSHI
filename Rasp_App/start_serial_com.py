@@ -1,3 +1,4 @@
+"""
 # - RECEPTOR - #
 import socket
 import os
@@ -6,12 +7,12 @@ import time
 from SerialCom import serial_sensor
 
 # Ruta del socket en el sistema de archivos
-SOCKET_PATH = "/tmp/uds_socket"
-
-# Create the Unix socket client
-client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-# Connect to the server
-client.connect(SOCKET_PATH)
+#SOCKET_PATH = "/tmp/uds_socket"
+#
+## Create the Unix socket client
+#client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+## Connect to the server
+#client.connect(SOCKET_PATH)
 
 # - Obtener todos los ports - #
 ports = serial_sensor.find_available_serial_ports()
@@ -51,9 +52,9 @@ def check_connections(device: serial_sensor.SerialSensor):
     print(f'Checking Serial connection...')
     
     while atempts != 4:
-        time.sleep(1)
-        test_ans = device.send("A ")
+        time.sleep(2)
         #print(f'Received from test: {test_ans}')
+        test_ans = device.read_serial()
         
         if test_ans is None:
             print(f'Attempt {atempts} of 4 failed. Retrying in 1 sec...')
@@ -64,18 +65,20 @@ def check_connections(device: serial_sensor.SerialSensor):
         atempts += 1
     
     if correct == 4 and incorrect == 0:
-        print(f'{atempts} of 4 succesfull... Connection Ok')
+        print(f'{correct} of 4 succesfull... Connection Ok')
         return 'Ok'
     
     if correct != 4 and incorrect > 0:
-        print(f'{atempts} of 4 succesfull... Connection unstable')
+        print(f'{correct} of 4 succesfull... Connection unstable')
         return 'Unstable'
 
     if correct == 0 and incorrect == 4: 
-        print(f'{atempts} of 4 succesfull... Connection Unsuccessful')
+        print(f'{correct} of 4 succesfull... Connection Unsuccessful')
         return 'Unsuccessful'
 
 if __name__ == "__main__":
+    
+    
     # - Verifcacion de puerto y dispositivo serial - #
     if ports:
         device = connect_serial_device()
@@ -126,3 +129,6 @@ if __name__ == "__main__":
         msg = 'Not Ports'
         client.sendall(msg.encode())
         print('Not aviable ports... Leaving Serial Protocol')
+    """
+if __name__ == "__main__":
+    print('Good to go')
