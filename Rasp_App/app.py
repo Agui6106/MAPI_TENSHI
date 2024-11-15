@@ -175,6 +175,14 @@ if __name__ == "__main__":
     connection, client_address = server.accept()
     print('Connection from', client_address)
     
+    data = connection.recv(1024)
+    serial_status = True
+    if data.decode() == 'Not Ports':
+        serial_status = False
+        detener_proceso(serial_proc)
+        print('Serial Processes stopped before expected... Check connections')
+        send_response('No Serial')
+    
     last_processed_command = ''
     
     # - Interfaz de consola - #
@@ -191,7 +199,7 @@ if __name__ == "__main__":
                 send_response('Mqtt Stopped')
                 
             elif comando == 'stop.serial':
-            #    detener_proceso(serial_proc)
+                detener_proceso(serial_proc)
                 send_response('Serial Stopped')
                 
             elif comando == 'stop.transmision':
@@ -202,7 +210,7 @@ if __name__ == "__main__":
                 send_response(url_stream)
                 
             # - ESP commands - #
-            elif comando == 'esp.info':
+            elif comando == 'esp.info' and serial_status == True:
                 # Enviamos un mensaje al servidor
                 try:
                     # Send a response back to the client
@@ -221,7 +229,7 @@ if __name__ == "__main__":
                 except KeyboardInterrupt:
                     print("\nCommunication terminated by user in main.")
                 
-            elif comando == 'esp.status':
+            elif comando == 'esp.status' and serial_status == True:
                 # Enviamos un mensaje al servidor
                 try:
                     # Send a response back to the client

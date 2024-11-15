@@ -91,6 +91,10 @@ if __name__ == "__main__":
                     user_in = data.decode()
                     print(f"Message from socket: {user_in}")
                     
+                    bus_data = device.read_serial()
+                    serial_data = bus_data.split(',')
+                    print(serial_data)
+                    
                     # Enviamos por serial
                     if user_in:
                         if user_in == 'esp.test ':
@@ -119,4 +123,6 @@ if __name__ == "__main__":
         else:
             print('No available device to connect... Leaving Serial Protocol')
     else:
+        msg = 'Not Ports'
+        client.sendall(msg.encode())
         print('Not aviable ports... Leaving Serial Protocol')
