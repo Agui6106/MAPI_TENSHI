@@ -555,7 +555,12 @@ class Frame_Main_MQTT_Control(Frame):
                       command=self.get_and_launch_MAPS)
     # Obtener las coordenadas en google maps
     def get_and_launch_MAPS(self):
-        pass
+        Lat = self.value[9]
+        Long = self.value[10]
+        
+        url = f'https://www.google.com/maps/search/?api=1&query={Lat},{Long}'
+        nav1 = webbrowser.get()
+        nav1.open(url)
     
     # - Data - #    
     def ultr_label(self) -> Label:
@@ -660,36 +665,36 @@ class Frame_Main_MQTT_Control(Frame):
         
         # -- DATA -- #
         if self.response_Data:
-            value = self.response_Data.split(",")
+            self.value = self.response_Data.split(",")
             # Sensores de temperatura y ultrasonico
-            self.data_temp.config(text=value[0])
-            self.data_Hum.config(text=value[1])
-            self.data_Dist_UltrF.config(text=value[2])
-            self.data_Dist_UltrB.config(text=value[3])
+            self.data_temp.config(text=self.value[0])
+            self.data_Hum.config(text=self.value[1])
+            self.data_Dist_UltrF.config(text=self.value[2])
+            self.data_Dist_UltrB.config(text=self.value[3])
             # verifciamos colision 1
-            if value[4] == 'collision':
+            if self.value[4] == 'collision':
                 self.data_Dist_InfrF.config(text='Danger', foreground='red')
-            if value[4] == 'clear':
+            if self.value[4] == 'clear':
                 self.data_Dist_InfrF.config(text='Safe', foreground='Green')
             # Verificamos colision 2
-            if value[5] == 'collision':
+            if self.value[5] == 'collision':
                 self.data_Dist_InfrB.config(text='Danger', foreground='red')
-            if value[5] == 'clear':
+            if self.value[5] == 'clear':
                 self.data_Dist_InfrB.config(text='Safe', foreground='Green')
             
             # Giroscopios
-            self.X_Data.config(text=value[6])
-            self.Y_Data.config(text=value[7])
+            self.X_Data.config(text=self.value[6])
+            self.Y_Data.config(text=self.value[7])
             
             # Coordenadas
-            self.Latitud_Data.config(text=value[9])
-            self.Longitud_Data.config(text=value[10])
-            Lat = value[9]
-            Long = value[10]
+            self.Latitud_Data.config(text=self.value[9])
+            self.Longitud_Data.config(text=self.value[10])
+            Lat = self.value[9]
+            Long = self.value[10]
             
             # - Llamado de emergencia - #
-            temp = value[0]
-            hum = value[1]
+            temp = self.value[0]
+            hum = self.value[1]
             # Gas
 
             numeric_temp_value = float(temp.replace("°C", ""))
