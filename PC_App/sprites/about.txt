@@ -2,18 +2,100 @@
 # -------------------------------- About this software --------------------------------- #
 #----------------------------------------------------------------------------------------#
 
-Developed in Santiago de Queretaro, Mexico. 2024 By MAPI-Team
+MAPI-Tenshi Control Panel. Stable Version: 1.0
+
+General Description:
+    The MAPI-Tenshi Control Panel aims to improve remote robot control in disaster relief
+    scenarios, enabling rapid responses through an intuitive IoT-powered interface.
+
+About:
+    The MAPI-Tenshi Control Panel is software dedicated to the remote control of multiple
+    Tenshi Robots, available through IoT technologies, with an easy-to-use interface. It 
+    enables fast and secure communication for quick deployment of Tenshi Robots in natural
+    disaster scenarios, enhancing agility in life-saving actions.
+
+System Requirements:
+    - Operating System: Windows 10
+    - RAM: 2GB minimum
+    - Disk Space: 3 MB
+    - Python 3.11.0 minimum
+    - Node-RED version: v4.0.2
+    - Node.js  version: v20.16.0
+    - Internet connection
+    - User must have a created ThingSpeak account. Create one at:
+        https://thingspeak.mathworks.com/
+
+Instalation:
+    Downlaod executable at:
+        link.com
+    Source file aviable at GitHub:
+        https://github.com/Agui6106/MAPI_TENSHI
+
+Configurations and Setup:
+    WARNING: If executing on a DIY Robot, please install the Robot Program on your device.  
+             No warranty of functionality in this case!
+
+    1. Run Node-RED on your control PC.
+
+    2. Turn on your robot and connect to the user interface using HDMI or wireless methods
+    
+    3. Run the main program according to the following cases:  
+        A - If downloaded from GitHub (recommended for DIY Robots): Run `main.py`.  
+        B - If using the official MAPI-TENSHI robot, simply type `run` in the terminal. 
+
+    4. The robot will ask for the host IP. Please input your PC's IP to connect to the 
+       MQTT broker.  
+        **NOTE:** Node-RED must be running!  
+
+    5. The robot will provide you with a URL. Please copy and paste it into the login 
+       interface in the "URL Stream" entry field.  
+
+    6. Insert the remaining arguments (optional).  
+        If none are selected, the system will use the following defaults:  
+            Raspberry IP    - 0.0.0.1  
+            ESP IP          - 0.0.0.2  
+            Stream URL      - https://server-example.com  
+            Robot ID        - 01  
+
+    7. Before starting, ensure your controller is connected (Xbox and PlayStation 
+       controllers are supported).  
+
+    8. Click "Start," and the interface should now be running!
+
+
+Features:
+    - Real time remote control
+    - Connectivity using MQTT protocols
+    - Node-red interface as debugger
+    - Fast location detection 
+    - Connectivity with ThingSpeak claud for Matlab Data analitcs
+
+Common Problems and Troubleshooting:
+    x
+
+FAQ:
+    x
+
+Update Log:
+    Robot software - Stable Version 1.0-Alpha. Last Updated: 30-Nov-2024
+    Control Panel software - Stable Version 1.0. Last Update: 14-Nov-2024
+
+Developed in Santiago de Queretaro, Mexico, 2024 by the MAPI-Team:
     - Jose Alberto Aguilar Sanchez
     - Mario Godinez Chavero
     - Guadalupe Paulina Lopez Cuevas
     - Jorge Israel Sandoval Sanchez
 
+This proyect was made with love with the support of:
+    - Aseivo
+    - Mom
+    - Dad
+
 References:
-    - Camera stream originally. Originally developed by: Can Berk from GitHub:
+    - Camera Stream: Originally developed by Can Berk, available on GitHub: 
         https://github.com/canberkdurmus/pi_stream.git
-    
-    - Face detection algorithm. Originally developed by: Gabriela Solano from web:
+
+    - Face Detection Algorithm: Originally developed by Gabriela Solano, available at: 
         https://omes-va.com/deteccion-de-rostros-mediapipe-python/
-    
 
-
+Crafted with love and passion by little engineers with big dreams.
