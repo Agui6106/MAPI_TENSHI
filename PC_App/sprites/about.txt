@@ -1,5 +1,5 @@
 #----------------------------------------------------------------------------------------#
-# -------------------------------- About this software --------------------------------- #
+#--------------------------------- About this software ----------------------------------#
 #----------------------------------------------------------------------------------------#
 
 MAPI-Tenshi Control Panel. Stable Version: 1.0
@@ -45,7 +45,7 @@ Configurations and Setup:
 
     4. The robot will ask for the host IP. Please input your PC's IP to connect to the 
        MQTT broker.  
-        **NOTE:** Node-RED must be running!  
+       NOTE: Node-RED must be running!  
 
     5. The robot will provide you with a URL. Please copy and paste it into the login 
        interface in the "URL Stream" entry field.  
@@ -62,7 +62,6 @@ Configurations and Setup:
 
     8. Click "Start," and the interface should now be running!
 
-
 Features:
     - Real time remote control
     - Connectivity using MQTT protocols
@@ -70,15 +69,51 @@ Features:
     - Fast location detection 
     - Connectivity with ThingSpeak claud for Matlab Data analitcs
 
-Common Problems and Troubleshooting:
-    x
+Common Problems and Troubleshooting:  
+    Problem:    No video available.  
+    Solution:   Make sure to copy the URL correctly.  
 
-FAQ:
-    x
+    Problem:    No MQTT communication.  
+    Solution:   Ensure that Node-RED is running correctly.  
 
+    Problem:    My joystick is not detected.  
+    Solution:   Make sure to connect it to a USB port on your PC. Note that wireless 
+                connections are not supported.  
+
+    Problem:    My official robot doesn't start/move.  
+    Solution:   Check that the batteries are correctly inserted in the rack. If the 
+                problem persists, charge your batteries.  
+
+    Problem:    Robot failed to start the stream.  
+    Solution:   Fully reboot the robot. If the problem persists, check the camera 
+                connections.  
+
+FAQ:  
+    1. Can I control 2 or more robots?  
+    ANS: Yes, if you have sufficient Wi-Fi bandwidth.  
+
+    2. Do I have to pay for the use of this software?  
+    ANS: No. It is completely free, and nobody should charge you for its use.  
+
+    3. Can I run MAPI-Tenshi Control Panel multiple times?  
+    ANS: Yes, you can run it as many times as your system supports.  
+
+    4. Can the software control multiple robots at once?  
+    ANS: No, but you can run the app for as many robots as you have and connect them 
+         individually.  
+
+    5. Can I use part of your code in my own projects?  
+    ANS: Yes, but not for commercial purposes. Please give credit as follows:  
+         "Using MAPI-Team Original Software."  
+ 
 Update Log:
-    Robot software - Stable Version 1.0-Alpha. Last Updated: 30-Nov-2024
-    Control Panel software - Stable Version 1.0. Last Update: 14-Nov-2024
+    Robot software 
+    Stable Version 1.0-Alpha: Initial release with real-time control and MQTT connectivity.
+    - Last Updated: 30-Nov-2024
+    
+    Control Panel software
+    Stable Version 1.0: All basic functions of connectivity and image process stable.
+    - Last Update: 14-Nov-2024
 
 Developed in Santiago de Queretaro, Mexico, 2024 by the MAPI-Team:
     - Jose Alberto Aguilar Sanchez
@@ -86,16 +121,279 @@ Developed in Santiago de Queretaro, Mexico, 2024 by the MAPI-Team:
     - Guadalupe Paulina Lopez Cuevas
     - Jorge Israel Sandoval Sanchez
 
-This proyect was made with love with the support of:
-    - Aseivo
-    - Mom
-    - Dad
-
 References:
     - Camera Stream: Originally developed by Can Berk, available on GitHub: 
         https://github.com/canberkdurmus/pi_stream.git
 
     - Face Detection Algorithm: Originally developed by Gabriela Solano, available at: 
         https://omes-va.com/deteccion-de-rostros-mediapipe-python/
+
+#----------------------------------------------------------------------------------------#
+#---------------------------------- Sobre este software ---------------------------------#
+#----------------------------------------------------------------------------------------#
+
+MAPI-Tenshi Control Panel. Versión Estable: 1.0  
+
+Descripción General:  
+    El MAPI-Tenshi Control Panel tiene como objetivo mejorar el control remoto de robots 
+    en escenarios de ayuda ante desastres, permitiendo respuestas rápidas mediante una 
+    interfaz intuitiva potenciada por IoT.  
+
+Acerca de:  
+    El MAPI-Tenshi Control Panel es un software dedicado al control remoto de múltiples
+    Robots Tenshi, disponible a través de tecnologías IoT con una interfaz fácil de usar. 
+    Permite una comunicación rápida y segura para el despliegue eficiente de Robots Tenshi
+    en escenarios de desastres naturales, mejorando la agilidad en acciones de rescate.
+
+Requisitos del Sistema:  
+    - Sistema Operativo: Windows 10  
+    - RAM: Mínimo 2GB  
+    - Espacio en Disco: 3 MB  
+    - Python 3.11.0 como mínimo  
+    - Node-RED versión: v4.0.2  
+    - Node.js versión: v20.16.0  
+    - Conexión a Internet  
+    - El usuario debe tener una cuenta creada en ThingSpeak. Créala en:  
+        https://thingspeak.mathworks.com/  
+
+Instalación:  
+    Descarga el ejecutable en:  
+        link.com  
+    El código fuente está disponible en GitHub:  
+        https://github.com/Agui6106/MAPI_TENSHI  
+
+Configuración e Instalación:  
+    ADVERTENCIA: Si se ejecuta en un robot DIY (hazlo tú mismo), instala el Programa del
+                 Robot en tu dispositivo - No se garantiza la funcionalidad en este caso. 
+
+    1. Ejecuta Node-RED en tu PC de control.  
+
+    2. Enciende tu robot y conéctate a la interfaz de usuario mediante HDMI o métodos 
+       inalámbricos.
+
+    3. Ejecuta el programa principal según el caso:  
+       A - Si lo descargaste desde GitHub (recomendado para Robots DIY): Ejecuta main.py.  
+       B - Si usas el robot oficial MAPI-TENSHI: Solo escribe run en la terminal.  
+
+    4. El robot solicitará la IP del host. Ingresa la IP de tu PC para conectarte al 
+       broker MQTT.
+       Nota: ¡Node-RED debe estar ejecutándose!  
+
+    5. El robot te proporcionará una URL. Cópiala y pégala en la interfaz de inicio de 
+       sesión en el campo "URL Stream".  
+
+    6. Inserta los argumentos restantes (opcional).  
+       Si no se seleccionan, el sistema usará los siguientes valores predeterminados:  
+            Raspberry IP    - 0.0.0.1  
+            ESP IP          - 0.0.0.2  
+            Stream URL      - https://server-example.com  
+            Robot ID        - 01  
+
+    7. Antes de empezar, asegúrate de que el controlador esté conectado (se admiten 
+       controles de Xbox y PlayStation). 
+
+    8. Haz clic en "Iniciar" y la interfaz debería estar en funcionamiento.  
+
+Características:  
+    - Control remoto en tiempo real.  
+    - Conectividad utilizando protocolos MQTT.  
+    - Interfaz Node-RED como depurador.  
+    - Detección rápida de ubicación.  
+    - Conectividad con la nube ThingSpeak para análisis de datos en MATLAB.  
+
+Problemas Comunes y Solución de Problemas:  
+    Problema: No hay video disponible.  
+    Solución: Asegúrate de copiar correctamente la URL.  
+
+    Problema: No hay comunicación MQTT.  
+    Solución: Verifica que Node-RED esté ejecutándose correctamente.  
+    
+    Problema: Mi joystick no es detectado.  
+    Solución: Conéctalo a un puerto USB en tu PC. Las conexiones inalámbricas no son 
+              compatibles.  
+    
+    Problema: Mi robot oficial no inicia/no se mueve.  
+    Solución: Revisa que las baterías estén correctamente insertadas en el rack. Si el 
+              problema persiste, carga las baterías.  
+    
+    Problema: El robot no inició el stream.  
+    Solución: Reinicia completamente el robot. Si el problema persiste, verifica las 
+              conexiones de la cámara.  
+
+Preguntas Frecuentes:  
+    1. ¿Puedo controlar 2 o más robots?  
+       Respuesta: Sí, si tienes suficiente ancho de banda Wi-Fi.  
+    
+    2. ¿Debo pagar por usar este software?  
+       Respuesta: No. Es completamente gratuito y nadie debería cobrarte por su uso.  
+    
+    3. ¿Puedo ejecutar el MAPI-Tenshi Control Panel varias veces?  
+       Respuesta: Sí, puedes ejecutarlo tantas veces como lo permita tu sistema.  
+    
+    4. ¿El software puede controlar múltiples robots al mismo tiempo?  
+       Respuesta: No, pero puedes ejecutar la aplicación para cada robot y conectarlos 
+                  individualmente.  
+    
+    5. ¿Puedo usar parte del código en mis propios proyectos?  
+       Respuesta: Sí, pero no para fines comerciales. Da crédito como:  
+       "Usando el Software Original de MAPI-Team".  
+
+Registro de Actualizaciones:  
+    Software del Robot:  
+    Versión Estable 1.0-Alpha: Lanzamiento inicial con control en tiempo real y 
+                               conectividad MQTT.
+    Última Actualización: 30-Nov-2024  
+    
+    Software del Panel de Control:  
+    Versión Estable 1.0: Todas las funciones básicas de conectividad y procesamiento de 
+                         imágenes estables.  
+    Última Actualización: 14-Nov-2024  
+
+Desarrollado en Santiago de Querétaro, México, 2024 por el equipo MAPI:  
+    - José Alberto Aguilar Sánchez  
+    - Mario Godínez Chavero  
+    - Guadalupe Paulina López Cuevas  
+    - Jorge Israel Sandoval Sánchez  
+
+Referencias:  
+    - Stream de Cámara: Desarrollado originalmente por Can Berk. Disponible en:  
+        https://github.com/canberkdurmus/pi_stream.git  
+    - Algoritmo de Detección de Rostros: Desarrollado originalmente por Gabriela Solano. 
+      Disponible en:  
+        https://omes-va.com/deteccion-de-rostros-mediapipe-python/  
+
+#----------------------------------------------------------------------------------------#
+# ------------------------------- このソフトウェアについて -------------------------------#
+#----------------------------------------------------------------------------------------#
+
+MAPI-Tenshiコントロールパネル 安定版: 1.0
+
+概要:
+MAPI-Tenshiコントロールパネルは災害救助シナリオにおいて迅速な対応を可能にする、
+IoTを活用した直感的なリモートロボット制御ソフトウェアです。
+
+詳細:
+MAPI-Tenshiコントロールパネルは複数のTenshiロボットをリモート制御するための
+ソフトウェアです。使いやすいインターフェースとIoT技術を活用し、災害救助シナリオ
+での迅速かつ安全な通信を実現します。これにより、生命救助活動の迅速化をサポートします。
+
+システム要件:
+    OS: Windows 10
+    RAM: 最低2GB
+    ディスク容量: 3MB
+    Python 3.11.0以上
+    Node-REDバージョン: v4.0.2
+    Node.jsバージョン: v20.16.0
+    インターネット接続
+    ThingSpeakアカウントが必要です。以下で作成してください:
+    https://thingspeak.mathworks.com/
+
+インストール:
+    以下から実行ファイルをダウンロードしてください:
+        link.com
+    ソースコードはGitHubで利用可能:
+        https://github.com/Agui6106/MAPI_TENSHI
+
+設定とセットアップ:
+    注意: DIYロボットで実行する場合、ロボットプログラムをデバイスにインストールして
+          この場合、機能の保証はありません。 ください。S
+    
+    1. コントロールPCでNode-REDを実行します。
+
+    2. ロボットを起動し、HDMIまたは無線接続を介してユーザーインターフェースに接続します。
+
+    3. 以下の場合に応じてメインプログラムを実行します。
+        A - GitHubからダウンロードした場合(DIYロボットに推奨): main.pyを実行してください。
+        B - 公式のMAPI-TENSHIロボットを使用する場合: ターミナルでrunと入力してください。
+
+    4. ロボットがホストIPを要求します。PCのIPを入力し、MQTTブローカーに接続してくだ
+       さい。注意: Node-REDが実行中である必要があります！
+
+    5. ロボットがURLを提供します。それをコピーし、ログイン画面の「URL Stream」欄に
+       貼り付けます。
+    
+    6. 残りの引数を入力します(任意)。入力がない場合、システムは以下のデフォルトを使用
+       します: 
+            Raspberry IP    - 0.0.0.1  
+            ESP IP          - 0.0.0.2  
+            Stream URL      - https://server-example.com  
+            Robot ID        - 01  
+
+    7. 開始する前にコントローラーが接続されていることを確認してください(Xboxおよび
+       PlayStationコントローラー対応)。
+
+    8. 「開始」をクリックし、インターフェースが動作することを確認してください！
+
+特徴:
+    - リアルタイムリモートコントロール
+    - MQTTプロトコルによる接続
+    - デバッガとしてのNode-REDインターフェース
+    - 迅速な位置検出
+    - ThingSpeakクラウドへの接続によるMATLABデータ解析
+
+一般的な問題と解決策:
+    問題: ビデオが表示されません。
+    対策: URLを正しくコピーしてください。
+
+    問題: MQTT通信がありません。
+    対策: Node-REDが正常に動作しているか確認してください。
+
+    問題: ジョイスティックが認識されません。
+    対策: PCのUSBポートに接続してください。無線接続はサポートされていません。
+
+    問題: 公式ロボットが起動/動作しません。
+    対策: ラックにバッテリーが正しく挿入されていることを確認してください。
+          それでも問題が解決しない場合、バッテリーを充電してください。
+
+    問題: ロボットがストリームを起動できませんでした。
+    対策: ロボットを完全に再起動してください。それでも問題が解決しない場合、カメラの
+
+よくある質問:
+    2台以上のロボットを制御できますか？
+    回答: はい、十分なWi-Fi帯域幅があれば可能です。
+
+    このソフトウェアを使用するのに料金はかかりますか？
+    回答: いいえ。完全に無料で、使用料を請求されることはありません。
+
+    MAPI-Tenshiコントロールパネルを複数回実行できますか？
+    回答: はい。システムが対応する限り何度でも実行可能です。
+
+    ソフトウェアで複数のロボットを同時に制御できますか？
+    回答: いいえ。ただし、各ロボット用にアプリを実行して個別に接続できます。
+
+    自分のプロジェクトにコードを使用できますか？
+    回答: はい。ただし、商業目的では使用しないでください。以下のようにクレジットを
+        与えてください:「MAPI-Team Original Softwareを使用」
+    
+更新履歴:
+    ロボットソフトウェア:
+        安定版1.0-Alpha: リアルタイム制御とMQTT接続機能の初期リリース。
+        最終更新日: 2024年11月30日
+
+    コントロールパネルソフトウェア:
+        安定版1.0: 接続と画像処理のすべての基本機能が安定。
+        最終更新日: 2024年11月14日
+
+開発場所: メキシコ、サンティアゴ・デ・ケレタロ、2024年 MAPIチーム:
+    ホセ・アルベルト・アギラール・サンチェス
+    マリオ・ゴディネス・チャベロ
+    グアダルーペ・パウリーナ・ロペス・クエバス
+    ホルヘ・イスラエル・サンドバル・サンチェス
+
+参考文献:
+    カメラストリーム: Can Berk氏が開発したオリジナル。詳細は以下をご覧ください:
+    https://github.com/canberkdurmus/pi_stream.git
+
+    顔検出アルゴリズム: ガブリエラ・ソラノ氏が開発したオリジナル。詳細は以下をご覧ください:
+    https://omes-va.com/deteccion-de-rostros-mediapipe-python/
+
+夢を追いかける小さなエンジニアたちが、愛と情熱で作りました。
+
+#----------------------------------------------------------------------------------------#
+
+This proyect was made with love with the support of:
+    - Aseivo
+    - Mom
+    - Dad
 
 Crafted with love and passion by little engineers with big dreams.

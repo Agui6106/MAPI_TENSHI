@@ -1302,7 +1302,7 @@ class FrameOptions(Frame):
         file_commands= os.path.join(os.path.dirname(__file__), './sprites/commands.txt')
         commands.config(state='normal')
         try:
-            with open(file_commands, "r") as archivo:
+            with open(file_commands, "r", encoding='utf-8') as archivo:
                 contenido = archivo.read()
                 # Inserta el contenido en el Text
                 commands.delete("1.0", 'end')  # Limpia el Text antes de insertar texto
@@ -1316,7 +1316,7 @@ class FrameOptions(Frame):
         file_about= os.path.join(os.path.dirname(__file__), './sprites/about.txt')
         about.config(state='normal')
         try:
-            with open(file_about, "r") as archivo:
+            with open(file_about, "r", encoding='utf-8') as archivo:
                 contenido = archivo.read()
                 # Inserta el contenido en el Text
                 about.delete("1.0", 'end')  # Limpia el Text antes de insertar texto
