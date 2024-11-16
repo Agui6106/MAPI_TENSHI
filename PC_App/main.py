@@ -17,7 +17,7 @@ from tkinter.ttk import Notebook
 import datetime as dt
 import webbrowser
 
-import psutil
+import requests
 import os
 
 # - Imagen de stream - #
@@ -37,6 +37,9 @@ import controls.ps4_control as ps4
 
 # IP Local
 ip = get_ip_Windows()
+
+# - TSP API Key - #
+THINGSPEAK_API_KEY = "KG9GW1438B4FJGNN" 
 
 # - Ventan de configuracion inicial - #
 def open_config_window():
@@ -293,7 +296,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.statuts1_label = Label(self.vital_Data_frame, text=" Motors", font=('Z003', 13))
         self.statuts2_label = Label(self.vital_Data_frame, text="Battery", font=('Z003', 13))
         self.statuts3_label = Label(self.vital_Data_frame, text=" Serial", font=('Z003', 13))
-        self.statuts4_label = Label(self.vital_Data_frame, text="  MQTT ", font=('Z003', 13))
+        self.statuts4_label = Label(self.vital_Data_frame, text=" Cloud ", font=('Z003', 13))
         self.status1: Button = self.stat_1()
         self.status2: Button = self.stat_2()
         self.status3: Button = self.stat_3()
@@ -590,7 +593,7 @@ class Frame_Main_MQTT_Control(Frame):
             if yl >= 0.25:
                 self.direction.create_image((0,0),image=self.GDown, anchor='nw')
                 try:
-                    mqtt_esp_Data.publish_message('Down')
+                    mqtt_esp_Data.publish_message('down')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
             
@@ -598,7 +601,7 @@ class Frame_Main_MQTT_Control(Frame):
             if yl <= -0.25:
                 self.direction.create_image((0,0),image=self.GUp, anchor='nw')
                 try:
-                    mqtt_esp_Data.publish_message('Up')
+                    mqtt_esp_Data.publish_message('up')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
             
@@ -606,7 +609,7 @@ class Frame_Main_MQTT_Control(Frame):
             if xl >= 0.25:
                 self.direction.create_image((0,0),image=self.GRight, anchor='nw')
                 try:
-                    mqtt_esp_Data.publish_message('Right')
+                    mqtt_esp_Data.publish_message('right')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
             
@@ -614,7 +617,7 @@ class Frame_Main_MQTT_Control(Frame):
             if xl <= -0.25:
                 self.direction.create_image((0,0),image=self.GLeft, anchor='nw')
                 try:
-                    mqtt_esp_Data.publish_message('Left')
+                    mqtt_esp_Data.publish_message('left')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
             
@@ -723,6 +726,33 @@ class Frame_Main_MQTT_Control(Frame):
             self.X_Data.config(text=self.mensaje_Locations)
             
         self.parent.after(500, self.get_response)
+    
+    # - ThingSpeak - #
+    def send_data_to_cloud(self):
+        """Envía los datos de `self.value` a la nube."""
+        if self.value is None:
+            return  # Si no hay datos, no hace nada
+
+        # Asegúrate de tener una URL de destino
+        cloud_url = f'https://api.thingspeak.com/update?api_key={THINGSPEAK_API_KEY}'
+        
+        # Configura los parámetros o datos a enviar
+        data = {
+            "field1": self.value[0],  # Asigna valores de acuerdo a `self.value`
+            "field2": self.value[1],
+            "field3": self.value[2],
+            # Agrega más campos si es necesario
+        }
+
+        try:
+            # Realiza una solicitud POST
+            response = requests.post(cloud_url, data=data)
+            if response.status_code == 200:
+                print("Datos enviados correctamente.")
+            else:
+                print(f"Error al enviar datos: {response.status_code} - {response.text}")
+        except Exception as e:
+            print(f"Error durante la conexión: {e}")
             
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
