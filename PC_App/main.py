@@ -35,6 +35,9 @@ from MQTT_con.MQTT_ex import mqtt_coms
 # - PS4 CONTROLLER - #
 import controls.ps4_control as ps4
 
+# - ThingSpeak - #
+from TsP_coms import start_thingspeak_thread
+
 # IP Local
 ip = get_ip_Windows()
 
@@ -361,6 +364,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.important_info_msg.insert('1.0', texto)
         self.important_info_msg.config(state='disabled')
         self.enters = 1
+        self.value = []
         
         """hora_actual = dt.datetime.now().strftime("%H:%M:%S")
         temp = 50
@@ -655,6 +659,7 @@ class Frame_Main_MQTT_Control(Frame):
     
     # Recepcion        
     def get_response(self):
+        
         # Perifericos
         self.mensaje_Perifs = mqtt_esp_Perif.last_message
 
@@ -725,34 +730,8 @@ class Frame_Main_MQTT_Control(Frame):
         if self.mensaje_Locations:
             self.X_Data.config(text=self.mensaje_Locations)
             
+        #start_thingspeak_thread(self.value)
         self.parent.after(500, self.get_response)
-    
-    # - ThingSpeak - #
-    def send_data_to_cloud(self):
-        """Envía los datos de `self.value` a la nube."""
-        if self.value is None:
-            return  # Si no hay datos, no hace nada
-
-        # Asegúrate de tener una URL de destino
-        cloud_url = f'https://api.thingspeak.com/update?api_key={THINGSPEAK_API_KEY}'
-        
-        # Configura los parámetros o datos a enviar
-        data = {
-            "field1": self.value[0],  # Asigna valores de acuerdo a `self.value`
-            "field2": self.value[1],
-            "field3": self.value[2],
-            # Agrega más campos si es necesario
-        }
-
-        try:
-            # Realiza una solicitud POST
-            response = requests.post(cloud_url, data=data)
-            if response.status_code == 200:
-                print("Datos enviados correctamente.")
-            else:
-                print(f"Error al enviar datos: {response.status_code} - {response.text}")
-        except Exception as e:
-            print(f"Error durante la conexión: {e}")
             
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
