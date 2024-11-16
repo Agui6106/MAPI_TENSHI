@@ -64,6 +64,9 @@ int infrarrojo1 = 5;  // Pin de Sensor Infrarrojo 1
 // Configuración Sensor Infrarrojo 2
 int infrarrojo2 = 25;  // Pin de Sensor Infrarrojo 2
 
+// Configuracion LDR
+float light;
+
 // Configuración Giroscopio
 // pin 22 SCL / pin 21 SDA
 //Direccion I2C de la IMU
@@ -284,6 +287,7 @@ void loop() { // Datos que recibimos del ESP32
     // -- LECTURA DE SENSORES -- //
     t = dht.readTemperature();  // Temperatura
     h = dht.readHumidity();     // Humedad
+    light = analogRead(32);
 
     // -- SENSOR ULTRASONICO -- //
     // Sensor 1
@@ -423,7 +427,8 @@ void loop() { // Datos que recibimos del ESP32
                      String(Angle[1]) + "°," +
                      String(Angle[2]) + "°," +
                      latitude + "," + 
-                     longitude + "\n";
+                     longitude + "," +
+                     light + "\n";
 
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
