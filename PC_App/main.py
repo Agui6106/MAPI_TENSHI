@@ -17,7 +17,7 @@ from tkinter.ttk import Notebook
 import datetime as dt
 import webbrowser
 
-import requests
+import random
 import os
 
 # - Imagen de stream - #
@@ -43,6 +43,7 @@ ip = get_ip_Windows()
 
 # - TSP API Key - #
 THINGSPEAK_API_KEY = "KG9GW1438B4FJGNN" 
+id_random = random.randint(100,999)
 
 # - Ventan de configuracion inicial - #
 def open_config_window():
@@ -253,6 +254,9 @@ class Frame_Main_MQTT_Control(Frame):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
         
+        # - Hora actual - #
+        self.hora_actual = dt.datetime.now().strftime("%H:%M:%S")
+        
         # - Imagenes de direccion - #
         # Arriba
         GUp= os.path.join(os.path.dirname(__file__), './sprites/Directions/Up.png')
@@ -363,20 +367,28 @@ class Frame_Main_MQTT_Control(Frame):
         self.important_info_msg.config(state='normal')
         self.important_info_msg.insert('1.0', texto)
         self.important_info_msg.config(state='disabled')
-        self.enters = 1
         self.value = []
         
         """hora_actual = dt.datetime.now().strftime("%H:%M:%S")
         temp = 50
         hum = 5
         location = 'xd'
-        Htemp = f'{hora_actual} - [Info]: Danger of fire... Calling firefighters at location {location}'
-        
+        #id_random = random.randint(100,999)
+        Htemp = f'{hora_actual} - [Info]: Danger of fire... Calling firefighters at location {location}\n'
+        ColMsg = f'{hora_actual} - [Info]: Robot Cant continue correct operation flipped robot\n'
+        helpmsg = f'{hora_actual} - [Info]: Calling Robot ID: #{id_random} for backup\n'
+            
         if temp >= 40 and hum <= 20:
-            self.enters += 1
             self.important_info_msg.config(state='normal')
-            self.important_info_msg.insert(f'{self.enters}.0', Htemp)
+            self.important_info_msg.insert('end', Htemp)
+            self.important_info_msg.config(state='disabled')
+        
+        if location == 'xd':
+            self.important_info_msg.config(state='normal')
+            self.important_info_msg.insert('end', ColMsg)
+            self.important_info_msg.insert('end', helpmsg)
             self.important_info_msg.config(state='disabled')"""
+            
             
         # - MQTT - #
         self.get_response()
@@ -564,7 +576,14 @@ class Frame_Main_MQTT_Control(Frame):
     def get_and_launch_MAPS(self):
         Lat = self.value[9]
         Long = self.value[10]
+
+        # - Imprimos mensaje - #
+        mapsmsg =       f'{self.hora_actual} - [Info]: Sending location: {Lat}, {Long} to parademics.\n'
+        self.important_info_msg.config(state='normal')
+        self.important_info_msg.insert('end', mapsmsg)
+        self.important_info_msg.config(state='disabled')
         
+        # - Abrimso Google Maps - #
         url = f'https://www.google.com/maps/search/?api=1&query={Lat},{Long}'
         nav1 = webbrowser.get()
         nav1.open(url)
@@ -682,11 +701,20 @@ class Frame_Main_MQTT_Control(Frame):
             # verifciamos colision 1
             if self.value[4] == 'collision':
                 self.data_Dist_InfrF.config(text='Danger', foreground='red')
+                self.important_info_msg.config(state='normal')
+                self.important_info_msg.insert('end', colsmsg)
+                self.important_info_msg.config(state='disabled')
+                
             if self.value[4] == 'clear':
                 self.data_Dist_InfrF.config(text='Safe', foreground='Green')
+                
             # Verificamos colision 2
             if self.value[5] == 'collision':
                 self.data_Dist_InfrB.config(text='Danger', foreground='red')
+                self.important_info_msg.config(state='normal')
+                self.important_info_msg.insert('end', colsmsg)
+                self.important_info_msg.config(state='disabled')
+                
             if self.value[5] == 'clear':
                 self.data_Dist_InfrB.config(text='Safe', foreground='Green')
             
@@ -700,23 +728,36 @@ class Frame_Main_MQTT_Control(Frame):
             Lat = self.value[9]
             Long = self.value[10]
             
-            # - Llamado de emergencia - #
+            # - Llamado de emergencia - Daddy Yankee- #
+            # - Bomberos - #
             temp = self.value[0]
             hum = self.value[1]
-            # Gas
-
+            
             numeric_temp_value = float(temp.replace("°C", ""))
             numeric_Hum_value = float(hum.replace("%", ""))
-
-            # - Hora actual - #
-            hora_actual = dt.datetime.now().strftime("%H:%M:%S")
-            Htemp = f'{hora_actual} - [Info]: Danger of fire... Calling firefighters at location {Lat}, {Long}'
             
+            # - Giros - #
+            x = self.value[6]
+            numeric_x = float(x.replace("°",""))
+            
+            # - Mensajes - #
+            Htemp =         f'{self.hora_actual} - [Info]: Danger of fire... Calling firefighters at location {Lat}, {Long}\n'
+            flippedmsg =    f'{self.hora_actual} - [Info]: Robot Cant continue correct operation flipped robot\n'
+            helpmsg =       f'{self.hora_actual} - [Info]: Calling Robot ID: #{id_random} for backup...\n'
+            colsmsg =       f'{self.hora_actual} - [Info]: Be aware of objects ahead \n'
+            
+            # - Bomberos - #
             if numeric_temp_value >= 40 and numeric_Hum_value <= 20:
                 print('Danger of fire... Calling firefighters')
-                self.enters += 1
                 self.important_info_msg.config(state='normal')
-                self.important_info_msg.insert(f'{self.enters}.0', Htemp)
+                self.important_info_msg.insert('end', Htemp)
+                self.important_info_msg.config(state='disabled')
+            
+            # - BackUp - #
+            if numeric_x >= 180:
+                self.important_info_msg.config(state='normal')
+                self.important_info_msg.insert('end', flippedmsg)
+                self.important_info_msg.insert('end', helpmsg)
                 self.important_info_msg.config(state='disabled')
             
         # Verificar respuesta en lampara
