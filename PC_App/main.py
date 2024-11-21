@@ -876,7 +876,7 @@ class Frame_Main_Pros_Camera(Frame):
     def _Create_title(self) -> Label:
         return Label(
             master=self,
-            text='Opciones de Camara',
+            text='Camera options',
             foreground='black',
             font=("Z003", 20, "bold")
         )
@@ -1239,7 +1239,7 @@ class FrameOptions(Frame):
         self.buttons: Entry = self.options_entry()
         self.axes: Entry = self.options_entry()
         
-        self.actions_label = Label(self, text="Quick Actions", font=("Magneto", 20, "bold"))
+        self.actions_label = Label(self, text="Quick Actions", font=("Z003", 20, "bold"))
         self.joys_updated: Button = self.but_refresh()
         self.dev_button: Button = self._button_Open_Dev()
         self.TSP_Button: Button = self._button_Open_TSP()
@@ -1307,7 +1307,7 @@ class FrameOptions(Frame):
             master=self,
             text='Connectivity',
             foreground='black',
-            font=("Magneto", 20, "bold")
+            font=("Z003", 20, "bold")
         )
     
     # - Notebook - #
@@ -1322,7 +1322,7 @@ class FrameOptions(Frame):
         # ---------- TAB 1 ---------- #
         # - Titulos - #
         Label(tab1, text="Commands", foreground='black', 
-              font=("Magneto", 20, "bold"), justify='left',).grid(row=0, column=0, padx=15,)
+              font=("Z003", 20, "bold"), justify='left',).grid(row=0, column=0, padx=15,)
         
         # - Text - #
         commands = Text(tab1, width=90,height=19,
