@@ -232,6 +232,7 @@ class App(Frame):
         """
         # Control MQTT
         frame_mqtt_control = Frame_Main_MQTT_Control(self.tab1)  # Instanciar el frame aquí
+        self.data_2_send = frame_mqtt_control.get_data()
         frame_mqtt_control.grid(row=1, column=0, rowspan=2, sticky='nsew')
 
         # Camara sin proceso
@@ -243,6 +244,9 @@ class App(Frame):
         frame_pros_camera.grid(row=2, column=1, sticky='nsew')
         
         return notebook
+
+    def get_data_app(self):
+        return self.data_2_send
 
 # ----------------------------------- #
 # --------- Frames de MAIN ---------- #
@@ -678,7 +682,6 @@ class Frame_Main_MQTT_Control(Frame):
     
     # Recepcion        
     def get_response(self):
-        
         # Perifericos
         self.mensaje_Perifs = mqtt_esp_Perif.last_message
 
@@ -771,8 +774,10 @@ class Frame_Main_MQTT_Control(Frame):
         if self.mensaje_Locations:
             self.X_Data.config(text=self.mensaje_Locations)
             
-        #start_thingspeak_thread(self.value)
         self.parent.after(500, self.get_response)
+    
+    def get_data(self):
+        return self.value
             
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
@@ -1196,10 +1201,6 @@ class Frame_CMD(Frame):
         self.cmd_out.config(state='readonly')
         self.parent.after(500, self.update_cmd_output)
 
-# ----------------------------------- #
-# -------- Frames de control -------- #
-# ----------------------------------- #
-   
 # ---- Clase ventana de Opciones ---- #
 class FrameOptions(Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -1498,5 +1499,22 @@ root = Tk()
 
 if __name__ == '__main__':
     ex = App(root)
+    #data = ex.get_data_app()
+    # - Obtenemos valores a enviar - #
+    data = [1,2,3,4,5,]
+    data_2send = []
+    data_2send.append(data[0])
+    data_2send.append(data[1])
+    data_2send.append(data[-1])
+
+    print(f'Data in Main: {data}')
+    print(f'Data divided: {data_2send}')
+    
+    # - Hilo dedicado a ThingSpeak - #
+    #if len(data) == 0:
+    #    print('No aviable data')
+    #else:
+    #    start_thingspeak_thread(data_2send)
+    
     root.mainloop()
     
