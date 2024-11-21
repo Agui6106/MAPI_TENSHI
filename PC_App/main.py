@@ -424,9 +424,6 @@ class Frame_Main_MQTT_Control(Frame):
         self.init_gui_of_VitalData()
         self.init_gui_of_Positions()
         self.init_gui_of_RecvData()
-    
-    def change_but(self):
-        self.status4.grid(row=1,column=9, padx=10)
         
     # - Colocamos los elementos visuales - #
     def init_main_gui(self)-> None:
@@ -436,7 +433,6 @@ class Frame_Main_MQTT_Control(Frame):
         self.vital_Data_frame.grid(row=1, column=0,  sticky="nsew", ipadx=10, pady=10) # 10x3
         self.recv_data_frame.grid(row=2, column=0,  sticky="nsew", )
         self.positions_frame.grid(row=3, column=0,  sticky="nsew", ) # 7x2
-        #self.importnat_info.grid(row=4, column=0, )
         self.important_info_msg.grid(row=4, column=0, pady=4)
         
     def init_gui_of_VitalData(self) -> None:
@@ -469,12 +465,10 @@ class Frame_Main_MQTT_Control(Frame):
         self.statuts2_label.grid(row=2,column=7)
         self.statuts3_label.grid(row=2,column=8)
         self.statuts4_label.grid(row=2,column=9)
-            
         
         #self.status1.grid_remove()
         #self.status2.grid_remove()
         #self.status3.grid_remove()
-        
     
     def init_gui_of_Positions(self) -> None:
         # - CONTENTS POSITIONS - #
@@ -1531,8 +1525,8 @@ root = Tk()
 
 if __name__ == '__main__':
     ex = App(root)
-    data = ex.get_data_app()
     # - Obtenemos valores a enviar - #
+    data = ex.get_data_app()
     #data = [1,2,3,4,5,]
 
     print(f'Data in Main: {data}')

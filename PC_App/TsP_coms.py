@@ -65,8 +65,6 @@ def start_thingspeak_thread(info, callback=None):
     thread.start()
     return thread
 
-# Asegurarse de que el script no se ejecute automáticamente al ser importado
-# Asegurarse de que el script no se ejecute automáticamente al ser importado
 if __name__ == "__main__":
     def notify(status, data):
         print(f"Callback: {'Success' if status else 'Failure'} - Data: {data}")
