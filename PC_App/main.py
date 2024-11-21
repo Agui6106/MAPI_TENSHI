@@ -667,14 +667,12 @@ class Frame_Main_MQTT_Control(Frame):
                     print(f"Failed to send info due to: {e}")
             
             # Sin Movimiento
-            """if xl == 0 and yl == 0:
+            if xl == 0 and yl == 0:
                 self.direction.create_image((0,0),image=self.Still, anchor='nw')
                 try:
-                    mqtt_esp_Data.publish_message('Left')
+                    mqtt_esp_Data.publish_message('center')
                 except Exception as e:
-                    print(f"Failed to send info due to: {e}")"""
-            
-            #self.motorX_data.config(text=xl)
+                    print(f"Failed to send info due to: {e}")
             
             # Chequear botones específicos y enviar info por MQTT
             buttons = controller_state['buttons']
