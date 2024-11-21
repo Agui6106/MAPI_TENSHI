@@ -43,6 +43,26 @@ ip = get_ip_Windows()
 
 # - TSP API Key - #
 THINGSPEAK_API_KEY = "KG9GW1438B4FJGNN" 
+# Variable global para almacenar el estado del envío
+thingspeak_status = {'success': None, 'data': None}
+
+def thingspeak_callback(success, data):
+    """
+    Callback para manejar el resultado del envío a ThingSpeak.
+
+    Args:
+        success (bool): Indica si el envío fue exitoso.
+        data (dict): Datos que se intentaron enviar.
+    """
+    global thingspeak_status
+    thingspeak_status['success'] = success
+    thingspeak_status['data'] = data
+    
+    if success:
+        print(f"Datos enviados a ThingSpeak correctamente: {data}")
+    else:
+        print(f"Error al enviar los datos: {data}")
+        
 id_random = random.randint(100,999)
 
 # - Ventan de configuracion inicial - #
@@ -404,6 +424,9 @@ class Frame_Main_MQTT_Control(Frame):
         self.init_gui_of_VitalData()
         self.init_gui_of_Positions()
         self.init_gui_of_RecvData()
+    
+    def change_but(self):
+        self.status4.grid(row=1,column=9, padx=10)
         
     # - Colocamos los elementos visuales - #
     def init_main_gui(self)-> None:
@@ -442,15 +465,16 @@ class Frame_Main_MQTT_Control(Frame):
         self.status1.grid(row=1,column=8, padx=10)
         self.status2.grid(row=1,column=7, padx=10)
         self.status3.grid(row=1,column=6, padx=10)
-        self.status4.grid(row=1,column=9, padx=10)
+        
         self.statuts2_label.grid(row=2,column=7)
         self.statuts3_label.grid(row=2,column=8)
         self.statuts4_label.grid(row=2,column=9)
+            
         
         #self.status1.grid_remove()
         #self.status2.grid_remove()
         #self.status3.grid_remove()
-        #self.status4.grid_remove()
+        
     
     def init_gui_of_Positions(self) -> None:
         # - CONTENTS POSITIONS - #
@@ -692,6 +716,14 @@ class Frame_Main_MQTT_Control(Frame):
         self.response = mqtt_esp_Servo.last_message
         # Sensores del ESP
         self.response_Data = mqtt_esp_Data.last_message
+        
+        # - TESTIGOS - #
+        # - TSP - #
+        # - TSP Testigo - #
+        if thingspeak_status['success'] is not None:
+            self.status4.grid(row=1,column=9, padx=10)
+        else:
+            self.status4.grid_remove()
         
         # -- DATA -- #
         if self.response_Data:
@@ -1499,22 +1531,22 @@ root = Tk()
 
 if __name__ == '__main__':
     ex = App(root)
-    #data = ex.get_data_app()
+    data = ex.get_data_app()
     # - Obtenemos valores a enviar - #
-    data = [1,2,3,4,5,]
-    data_2send = []
-    data_2send.append(data[0])
-    data_2send.append(data[1])
-    data_2send.append(data[-1])
+    #data = [1,2,3,4,5,]
 
     print(f'Data in Main: {data}')
-    print(f'Data divided: {data_2send}')
     
     # - Hilo dedicado a ThingSpeak - #
-    #if len(data) == 0:
-    #    print('No aviable data')
-    #else:
-    #    start_thingspeak_thread(data_2send)
+    if len(data) == 0:
+        print('No aviable data')
+    else:
+        data_2send = []
+        data_2send.append(data[0])
+        data_2send.append(data[1])
+        data_2send.append(data[-1])
+        print(f'Data divided: {data_2send}')
+        start_thingspeak_thread(data_2send, callback=thingspeak_callback)
     
     root.mainloop()
     
