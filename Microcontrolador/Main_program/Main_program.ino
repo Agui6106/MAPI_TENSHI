@@ -236,21 +236,14 @@ void setup() {
     myServo.attach(33);
 
     // -  Inicializacion de Motor A - //
-    pinMode(IN1, OUTPUT); 
-    pinMode(IN2, OUTPUT);  
-    // pinMode(ENA, OUTPUT);   
+    pinMode(in1, OUTPUT);
+    pinMode(in2, OUTPUT);
+    pinMode(ena, OUTPUT);  
 
     // - Inicializacion de Motor B - //
-    pinMode(IN4, OUTPUT); 
-    pinMode(IN3, OUTPUT);  
-    // pinMode(ENB, OUTPUT);
-
-    //ledcSetup(PWM_CHANNEL, FREQ, RESOLUTION);
-    ledcAttach(IN1, FREQ, RESOLUTION);
-    digitalWrite(IN2, LOW);
-
-    ledcAttach(IN3, FREQ, RESOLUTION);
-    digitalWrite(IN4, LOW);
+    pinMode(in3, OUTPUT);
+    pinMode(in4, OUTPUT);
+    pinMode(enb, OUTPUT);
 
     // - Inicializacion de Sensor Ultrasónico - //
     pinMode(trigPin, OUTPUT);
