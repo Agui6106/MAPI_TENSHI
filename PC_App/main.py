@@ -472,6 +472,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.status1.grid(row=1,column=8, padx=10)
         self.status2.grid(row=1,column=7, padx=10)
         self.status3.grid(row=1,column=6, padx=10)
+        self.status4.grid(row=1,column=9, padx=10)
         
         self.statuts2_label.grid(row=2,column=7)
         self.statuts3_label.grid(row=2,column=8)
@@ -534,6 +535,28 @@ class Frame_Main_MQTT_Control(Frame):
         self.gas_levels.grid(row=3,column=9)
         
     # - Atributos y elementos de aplicacion - #
+    
+    def blink_widget(self, widget, interval=500, times=5):
+        """
+        Hace que un widget parpadee en la interfaz.
+
+        Args:
+            widget: El widget de Tkinter que debe parpadear.
+            interval: Intervalo de parpadeo en milisegundos.
+            times: Número de veces que debe parpadear.
+        """
+        def toggle_visibility(count):
+            if count > 0:
+                if widget.winfo_ismapped():  # Si está visible
+                    widget.grid_remove()
+                else:  # Si está oculto
+                    widget.grid()
+                self.after(interval, toggle_visibility, count - 1)
+            else:
+                widget.grid_remove()  # Asegurarse de que termine oculto al final
+
+        toggle_visibility(times * 2)  # Cada parpadeo tiene dos estados (visible/oculto)
+
     # - TITULO - #
     def _Create_title(self) -> Label:
         return Label(
@@ -724,7 +747,10 @@ class Frame_Main_MQTT_Control(Frame):
         # - TESTIGOS - #
         # - TSP Testigo - #
         if thingspeak_status['success'] is not None:
+            #self.blink_widget(self.status4, interval=500, times=2)
             self.status4.grid(row=1,column=9, padx=10)
+            #time.sleep(100)
+            #self.status4.grid_remove()
         else:
             self.status4.grid_remove()
         
