@@ -264,11 +264,21 @@ class App(Frame):
         frame_pros_camera = Frame_Main_Pros_Camera(self.tab1)
         frame_pros_camera.grid(row=2, column=1, sticky='nsew')
         
-        self.data_2_send = frame_mqtt_control.get_data()
         return notebook
 
     def get_data_app(self):
-        return self.data_2_send
+        while not mqtt_esp_Data.last_message:
+            print("No message... Waiting")
+            time.sleep(1)
+        
+        value = mqtt_esp_Data.last_message.split(",")
+        
+        if value:
+            print("Value in get data app (Class): ",value)
+            return value
+        else:
+            print('NO values on mqtt')
+            return []
 
 # ----------------------------------- #
 # --------- Frames de MAIN ---------- #
@@ -799,19 +809,6 @@ class Frame_Main_MQTT_Control(Frame):
             self.X_Data.config(text=self.mensaje_Locations)
         
         self.parent.after(500, self.get_response)
-    
-    def get_data(self):
-        while not mqtt_esp_Data.last_message:
-            print("No message... Waiting")
-            time.sleep(5)
-        
-        self.value = mqtt_esp_Data.last_message.split(",")
-        
-        if self.value:
-            return self.value
-        else:
-            print('NO values on mqtt')
-            return []
 
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
@@ -1539,30 +1536,28 @@ root = Tk()
 
 if __name__ == '__main__':
     ex = App(root)
-
+    
     # Función para actualizar `dataAPP` periódicamente
     def update_data():
         global dataAPP
         dataAPP = ex.get_data_app()  # Obtén los datos más recientes
         print(f'Updated Data in Main: {dataAPP}')  # Imprime los datos actualizados
-        root.after(10000, update_data)  # Llama nuevamente a esta función en 1000ms (1 segundo)
-
-    # Hilo dedicado a ThingSpeak
-    def check_and_send_data():
+    
         if len(dataAPP) == 0:
             print('No available data')
-            pass
         else:
             data_2sendApp = [dataAPP[0], dataAPP[1], dataAPP[-1]]
             print(f'Data divided for ThingSpeak: {data_2sendApp}')
+            # Inicia un hilo para enviar los datos
             start_thingspeak_thread(data_2sendApp, callback=thingspeak_callback)
-        root.after(15000, check_and_send_data)  # Llama nuevamente después de 15 segundos
+    
+        root.after(15000, update_data)  # Llama nuevamente a esta función en 15000ms (15 segundos)
+
+    update_data()  # Actualiza los datos cada segundo
+    print("Data in Main before sending",dataAPP)
 
     # Inicia la actualización de datos y el envío a ThingSpeak
     dataAPP = []  # Inicializa la variable global
-    
-    update_data()  # Actualiza los datos cada segundo
-    check_and_send_data()  # Verifica y envía los datos cada 15 segundos
 
     # Ejecuta el bucle principal de la interfaz gráfica
     root.mainloop()

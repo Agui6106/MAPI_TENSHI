@@ -27,31 +27,26 @@ def send_to_thingspeak(data: dict, callback=None):
         
 def read_and_send_data_to_thingspeak(info, send_to_thingspeak, callback=None):
     """
-    Lee datos de un dispositivo y los envía a ThingSpeak.
-    
+    Envía datos a ThingSpeak una sola vez.
+
     Args:
         info (list): Lista con datos del dispositivo.
         send_to_thingspeak (callable): Función para enviar los datos a ThingSpeak.
     """
     print('Initializing ThingSpeak communications...')
-    while True:
-        try:
-            if len(info) >= 2 and info[0] != 'nan' and info[1] != 'nan':
-                data_to_send = {
-                    'field1': info[0],
-                    'field2': info[1],
-                    'field3': info[2] if len(info) > 2 else None
-                }
-                send_to_thingspeak(data_to_send, callback=callback)
-                time.sleep(15)
-            else: 
-                print('Valor nan detectado en los datos')
-        except KeyboardInterrupt:
-            print('Process manually interrupted')
-            break
-        except Exception as e:
-            print(f"Error: {e}")
-            break
+    try:
+        if len(info) >= 2 and info[0] != 'nan' and info[1] != 'nan':
+            data_to_send = {
+                'field1': info[0],
+                'field2': info[1],
+                'field3': info[2] if len(info) > 2 else None
+            }
+            send_to_thingspeak(data_to_send, callback=callback)
+        else:
+            print('Valor nan detectado en los datos')
+    except Exception as e:
+        print(f"Error: {e}")
+
 
 def start_thingspeak_thread(info, callback=None):
     """
