@@ -31,17 +31,15 @@ DHT dht(SENSOR, DHT11);   // creacion del objeto, cambiar segundo parametro
 
 // Configuracion Motores
 // Motores A
-#define IN1 14      
-#define IN2 12      
-int ENA = 13;      
+#define in1 14      
+#define in2 12      
+int ena = 13;      
 // Motores B
-#define IN4 4      
-#define IN3 2      
-int ENB = 15; 
-#define FREQ 5000
-#define PWM_CHANNEL 0 
-#define RESOLUTION 8
-int duty_cycle = 200; //seria el 100 porciento, registro de 8 bits
+#define in3 4      
+#define in4 2      
+int enb = 15; 
+int vel = 0;
+bool a = 1,b = 0, c = 1, d = 0;
 
 // Configuracion Servo
 Servo myServo;
@@ -125,48 +123,62 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     //Serial.print("Mensaje: ");
     //Serial.println(message);
 
+    if(dir != "center"){
+      vel += 20;
+      if(vel > 210){
+        vel = 210;
+      }
+    }else{
+      vel-=20;
+      if(vel < 0){
+        vel = 0;
+      }
+    }
+
     // - Control del Motor A basado en el mensaje - //
-    if (message == "Up") {
+    if (message == "up") {
       // Habilita motor A (giro hacia adelante)
-      digitalWrite(ENA, HIGH);  
-      digitalWrite(IN1, LOW); 
-      digitalWrite(IN2, HIGH);
+      a = 0;
+      b = 1;
       // Habilita motor B (giro hacia adelante)
-      digitalWrite(ENB, HIGH); 
-      digitalWrite(IN3, LOW);
-      digitalWrite(IN4, HIGH);
-    } else if (message == "Down") {
+      c = 1;
+      d = 0;
+    } else if (message == "down") {
       // Habilita motor A (giro hacia atras)
-      digitalWrite(ENA, HIGH);  
-      digitalWrite(IN1, HIGH); 
-      digitalWrite(IN2, LOW);
+      a = 1;
+      b = 0;
       // Habilita motor B (giro hacia atras)
-      digitalWrite(ENB, HIGH); 
-      digitalWrite(IN3, HIGH);
-      digitalWrite(IN4, LOW);
-    } else if (message == "Left"){
+      c = 0; 
+      d = 1;
+    } else if (message == "left"){
       // Habilita motor A (giro hacia atras)
-      digitalWrite(ENA, HIGH);  
-      digitalWrite(IN1, HIGH); 
-      digitalWrite(IN2, LOW);
+      a = 1;
+      b = 0;
       // Habilita motor B (giro hacia adelante)
-      digitalWrite(ENB, HIGH); 
-      digitalWrite(IN3, LOW);
-      digitalWrite(IN4, HIGH);
-    } else if (message == "Right"){
+      c = 1;
+      d = 0;
+    } else if (message == "right"){
       // Habilita motor A (giro hacia adelante)
-      digitalWrite(ENA, HIGH);  
-      digitalWrite(IN1, HIGH); 
-      digitalWrite(IN2, LOW);
+      a = 0;
+      b = 1;
       // Habilita motor B (giro hacia atras)
-      digitalWrite(ENB, HIGH); 
-      digitalWrite(IN3, HIGH);
-      digitalWrite(IN4, LOW);
+      c = 0;
+      d = 1;
     } else{
       // Apagar ambos motores
-      digitalWrite(ENA, LOW);
-      digitalWrite(ENB, LOW);
+      a = 0;
+      b = 0;
+      c = 0; 
+      d = 0;
     }
+
+    digitalWrite(in1, a);
+    digitalWrite(in2, b);
+    digitalWrite(in3, c);
+    digitalWrite(in4, d);
+    
+    analogWrite(ena, vel);
+    analogWrite(enb, vel);
 
     // - Control del Servo Motor basado en el mensaje - //
     int angle = 0;
@@ -224,21 +236,14 @@ void setup() {
     myServo.attach(33);
 
     // -  Inicializacion de Motor A - //
-    pinMode(IN1, OUTPUT); 
-    pinMode(IN2, OUTPUT);  
-    // pinMode(ENA, OUTPUT);   
+    pinMode(in1, OUTPUT);
+    pinMode(in2, OUTPUT);
+    pinMode(ena, OUTPUT);  
 
     // - Inicializacion de Motor B - //
-    pinMode(IN4, OUTPUT); 
-    pinMode(IN3, OUTPUT);  
-    // pinMode(ENB, OUTPUT);
-
-    //ledcSetup(PWM_CHANNEL, FREQ, RESOLUTION);
-    ledcAttach(IN1, FREQ, RESOLUTION);
-    digitalWrite(IN2, LOW);
-
-    ledcAttach(IN3, FREQ, RESOLUTION);
-    digitalWrite(IN4, LOW);
+    pinMode(in3, OUTPUT);
+    pinMode(in4, OUTPUT);
+    pinMode(enb, OUTPUT);
 
     // - Inicializacion de Sensor Ultrasónico - //
     pinMode(trigPin, OUTPUT);
