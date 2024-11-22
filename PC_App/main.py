@@ -20,6 +20,8 @@ import webbrowser
 import random
 import os
 
+import time
+
 # - Imagen de stream - #
 import cv2
 import numpy as np
@@ -252,7 +254,6 @@ class App(Frame):
         """
         # Control MQTT
         frame_mqtt_control = Frame_Main_MQTT_Control(self.tab1)  # Instanciar el frame aquí
-        self.data_2_send = frame_mqtt_control.get_data()
         frame_mqtt_control.grid(row=1, column=0, rowspan=2, sticky='nsew')
 
         # Camara sin proceso
@@ -263,6 +264,7 @@ class App(Frame):
         frame_pros_camera = Frame_Main_Pros_Camera(self.tab1)
         frame_pros_camera.grid(row=2, column=1, sticky='nsew')
         
+        self.data_2_send = frame_mqtt_control.get_data()
         return notebook
 
     def get_data_app(self):
@@ -412,7 +414,6 @@ class Frame_Main_MQTT_Control(Frame):
             self.important_info_msg.insert('end', ColMsg)
             self.important_info_msg.insert('end', helpmsg)
             self.important_info_msg.config(state='disabled')"""
-            
             
         # - MQTT - #
         self.get_response()
@@ -698,6 +699,7 @@ class Frame_Main_MQTT_Control(Frame):
     
     # Recepcion        
     def get_response(self):
+        colsmsg =       f'{self.hora_actual} - [Info]: Be aware of objects ahead \n'
         # Perifericos
         self.mensaje_Perifs = mqtt_esp_Perif.last_message
 
@@ -710,7 +712,6 @@ class Frame_Main_MQTT_Control(Frame):
         self.response_Data = mqtt_esp_Data.last_message
         
         # - TESTIGOS - #
-        # - TSP - #
         # - TSP Testigo - #
         if thingspeak_status['success'] is not None:
             self.status4.grid(row=1,column=9, padx=10)
@@ -771,7 +772,6 @@ class Frame_Main_MQTT_Control(Frame):
             Htemp =         f'{self.hora_actual} - [Info]: Danger of fire... Calling firefighters at location {Lat}, {Long}\n'
             flippedmsg =    f'{self.hora_actual} - [Info]: Robot Cant continue correct operation flipped robot\n'
             helpmsg =       f'{self.hora_actual} - [Info]: Calling Robot ID: #{id_random} for backup...\n'
-            colsmsg =       f'{self.hora_actual} - [Info]: Be aware of objects ahead \n'
             
             # - Bomberos - #
             if numeric_temp_value >= 40 and numeric_Hum_value <= 20:
@@ -797,12 +797,22 @@ class Frame_Main_MQTT_Control(Frame):
         # Lectura de los valores del giroscopio
         if self.mensaje_Locations:
             self.X_Data.config(text=self.mensaje_Locations)
-            
+        
         self.parent.after(500, self.get_response)
     
     def get_data(self):
-        return self.value
-            
+        while not mqtt_esp_Data.last_message:
+            print("No message... Waiting")
+            time.sleep(5)
+        
+        self.value = mqtt_esp_Data.last_message.split(",")
+        
+        if self.value:
+            return self.value
+        else:
+            print('NO values on mqtt')
+            return []
+
 # -- Camara sin procesar -- #
 class Frame_Main_Raw_Camera(Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -1392,7 +1402,6 @@ class FrameOptions(Frame):
         
         about.config(state='disabled')
 
-        
         return notebook 
     
     # - Valores - #
@@ -1514,31 +1523,48 @@ class FrameOptions(Frame):
     # - Abrimos el navegador - #
     def open_TSP(self):
         nav1 = webbrowser.get()
-        nav1.open('https://thingspeak.mathworks.com/channels/2739749')
+        nav1.open('https://thingspeak.mathworks.com/channels/2748122')
            
 # ------------------------------------------------------ #
 # -------------- Inicializacion de la app -------------- #
 # ------------------------------------------------------ #
 root = Tk()
 
+    #num1 = random.randint(1,100)
+    #num2 = random.randint(1,100)
+    #num3 = random.randint(1,100)
+    #num4 = random.randint(1,100)
+    #data = [num1,num2,num3,num4]
+    #data =[]
+
 if __name__ == '__main__':
     ex = App(root)
-    # - Obtenemos valores a enviar - #
-    data = ex.get_data_app()
-    #data = [1,2,3,4,5,]
 
-    print(f'Data in Main: {data}')
+    # Función para actualizar `dataAPP` periódicamente
+    def update_data():
+        global dataAPP
+        dataAPP = ex.get_data_app()  # Obtén los datos más recientes
+        print(f'Updated Data in Main: {dataAPP}')  # Imprime los datos actualizados
+        root.after(10000, update_data)  # Llama nuevamente a esta función en 1000ms (1 segundo)
+
+    # Hilo dedicado a ThingSpeak
+    def check_and_send_data():
+        if len(dataAPP) == 0:
+            print('No available data')
+            pass
+        else:
+            data_2sendApp = [dataAPP[0], dataAPP[1], dataAPP[-1]]
+            print(f'Data divided for ThingSpeak: {data_2sendApp}')
+            start_thingspeak_thread(data_2sendApp, callback=thingspeak_callback)
+        root.after(15000, check_and_send_data)  # Llama nuevamente después de 15 segundos
+
+    # Inicia la actualización de datos y el envío a ThingSpeak
+    dataAPP = []  # Inicializa la variable global
     
-    # - Hilo dedicado a ThingSpeak - #
-    if len(data) == 0:
-        print('No aviable data')
-    else:
-        data_2send = []
-        data_2send.append(data[0])
-        data_2send.append(data[1])
-        data_2send.append(data[-1])
-        print(f'Data divided: {data_2send}')
-        start_thingspeak_thread(data_2send, callback=thingspeak_callback)
-    
+    update_data()  # Actualiza los datos cada segundo
+    check_and_send_data()  # Verifica y envía los datos cada 15 segundos
+
+    # Ejecuta el bucle principal de la interfaz gráfica
     root.mainloop()
+
     
