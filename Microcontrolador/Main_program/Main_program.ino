@@ -123,13 +123,13 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     //Serial.print("Mensaje: ");
     //Serial.println(message);
 
-    if(dir != "center"){
-      vel += 20;
+    if(message != "center"){
+      vel += 90;
       if(vel > 210){
         vel = 210;
       }
     }else{
-      vel-=20;
+      vel-=90;
       if(vel < 0){
         vel = 0;
       }
@@ -172,6 +172,8 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
       d = 0;
     }
 
+    Serial.println("                         Message: " + message);
+
     digitalWrite(in1, a);
     digitalWrite(in2, b);
     digitalWrite(in3, c);
@@ -211,8 +213,8 @@ void reconnect() {
         if (mqttClient.connect("ESP32Client")) {
             Serial.println("Conectado");
             // Control Motores
-            //mqttClient.subscribe("ESP/MotorX");
-            //mqttClient.subscribe("ESP/MotorY");
+            mqttClient.subscribe("ESP/Motors");
+            
             mqttClient.subscribe("ESP/Servo");
         } else {
             //Serial.print("Fallido, rc=");
@@ -310,7 +312,7 @@ void loop() { // Datos que recibimos del ESP32
   
     duration2 = pulseIn(echoPin2, HIGH); //obtenemos el ancho del pulso
     distance2 = duration2/59;             //escalamos el tiempo a una distancia en cm
-    delay(200);
+    //delay(100);
 
     // -- SENSOR INFRARROJOS -- //
     int valueInf1 = 0;
@@ -438,7 +440,7 @@ void loop() { // Datos que recibimos del ESP32
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
     Serial.print(mensaje);
-    /*
+    
     Serial.println("Temperatura: " + String(t));
     Serial.println("Humedad: " + String(h));
     Serial.println("Distancia 1: " + String(distance));
@@ -450,9 +452,9 @@ void loop() { // Datos que recibimos del ESP32
     Serial.println("Angulo Z: " + String(Angle[2]));
     Serial.println("Latitud: " + String(latitude));
     Serial.println("Longitud: " + String(longitude));
-    */
+    
 
-    delay(500);
+    delay(100);
 
 /*
     // Motores 
