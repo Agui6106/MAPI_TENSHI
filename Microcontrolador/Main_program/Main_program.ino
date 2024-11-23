@@ -123,8 +123,8 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     //Serial.print("Mensaje: ");
     //Serial.println(message);
 
-    if(dir != "center"){
-      vel += 20;
+    if(message != "center"){
+      vel += 90;
       if(vel > 210){
         vel = 210;
       }
@@ -310,7 +310,7 @@ void loop() { // Datos que recibimos del ESP32
     delayMicroseconds(10);          //Enviamos un pulso de 10us
     digitalWrite(trigPin2, LOW);
   
-    duration2 = pulseIn(echoPin2, HIGH); //obtenemos el ancho del pulso
+    duration2 git= pulseIn(echoPin2, HIGH); //obtenemos el ancho del pulso
     distance2 = duration2/59;             //escalamos el tiempo a una distancia en cm
     //delay(100);
 
