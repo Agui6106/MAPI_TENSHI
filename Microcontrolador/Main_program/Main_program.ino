@@ -123,7 +123,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     //Serial.print("Mensaje: ");
     //Serial.println(message);
 
-    if(dir != "center"){
+    if(message != "center"){
       vel += 20;
       if(vel > 210){
         vel = 210;
