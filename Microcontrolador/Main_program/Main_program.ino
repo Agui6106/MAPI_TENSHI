@@ -310,7 +310,7 @@ void loop() { // Datos que recibimos del ESP32
     delayMicroseconds(10);          //Enviamos un pulso de 10us
     digitalWrite(trigPin2, LOW);
   
-    duration2 git= pulseIn(echoPin2, HIGH); //obtenemos el ancho del pulso
+    duration2 = pulseIn(echoPin2, HIGH); //obtenemos el ancho del pulso
     distance2 = duration2/59;             //escalamos el tiempo a una distancia en cm
     //delay(100);
 
