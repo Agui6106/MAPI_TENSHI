@@ -42,7 +42,8 @@ int vel = 0;
 bool a = 1,b = 0, c = 1, d = 0;
 
 // Configuracion Servo
-Servo myServo;
+Servo servoRasp;
+Servo servoBrazo;
 
 // Configuración Sensor Ultrasónico
 #define trigPin 18     // Pin de Trigger
@@ -60,7 +61,10 @@ float distance2;
 int infrarrojo1 = 5;  // Pin de Sensor Infrarrojo 1
 
 // Configuración Sensor Infrarrojo 2
-int infrarrojo2 = 25;  // Pin de Sensor Infrarrojo 2
+int infrarrojo2 = 34;  // Pin de Sensor Infrarrojo 2
+
+// Configuración Sensor de Gas
+int gas = 35;  // Pin de Sensor de Gas
 
 // Configuracion LDR
 float light;
@@ -183,7 +187,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     analogWrite(enb, vel);
 
     // - Control del Servo Motor basado en el mensaje - //
-    int angle = 0;
+    /*int angle = 0;
     myServo.write(180);
     if (message == "D_LFT") {
       myServo.write(angle - 10);
@@ -194,6 +198,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
         mqttClient.publish("ESP/Response", "Servo +10°");
 
       }
+      */
 
     /*
     float angle = message.toFloat();  // Convierte el mensaje a un número entero
@@ -235,7 +240,9 @@ void setup() {
     dht.begin();   
 
     // Inicilizacion servomotor
-    myServo.attach(33);
+    servoRasp.attach(33);
+    servoBrazo.attach(25);
+
 
     // -  Inicializacion de Motor A - //
     pinMode(in1, OUTPUT);
