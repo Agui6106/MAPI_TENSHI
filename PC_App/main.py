@@ -18,6 +18,7 @@ import datetime as dt
 import webbrowser
 
 import random
+import json
 import os
 
 import time
@@ -163,8 +164,8 @@ mqtt_client.start()
 
 # - ESP32 - #
 # -- SERVO -- #
-mqtt_esp_Servo = mqtt_coms(ip, 1883, 'ESP/Response', 'ESP/Servo')
-mqtt_esp_Servo.start()
+mqtt_MatLab = mqtt_coms(ip, 1883, 'estado_luz', 'ESP/Servo')
+mqtt_MatLab.start()
 
 # -- SENSORS AND MAIN MOTORS -- #
 mqtt_esp_Data = mqtt_coms(ip, 1883, 'ESP/Sensors', 'ESP/Motors')
@@ -173,10 +174,6 @@ mqtt_esp_Data.start()
 # -- PERIFERICOS -- #
 mqtt_esp_Perif = mqtt_coms(ip, 1883, 'ESP/Lamp/Buzz', 'ESP/Perifericals')
 mqtt_esp_Perif.start()
-
-# -- GIROSCOPIO Y GPS -- #
-mqtt_esp_Locations = mqtt_coms(ip, 1883, 'ESP/Lat/Long/GX/GY', 'PC/Response')
-mqtt_esp_Locations.start()
 
 # - FECHA DE HOY - #
 date = dt.datetime.now()
@@ -289,6 +286,7 @@ class Frame_Main_MQTT_Control(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
+        self.last_processed_message = None  # Variable para guardar el último mensaje procesado
         
         # - Hora actual - #
         self.hora_actual = dt.datetime.now().strftime("%H:%M:%S")
@@ -337,7 +335,7 @@ class Frame_Main_MQTT_Control(Frame):
         
         # - STATUS - #
         self.statuts1_label = Label(self.vital_Data_frame, text=" Motors", font=('Z003', 13))
-        self.statuts2_label = Label(self.vital_Data_frame, text="Battery", font=('Z003', 13))
+        self.statuts2_label = Label(self.vital_Data_frame, text=" Light ", font=('Z003', 13))
         self.statuts3_label = Label(self.vital_Data_frame, text=" Serial", font=('Z003', 13))
         self.statuts4_label = Label(self.vital_Data_frame, text=" Cloud ", font=('Z003', 13))
         self.status1: Button = self.stat_1()
@@ -479,7 +477,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.statuts4_label.grid(row=2,column=9)
         
         #self.status1.grid_remove()
-        #self.status2.grid_remove()
+        self.status2.grid_remove()
         #self.status3.grid_remove()
     
     def init_gui_of_Positions(self) -> None:
@@ -535,27 +533,23 @@ class Frame_Main_MQTT_Control(Frame):
         self.gas_levels.grid(row=3,column=9)
         
     # - Atributos y elementos de aplicacion - #
+    def imprimir_mensaje(self, mensaje):
+        # Verificar si ya se está en un tiempo de espera
+        if not hasattr(self, 'message_timer'):
+            self.message_timer = False  # Inicializar la bandera
+
+        if not self.message_timer:  # Si no estamos en tiempo de espera
+            self.important_info_msg.config(state='normal')
+            self.important_info_msg.insert('end', mensaje )
+            self.important_info_msg.see('end')  # Autoscroll
+            self.important_info_msg.config(state='disabled')
+
+            # Establecer tiempo de espera para nuevos mensajes
+            self.message_timer = True
+            self.parent.after(3000, self.reset_message_timer)  # 3 segundos de espera
     
-    def blink_widget(self, widget, interval=500, times=5):
-        """
-        Hace que un widget parpadee en la interfaz.
-
-        Args:
-            widget: El widget de Tkinter que debe parpadear.
-            interval: Intervalo de parpadeo en milisegundos.
-            times: Número de veces que debe parpadear.
-        """
-        def toggle_visibility(count):
-            if count > 0:
-                if widget.winfo_ismapped():  # Si está visible
-                    widget.grid_remove()
-                else:  # Si está oculto
-                    widget.grid()
-                self.after(interval, toggle_visibility, count - 1)
-            else:
-                widget.grid_remove()  # Asegurarse de que termine oculto al final
-
-        toggle_visibility(times * 2)  # Cada parpadeo tiene dos estados (visible/oculto)
+    def reset_message_timer(self):
+        self.message_timer = False
 
     # - TITULO - #
     def _Create_title(self) -> Label:
@@ -658,6 +652,7 @@ class Frame_Main_MQTT_Control(Frame):
         if not ps4.check_ps4_connection():
             pass        
         else:
+            stop = False
             # Obtenemos los valores y redondeamos los necesarios
             controller_state = ps4.get_controller_state()
             # Redondeamos los valores de los ejes necesarios
@@ -668,55 +663,104 @@ class Frame_Main_MQTT_Control(Frame):
         
             # Obtenemos los valores del control y enviamos x MQTT
             self.cam_scale.set(xr)
+            
+            if not stop:
+                if (yl > -xl) and (yl > xl) and yl < 0.3:
+                    # Down
+                    self.direction.create_image((0,0),image=self.GDown, anchor='nw')
+                    try:
+                        print(f"Axe value: {yl}")
+                        mqtt_esp_Data.publish_message('down')
+                        print("Send: down")
+                    except Exception as e:
+                        print(f"Failed to send info due to: {e}")
+                
+                elif (yl < -xl) and (yl > xl) and xl < -0.3:
+                    # Left
+                    self.direction.create_image((0,0),image=self.GLeft, anchor='nw')
+                    try:
+                        print(f"Axe value: {xl}")
+                        mqtt_esp_Data.publish_message('left')
+                        print("Send: left")
+                    except Exception as e:
+                        print(f"Failed to send info due to: {e}")
+                
+                elif (yl < -xl) and (yl < xl) and yl > -0.3:
+                    # Up
+                    self.direction.create_image((0,0),image=self.GUp, anchor='nw')
+                    try:
+                        print(f"Axe value: {yl}")
+                        mqtt_esp_Data.publish_message('up')
+                        print("Send: up")
+                    except Exception as e:
+                        print(f"Failed to send info due to: {e}")
+                
+                elif (yl > -xl) and (yl < xl) and xl > 0.3:
+                    # Right
+                    self.direction.create_image((0,0),image=self.GRight, anchor='nw')
+                    try:
+                        print(f"Axe value: {xl}")
+                        mqtt_esp_Data.publish_message('right')
+                        print("Send: right")
+                    except Exception as e:
+                        print(f"Failed to send info due to: {e}")
+                        
             # Hacia Abajo
-            if yl >= 0.25:
-                self.direction.create_image((0,0),image=self.GDown, anchor='nw')
-                try:
-                    mqtt_esp_Data.publish_message('down')
-                except Exception as e:
-                    print(f"Failed to send info due to: {e}")
+            #if yl >= 0.30:
+            #    self.direction.create_image((0,0),image=self.GDown, anchor='nw')
+            #    try:
+            #        print(f"Axe value: {yl}")
+            #        mqtt_esp_Data.publish_message('down')
+            #        print("Send: down")
+            #    except Exception as e:
+            #        print(f"Failed to send info due to: {e}")
             
             # Hacia Arriba
-            if yl <= -0.25:
-                self.direction.create_image((0,0),image=self.GUp, anchor='nw')
-                try:
-                    mqtt_esp_Data.publish_message('up')
-                except Exception as e:
-                    print(f"Failed to send info due to: {e}")
+            #if yl <= -0.30:
+            #    self.direction.create_image((0,0),image=self.GUp, anchor='nw')
+            #    try:
+            #        print(f"Axe value: {yl}")
+            #        mqtt_esp_Data.publish_message('up')
+            #        print("Send: up")
+            #    except Exception as e:
+            #        print(f"Failed to send info due to: {e}")
             
             # Derecha
-            if xl >= 0.25:
-                self.direction.create_image((0,0),image=self.GRight, anchor='nw')
-                try:
-                    mqtt_esp_Data.publish_message('right')
-                except Exception as e:
-                    print(f"Failed to send info due to: {e}")
-            
+            #if xl >= 0.30:
+            #    self.direction.create_image((0,0),image=self.GRight, anchor='nw')
+            #    try:
+            #        print(f"Axe value: {xl}")
+            #        mqtt_esp_Data.publish_message('right')
+            #        print("Send: right")
+            #    except Exception as e:
+            #        print(f"Failed to send info due to: {e}")
+            #
             # Izquierda
-            if xl <= -0.25:
-                self.direction.create_image((0,0),image=self.GLeft, anchor='nw')
-                try:
-                    mqtt_esp_Data.publish_message('left')
-                except Exception as e:
-                    print(f"Failed to send info due to: {e}")
-            
-            # Sin Movimiento
-            if xl == 0 and yl == 0:
-                self.direction.create_image((0,0),image=self.Still, anchor='nw')
-                try:
-                    mqtt_esp_Data.publish_message('center')
-                except Exception as e:
-                    print(f"Failed to send info due to: {e}")
+            #if xl <= -0.30:
+            #    self.direction.create_image((0,0),image=self.GLeft, anchor='nw')
+            #    try:
+            #        print(f"Axe value: {xl}")
+            #        mqtt_esp_Data.publish_message('left')
+            #        print("Send: left")
+            #    except Exception as e:
+            #        print(f"Failed to send info due to: {e}")
             
             # Chequear botones específicos y enviar info por MQTT
+            
+            
             buttons = controller_state['buttons']
             if buttons.get('X', 0):  # Por ejemplo, 'X' activa la lámpara
-                self.send_buttons_info('Lamp')
-            if buttons.get('O', 0):  # 'O' activa el buzzer
-                self.send_buttons_info('Buzzer')
+                self.direction.create_image((0,0),image=self.Still, anchor='nw')
+                try:
+                    print(f"Axe value: {xl}")
+                    mqtt_esp_Data.publish_message('center')
+                    print("send: center")
+                    stop = True
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
             
             # Llamada recursiva para actualizar cada 50ms
-            self.after(50, self.update_vals)
+            self.after(52, self.update_vals)
             
     # - MQTT PROTOCOL - #     
     # Envio       
@@ -730,27 +774,62 @@ class Frame_Main_MQTT_Control(Frame):
         except Exception as e:
             print(f"Failed to send info due to: {e}")
     
+    def recorrer_acciones(self, acciones, index=0):
+        if index < len(acciones):  # Asegurarse de no exceder el tamaño del array
+            accion = acciones[index]
+            if accion == "shadow":
+                # Mostrar el mensaje en el Text widget
+                self.important_info_msg.config(state='normal')
+                self.important_info_msg.insert('end', f'{self.hora_actual} - [Warn]: Too dark Turn On lights!!! \n')
+                self.important_info_msg.see('end')  # Autoscroll al final
+                self.important_info_msg.config(state='disabled')
+
+                # Mostrar el botón
+                self.status2.grid(row=1, column=7, padx=10)
+            elif accion == "light":
+                # Mostrar el mensaje en el Text widget
+                self.important_info_msg.config(state='normal')
+                self.important_info_msg.insert('end', f'{self.hora_actual} - [Warn]: Too bright Turn Off lights!!! \n')
+                self.important_info_msg.see('end')  # Autoscroll al final
+                self.important_info_msg.config(state='disabled')
+
+                # Ocultar el botón
+                self.status2.grid_remove()
+
+            # Llamar a la función nuevamente después de 5 segundos
+            self.parent.after(1000, self.recorrer_acciones, acciones, index + 1)
+
     # Recepcion        
     def get_response(self):
         colsmsg =       f'{self.hora_actual} - [Info]: Be aware of objects ahead \n'
-        # Perifericos
-        self.mensaje_Perifs = mqtt_esp_Perif.last_message
-
-        # Giroscopio y Coordenadas
-        self.mensaje_Locations = mqtt_esp_Locations.last_message
-        
-        # Respuesta del ESP
-        self.response = mqtt_esp_Servo.last_message
+        # Respuesta del Matlab
+        self.response = mqtt_MatLab.last_message
         # Sensores del ESP
         self.response_Data = mqtt_esp_Data.last_message
         
+        # Recorremos el array de Matlab
+        def read_matlab_info():
+            try:
+                # Decodificar el mensaje como JSON
+                estado_array = json.loads(self.response)
+                print("Array recibido:", estado_array)
+                acciones = ["light" if estado == 0 else "shadow" for estado in estado_array]
+                return acciones
+            except json.JSONDecodeError as e:
+                print("Error al decodificar JSON:", e)
+                
+        if self.response and self.response != self.last_processed_message:
+            # Procesar solo si el mensaje es nuevo
+            self.last_processed_message = self.response  # Actualizamos el último mensaje procesado
+            acciones = read_matlab_info()
+            print("Acciones procesadas:", acciones)
+            
+            self.recorrer_acciones(acciones)
+
         # - TESTIGOS - #
         # - TSP Testigo - #
         if thingspeak_status['success'] is not None:
-            #self.blink_widget(self.status4, interval=500, times=2)
             self.status4.grid(row=1,column=9, padx=10)
-            #time.sleep(100)
-            #self.status4.grid_remove()
         else:
             self.status4.grid_remove()
         
@@ -764,20 +843,17 @@ class Frame_Main_MQTT_Control(Frame):
             self.data_Dist_UltrB.config(text=self.value[3])
             # verifciamos colision 1
             if self.value[4] == 'collision':
+                #colsmsg
                 self.data_Dist_InfrF.config(text='Danger', foreground='red')
-                self.important_info_msg.config(state='normal')
-                self.important_info_msg.insert('end', colsmsg)
-                self.important_info_msg.config(state='disabled')
-                
+                self.imprimir_mensaje(colsmsg)
+
             if self.value[4] == 'clear':
                 self.data_Dist_InfrF.config(text='Safe', foreground='Green')
                 
             # Verificamos colision 2
             if self.value[5] == 'collision':
                 self.data_Dist_InfrB.config(text='Danger', foreground='red')
-                self.important_info_msg.config(state='normal')
-                self.important_info_msg.insert('end', colsmsg)
-                self.important_info_msg.config(state='disabled')
+                self.imprimir_mensaje(colsmsg)
                 
             if self.value[5] == 'clear':
                 self.data_Dist_InfrB.config(text='Safe', foreground='Green')
@@ -809,31 +885,16 @@ class Frame_Main_MQTT_Control(Frame):
             flippedmsg =    f'{self.hora_actual} - [Info]: Robot Cant continue correct operation flipped robot\n'
             helpmsg =       f'{self.hora_actual} - [Info]: Calling Robot ID: #{id_random} for backup...\n'
             
-            # - Bomberos - #
+            # - Bomberos - # Htemp
             if numeric_temp_value >= 40 and numeric_Hum_value <= 20:
                 print('Danger of fire... Calling firefighters')
-                self.important_info_msg.config(state='normal')
-                self.important_info_msg.insert('end', Htemp)
-                self.important_info_msg.config(state='disabled')
+                self.imprimir_mensaje(Htemp)
             
-            # - BackUp - #
+            # - BackUp - # flippedmsg helpmsg
             if numeric_x >= 180:
-                self.important_info_msg.config(state='normal')
-                self.important_info_msg.insert('end', flippedmsg)
-                self.important_info_msg.insert('end', helpmsg)
-                self.important_info_msg.config(state='disabled')
-            
-        # Verificar respuesta en lampara
-        if self.mensaje_Perifs:
-            if self.mensaje_Perifs == 'LPOn':
-                self.buz_on_label.config(text='On', foreground='green')
-            elif self.mensaje_Perifs == 'LPOff':
-                self.lamp_on_label.config(text='Off',foreground='red')
-            
-        # Lectura de los valores del giroscopio
-        if self.mensaje_Locations:
-            self.X_Data.config(text=self.mensaje_Locations)
-        
+                self.imprimir_mensaje(flippedmsg)
+                self.imprimir_mensaje(helpmsg)
+                 
         self.parent.after(500, self.get_response)
 
 # -- Camara sin procesar -- #
@@ -1572,7 +1633,12 @@ if __name__ == '__main__':
         if len(dataAPP) == 0:
             print('No available data')
         else:
-            data_2sendApp = [dataAPP[0], dataAPP[1], dataAPP[-1]]
+            temp = dataAPP[0]
+            hum = dataAPP[1]
+            numeric_temp_value = float(temp.replace("°C", ""))
+            numeric_Hum_value = float(hum.replace("%", ""))
+            
+            data_2sendApp = [numeric_temp_value, numeric_Hum_value, dataAPP[-1]]
             print(f'Data divided for ThingSpeak: {data_2sendApp}')
             # Inicia un hilo para enviar los datos
             start_thingspeak_thread(data_2sendApp, callback=thingspeak_callback)
