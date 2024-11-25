@@ -42,7 +42,9 @@ int vel = 0;
 bool a = 1,b = 0, c = 1, d = 0;
 
 // Configuracion Servo
-Servo myServo;
+Servo servoRasp;
+Servo servoBrazo;
+Servo servoGarra;
 
 // Configuración Sensor Ultrasónico
 #define trigPin 18     // Pin de Trigger
@@ -60,7 +62,7 @@ float distance2;
 int infrarrojo1 = 5;  // Pin de Sensor Infrarrojo 1
 
 // Configuración Sensor Infrarrojo 2
-int infrarrojo2 = 25;  // Pin de Sensor Infrarrojo 2
+int infrarrojo2 = 34;  // Pin de Sensor Infrarrojo 2
 
 // Configuracion LDR
 float light;
@@ -103,6 +105,31 @@ double SPEED;
 String speed="";
 String MSG;
 
+// Configuración Sensor de Gas
+int gas = 35;  // Pin de Sensor de Gas
+
+const int RL_VALUE = 5;    // Resistencia RL del modulo en Kilo ohms
+const int R0 = 10;          // Resistencia R0 del sensor en Kilo ohms
+
+// Datos para lectura multiple
+const int READ_SAMPLE_INTERVAL = 100;    // Tiempo entre muestras
+const int READ_SAMPLE_TIMES = 5;     // Numero muestras
+
+// Ajustar estos valores según el Datasheet
+const float X0 = 200;
+const float Y0 = 1.7;
+const float X1 = 10000;
+const float Y1 = 0.65;
+
+// Puntos de la curva de concentración {X, Y}
+const float punto0[] = { log10(X0), log10(Y0) };
+const float punto1[] = { log10(X1), log10(Y1) };
+
+// Calcular pendiente y coordenada abscisas
+const float scope = (punto1[1] - punto0[1]) / (punto1[0] - punto0[0]);
+const float coord = punto0[1] - punto0[0] * scope;
+
+
 // ==================================================================== //
 
 // -- Instancias de cliente Wi-Fi y MQTT -- //
@@ -123,13 +150,13 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     //Serial.print("Mensaje: ");
     //Serial.println(message);
 
-    if(dir != "center"){
-      vel += 20;
+    if(message != "center"){
+      vel += 90;
       if(vel > 210){
         vel = 210;
       }
     }else{
-      vel-=20;
+      vel-=90;
       if(vel < 0){
         vel = 0;
       }
@@ -172,6 +199,8 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
       d = 0;
     }
 
+    Serial.println("                         Message: " + message);
+
     digitalWrite(in1, a);
     digitalWrite(in2, b);
     digitalWrite(in3, c);
@@ -181,7 +210,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     analogWrite(enb, vel);
 
     // - Control del Servo Motor basado en el mensaje - //
-    int angle = 0;
+    /*int angle = 0;
     myServo.write(180);
     if (message == "D_LFT") {
       myServo.write(angle - 10);
@@ -192,6 +221,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
         mqttClient.publish("ESP/Response", "Servo +10°");
 
       }
+      */
 
     /*
     float angle = message.toFloat();  // Convierte el mensaje a un número entero
@@ -211,8 +241,8 @@ void reconnect() {
         if (mqttClient.connect("ESP32Client")) {
             Serial.println("Conectado");
             // Control Motores
-            //mqttClient.subscribe("ESP/MotorX");
-            //mqttClient.subscribe("ESP/MotorY");
+            mqttClient.subscribe("ESP/Motors");
+            
             mqttClient.subscribe("ESP/Servo");
         } else {
             //Serial.print("Fallido, rc=");
@@ -221,6 +251,30 @@ void reconnect() {
             delay(5000);
         }
     }
+}
+
+// Funciones para el sensor de gas
+// Obtener la resistencia promedio en N muestras
+float readMQ(int mq_pin)
+{
+  float rs = 0;
+  for (int i = 0;i<READ_SAMPLE_TIMES;i++) {
+    rs += getMQResistance(analogRead(mq_pin));
+    delay(READ_SAMPLE_INTERVAL);
+  }
+  return rs / READ_SAMPLE_TIMES;
+}
+
+// Obtener resistencia a partir de la lectura analogica
+float getMQResistance(int raw_adc)
+{
+  return (((float)RL_VALUE / 1000.0*(1023 - raw_adc) / raw_adc));
+}
+
+// Obtener concentracion 10^(coord + scope * log (rs/r0)
+float getConcentration(float rs_ro_ratio)
+{
+  return pow(10, coord + scope * log(rs_ro_ratio));
 }
 
 // ==================================================================== //
@@ -233,7 +287,10 @@ void setup() {
     dht.begin();   
 
     // Inicilizacion servomotor
-    myServo.attach(33);
+    servoRasp.attach(33);
+    servoBrazo.attach(25);
+    //servoGarra.attach();
+
 
     // -  Inicializacion de Motor A - //
     pinMode(in1, OUTPUT);
@@ -310,7 +367,7 @@ void loop() { // Datos que recibimos del ESP32
   
     duration2 = pulseIn(echoPin2, HIGH); //obtenemos el ancho del pulso
     distance2 = duration2/59;             //escalamos el tiempo a una distancia en cm
-    delay(200);
+    //delay(100);
 
     // -- SENSOR INFRARROJOS -- //
     int valueInf1 = 0;
@@ -417,6 +474,11 @@ void loop() { // Datos que recibimos del ESP32
     {
       //Serial.println("INVALID");
     }
+
+    // -- LECTURA DE SENSOR DE GAS -- //
+    float rs_med = readMQ(gas);    // Obtener la Rs promedio
+    float concentration = getConcentration(rs_med/R0);  // Obtener la concentración
+  
     
     // delay(2000);
 
@@ -433,6 +495,7 @@ void loop() { // Datos que recibimos del ESP32
                      String(Angle[2]) + "°," +
                      "123" + "," + 
                      "345" + "," +
+                     String(concentration) + " ppm," + 
                      light + "\n";
 
 
@@ -450,9 +513,10 @@ void loop() { // Datos que recibimos del ESP32
     Serial.println("Angulo Z: " + String(Angle[2]));
     Serial.println("Latitud: " + String(latitude));
     Serial.println("Longitud: " + String(longitude));
+    Serial.println("Concentracion de gas: " + String(concentration));
     */
 
-    delay(500);
+    delay(100);
 
 /*
     // Motores 
