@@ -44,6 +44,7 @@ bool a = 1,b = 0, c = 1, d = 0;
 // Configuracion Servo
 Servo servoRasp;
 Servo servoBrazo;
+Servo servoGarra;
 
 // Configuración Sensor Ultrasónico
 #define trigPin 18     // Pin de Trigger
@@ -62,9 +63,6 @@ int infrarrojo1 = 5;  // Pin de Sensor Infrarrojo 1
 
 // Configuración Sensor Infrarrojo 2
 int infrarrojo2 = 34;  // Pin de Sensor Infrarrojo 2
-
-// Configuración Sensor de Gas
-int gas = 35;  // Pin de Sensor de Gas
 
 // Configuracion LDR
 float light;
@@ -106,6 +104,31 @@ String latitude="", longitude="";
 double SPEED;
 String speed="";
 String MSG;
+
+// Configuración Sensor de Gas
+int gas = 35;  // Pin de Sensor de Gas
+
+const int RL_VALUE = 5;    // Resistencia RL del modulo en Kilo ohms
+const int R0 = 10;          // Resistencia R0 del sensor en Kilo ohms
+
+// Datos para lectura multiple
+const int READ_SAMPLE_INTERVAL = 100;    // Tiempo entre muestras
+const int READ_SAMPLE_TIMES = 5;     // Numero muestras
+
+// Ajustar estos valores según el Datasheet
+const float X0 = 200;
+const float Y0 = 1.7;
+const float X1 = 10000;
+const float Y1 = 0.65;
+
+// Puntos de la curva de concentración {X, Y}
+const float punto0[] = { log10(X0), log10(Y0) };
+const float punto1[] = { log10(X1), log10(Y1) };
+
+// Calcular pendiente y coordenada abscisas
+const float scope = (punto1[1] - punto0[1]) / (punto1[0] - punto0[0]);
+const float coord = punto0[1] - punto0[0] * scope;
+
 
 // ==================================================================== //
 
@@ -230,6 +253,30 @@ void reconnect() {
     }
 }
 
+// Funciones para el sensor de gas
+// Obtener la resistencia promedio en N muestras
+float readMQ(int mq_pin)
+{
+  float rs = 0;
+  for (int i = 0;i<READ_SAMPLE_TIMES;i++) {
+    rs += getMQResistance(analogRead(mq_pin));
+    delay(READ_SAMPLE_INTERVAL);
+  }
+  return rs / READ_SAMPLE_TIMES;
+}
+
+// Obtener resistencia a partir de la lectura analogica
+float getMQResistance(int raw_adc)
+{
+  return (((float)RL_VALUE / 1000.0*(1023 - raw_adc) / raw_adc));
+}
+
+// Obtener concentracion 10^(coord + scope * log (rs/r0)
+float getConcentration(float rs_ro_ratio)
+{
+  return pow(10, coord + scope * log(rs_ro_ratio));
+}
+
 // ==================================================================== //
 
 void setup() {
@@ -242,6 +289,7 @@ void setup() {
     // Inicilizacion servomotor
     servoRasp.attach(33);
     servoBrazo.attach(25);
+    //servoGarra.attach();
 
 
     // -  Inicializacion de Motor A - //
@@ -426,6 +474,11 @@ void loop() { // Datos que recibimos del ESP32
     {
       //Serial.println("INVALID");
     }
+
+    // -- LECTURA DE SENSOR DE GAS -- //
+    float rs_med = readMQ(gas);    // Obtener la Rs promedio
+    float concentration = getConcentration(rs_med/R0);  // Obtener la concentración
+  
     
     // delay(2000);
 
@@ -442,12 +495,13 @@ void loop() { // Datos que recibimos del ESP32
                      String(Angle[2]) + "°," +
                      "123" + "," + 
                      "345" + "," +
+                     String(concentration) + " ppm," + 
                      light + "\n";
 
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
     Serial.print(mensaje);
-    
+    /*
     Serial.println("Temperatura: " + String(t));
     Serial.println("Humedad: " + String(h));
     Serial.println("Distancia 1: " + String(distance));
@@ -459,7 +513,8 @@ void loop() { // Datos que recibimos del ESP32
     Serial.println("Angulo Z: " + String(Angle[2]));
     Serial.println("Latitud: " + String(latitude));
     Serial.println("Longitud: " + String(longitude));
-    
+    Serial.println("Concentracion de gas: " + String(concentration));
+    */
 
     delay(100);
 
