@@ -402,26 +402,6 @@ class Frame_Main_MQTT_Control(Frame):
         self.important_info_msg.insert('1.0', texto)
         self.important_info_msg.config(state='disabled')
         self.value = []
-        
-        """hora_actual = dt.datetime.now().strftime("%H:%M:%S")
-        temp = 50
-        hum = 5
-        location = 'xd'
-        #id_random = random.randint(100,999)
-        Htemp = f'{hora_actual} - [Info]: Danger of fire... Calling firefighters at location {location}\n'
-        ColMsg = f'{hora_actual} - [Info]: Robot Cant continue correct operation flipped robot\n'
-        helpmsg = f'{hora_actual} - [Info]: Calling Robot ID: #{id_random} for backup\n'
-            
-        if temp >= 40 and hum <= 20:
-            self.important_info_msg.config(state='normal')
-            self.important_info_msg.insert('end', Htemp)
-            self.important_info_msg.config(state='disabled')
-        
-        if location == 'xd':
-            self.important_info_msg.config(state='normal')
-            self.important_info_msg.insert('end', ColMsg)
-            self.important_info_msg.insert('end', helpmsg)
-            self.important_info_msg.config(state='disabled')"""
             
         # - MQTT - #
         self.get_response()
@@ -867,6 +847,9 @@ class Frame_Main_MQTT_Control(Frame):
             self.Longitud_Data.config(text=self.value[10])
             Lat = self.value[9]
             Long = self.value[10]
+            
+            # Concentracion de gas
+            self.gas_levels.config(text=self.value[11])
             
             # - Llamado de emergencia - Daddy Yankee- #
             # - Bomberos - #
@@ -1416,8 +1399,6 @@ class FrameOptions(Frame):
         
         self.frame_CMD_promt.grid(row=15,column=2, rowspan=2, padx=20, sticky='nsew')
         
-        # - INFO AND HELP - #
-    
     # - JOYSTICKS AND NETWORK - #
     # - VISUALS - #
     # - TITULO - #
@@ -1613,13 +1594,6 @@ class FrameOptions(Frame):
 # -------------- Inicializacion de la app -------------- #
 # ------------------------------------------------------ #
 root = Tk()
-
-    #num1 = random.randint(1,100)
-    #num2 = random.randint(1,100)
-    #num3 = random.randint(1,100)
-    #num4 = random.randint(1,100)
-    #data = [num1,num2,num3,num4]
-    #data =[]
 
 if __name__ == '__main__':
     ex = App(root)
