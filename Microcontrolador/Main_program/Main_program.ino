@@ -473,6 +473,8 @@ void loop() { // Datos que recibimos del ESP32
     else
     {
       //Serial.println("INVALID");
+      latitude = "123";
+      longitude = "456";
     }
 
     // -- LECTURA DE SENSOR DE GAS -- //
@@ -493,8 +495,8 @@ void loop() { // Datos que recibimos del ESP32
                      String(Angle[0]) + "°," +
                      String(Angle[1]) + "°," +
                      String(Angle[2]) + "°," +
-                     "123" + "," + 
-                     "345" + "," +
+                     latitude + "," + 
+                     longitude + "," +
                      String(concentration) + " ppm," + 
                      light + "\n";
 
