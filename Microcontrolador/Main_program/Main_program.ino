@@ -503,7 +503,7 @@ void loop() { // Datos que recibimos del ESP32
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
     Serial.print(mensaje);
-    /*
+    
     Serial.println("Temperatura: " + String(t));
     Serial.println("Humedad: " + String(h));
     Serial.println("Distancia 1: " + String(distance));
@@ -516,7 +516,7 @@ void loop() { // Datos que recibimos del ESP32
     Serial.println("Latitud: " + String(latitude));
     Serial.println("Longitud: " + String(longitude));
     Serial.println("Concentracion de gas: " + String(concentration));
-    */
+    
 
     delay(100);
 
