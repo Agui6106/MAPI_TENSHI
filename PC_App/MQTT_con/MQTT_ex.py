@@ -49,6 +49,7 @@ class mqtt_coms:
 
     # Método para detener el loop
     def stop(self):
+        print(f'Closing MQTT protocol at {self.broker_ip} with the Sub-Topic: {self.topic_sub} and Pub-Topic: {self.topic_pub}')
         self._running = False
         self.client.disconnect()
 
