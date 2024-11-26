@@ -167,29 +167,33 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     }
 */
     // - Control del Motor A basado en el mensaje - //
-    if (message == "up") {
+    if (message == "left") {
       // Habilita motor A (giro hacia adelante)
+      vel = 160;
       a = 0;
       b = 1;
       // Habilita motor B (giro hacia adelante)
       c = 1;
       d = 0;
-    } else if (message == "down") {
+    } else if (message == "right") {
       // Habilita motor A (giro hacia atras)
+      vel = 160;
       a = 1;
       b = 0;
       // Habilita motor B (giro hacia atras)
       c = 0; 
       d = 1;
-    } else if (message == "left"){
+    } else if (message == "down"){
       // Habilita motor A (giro hacia atras)
+      vel = 170;
       a = 1;
       b = 0;
       // Habilita motor B (giro hacia adelante)
       c = 1;
       d = 0;
-    } else if (message == "right"){
+    } else if (message == "up"){
       // Habilita motor A (giro hacia adelante)
+      vel = 170;
       a = 0;
       b = 1;
       // Habilita motor B (giro hacia atras)
@@ -197,6 +201,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
       d = 1;
     } else{
       // Apagar ambos motores
+      vel = 0;
       a = 0;
       b = 0;
       c = 0; 
@@ -330,10 +335,9 @@ void loop() { // Datos que recibimos del ESP32
     }
     mqttClient.loop();
   
-  if(tiempo - tiempo2 >= 100){
+  if(tiempo - tiempo2 >= 1000){
     
     tiempo2 = tiempo;
-    Serial.println("Tiempo transcurrido: " + String(tiempo) + "\n");
 
     // -- LECTURA DE SENSORES -- //
     t = dht.readTemperature();  // Temperatura
@@ -492,7 +496,7 @@ void loop() { // Datos que recibimos del ESP32
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
     Serial.print(mensaje);
-    
+    /*
     Serial.println("Temperatura: " + String(t));
     Serial.println("Humedad: " + String(h));
     Serial.println("Distancia 1: " + String(distance));
@@ -505,7 +509,7 @@ void loop() { // Datos que recibimos del ESP32
     Serial.println("Latitud: " + String(latitude));
     Serial.println("Longitud: " + String(longitude));
     Serial.println("Concentracion de gas: " + String(concentration));
-
+    */
     }
     
 }
