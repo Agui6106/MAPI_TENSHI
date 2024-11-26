@@ -1,19 +1,22 @@
+import threading
 import paho.mqtt.client as mqtt
 import socket
 
-    # Obtener la IP en Windows
+# Obtener la IP en Windows
 @staticmethod
 def get_ip_Windows():
-        hostname = socket.gethostname()  # Obtiene el nombre del dispositivo
-        ipv4 = socket.gethostbyname(hostname)  # Obtiene la dirección IPv4
-        return ipv4
-    
+    hostname = socket.gethostname()  # Obtiene el nombre del dispositivo
+    ipv4 = socket.gethostbyname(hostname)  # Obtiene la dirección IPv4
+    return ipv4
+
 class mqtt_coms:
     def __init__(self, broker_ip, broker_port, topic_sub, topic_pub):
         self.broker_ip = broker_ip
         self.broker_port = broker_port
         self.topic_sub = topic_sub
         self.topic_pub = topic_pub
+        self.last_message = None
+        self._running = False  # Bandera para controlar el hilo
 
         # Crear el cliente MQTT
         self.client = mqtt.Client()
@@ -24,8 +27,9 @@ class mqtt_coms:
 
         # Conectarse al broker
         self.client.connect(self.broker_ip, self.broker_port, 60)
-        
-        self.last_message = None
+
+        # Hilo para manejar el loop
+        self.thread = threading.Thread(target=self._loop_forever, daemon=True)
 
     # Función que se ejecuta cuando se conecta al broker MQTT
     def on_connect(self, client, userdata, flags, reasonCode, properties=None):
@@ -36,20 +40,27 @@ class mqtt_coms:
     def on_message(self, client, userdata, msg):
         self.last_message = msg.payload.decode()
         print(f"Mensaje recibido en {msg.topic}: {self.last_message}")
-        
 
-    # Método para iniciar el bucle del cliente MQTT
+    # Método para iniciar el loop en un hilo separado
     def start(self):
-        self.client.loop_start()
+        if not self.thread.is_alive():
+            self._running = True
+            self.thread.start()
+
+    # Método para detener el loop
+    def stop(self):
+        self._running = False
+        self.client.disconnect()
 
     # Método para publicar mensajes
     def publish_message(self, message):
         self.client.publish(self.topic_pub, message)
 
-    # Método para detener el loop
-    def stop(self):
-        self.client.loop_stop()
-        self.client.disconnect()
+    # Método privado para el loop del cliente MQTT
+    def _loop_forever(self):
+        while self._running:
+            self.client.loop(timeout=1.0)  # Tiempo de espera para evitar uso excesivo de CPU
+
 
 # Ejemplo de uso de la clase
 if __name__ == "__main__":
