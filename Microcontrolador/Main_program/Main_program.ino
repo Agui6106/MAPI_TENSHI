@@ -5,7 +5,7 @@
 #include <ESP32Servo.h>
 
 // importa la Librerias DHT
-#include <DHT.h>    
+#include <DHT.h>   
 #include <DHT_U.h>
 
 // Importa la libreria para el giroscopio
@@ -13,6 +13,10 @@
 
 // Importa la libreria para el GPS
 #include <TinyGPS++.h>
+
+// Variables para controlar tiempos
+unsigned long tiempo;
+unsigned long tiempo2 = 0;
 
 // Configuración de la red Wi-Fi
 const char* ssid = "OPPO Reno7";
@@ -149,7 +153,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     
     //Serial.print("Mensaje: ");
     //Serial.println(message);
-
+/*
     if(message != "center"){
       vel += 90;
       if(vel > 210){
@@ -161,7 +165,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
         vel = 0;
       }
     }
-
+*/
     // - Control del Motor A basado en el mensaje - //
     if (message == "up") {
       // Habilita motor A (giro hacia adelante)
@@ -209,28 +213,6 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     analogWrite(ena, vel);
     analogWrite(enb, vel);
 
-    // - Control del Servo Motor basado en el mensaje - //
-    /*int angle = 0;
-    myServo.write(180);
-    if (message == "D_LFT") {
-      myServo.write(angle - 10);
-      mqttClient.publish("ESP/Response", "Servo -10°");
-      
-      } else if (message == "D_RGT"){
-        myServo.write(angle + 10);
-        mqttClient.publish("ESP/Response", "Servo +10°");
-
-      }
-      */
-
-    /*
-    float angle = message.toFloat();  // Convierte el mensaje a un número entero
-    if (angle >= 0 && angle <= 180) {
-       myServo.write(angle);
-    } else {
-       Serial.println("Valor no válido para el servo");
-    }
-    */
 
 }
 
@@ -341,11 +323,18 @@ void setup() {
 }
 
 void loop() { // Datos que recibimos del ESP32
-    if (!mqttClient.connected()) {
+  tiempo = millis();
+
+  if (!mqttClient.connected()) {
         reconnect();
     }
     mqttClient.loop();
+  
+  if(tiempo - tiempo2 >= 100){
     
+    tiempo2 = tiempo;
+    Serial.println("Tiempo transcurrido: " + String(tiempo) + "\n");
+
     // -- LECTURA DE SENSORES -- //
     t = dht.readTemperature();  // Temperatura
     h = dht.readHumidity();     // Humedad
@@ -516,43 +505,7 @@ void loop() { // Datos que recibimos del ESP32
     Serial.println("Latitud: " + String(latitude));
     Serial.println("Longitud: " + String(longitude));
     Serial.println("Concentracion de gas: " + String(concentration));
-    
 
-    delay(100);
-
-/*
-    // Motores 
-    duty_cycle =   + 10;
-    Serial.println(duty_cycle);
-    if(duty_cycle > 255)
-    {
-      duty_cycle = 0;
     }
-    
-    ledcWrite(PWM_CHANNEL, duty_cycle);
-
-        // -- ENVIO DISTANCIA SENSOR ULTRASONICO 2 -- //
-    String dist2 = String(distance2);
-    mqttClient.publish("ESP/Ultra-Distancas2", dist2.c_str());
-    Serial.print("Distancia2: ");
-    Serial.println(distance2);
-    delay(200);
- 
-    // -- ENVIO ESTADO SENSOR INFRARROJO 2 -- //
-    
-
-
-    // -- ENVIO ESTADO SENSOR INFRARROJO 2 -- //
-    String infra2 = String(digitalRead(infrarrojo2));
-    mqttClient.publish("ESP/Infra-2", infr2.c_str());
-    int valueInf2 = 0;
-    value = digitalRead(infrarrojo2);  //lectura digital de pin
-
-    if (value == HIGH) {
-            Serial.println("Detectando obstaculo");
-        }
-
-    delay(2000);
-  */
     
 }
