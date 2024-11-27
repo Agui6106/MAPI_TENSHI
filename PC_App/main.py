@@ -1308,7 +1308,11 @@ class FrameOptions(Frame):
     def __init__(self, parent, *args, **kwargs):
         Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-    
+        
+        # - IMAGEN CONTROL MAP- #
+        Map_control= os.path.join(os.path.dirname(__file__), './sprites/Control_Map_MAPI.png')
+        self.map_control = PhotoImage(file=Map_control)
+        
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
         self.notebook_set = self._create_settings_Notebook()
@@ -1417,31 +1421,44 @@ class FrameOptions(Frame):
         notebook = Notebook(self)
         tab1 = Frame(notebook)
         tab2 = Frame(notebook)
-        notebook.add(tab1, text='Help')
-        notebook.add(tab2, text='About')
+        tab3 = Frame(notebook)
+        notebook.add(tab1, text='Controls')
+        notebook.add(tab2, text='Commands')
+        notebook.add(tab3, text='About')
         
         # ---------- TAB 1 ---------- #
         # - Titulos - #
-        Label(tab1, text="Commands", foreground='black', 
+        Label(tab1, text="Control Map", foreground='black', 
+              font=("Z003", 20, "bold"), justify='left',).grid(row=0, column=0, padx=15,)
+        
+        # - CANVA - #
+        mapeo = Canvas(tab1, width=1000, height=500, bg='black')
+        mapeo.create_image((-25,2),image=self.map_control, anchor='nw')
+        mapeo.grid(row=1,column=0)
+        
+        # ---------- TAB 2 ---------- #
+        # - Titulos - #
+        Label(tab2, text="Commands", foreground='black', 
               font=("Z003", 20, "bold"), justify='left',).grid(row=0, column=0, padx=15,)
         
         # - Text - #
-        commands = Text(tab1, width=90,height=19,
+        commands = Text(tab2, width=90,height=22,
                         font=('consolas', 14), state='disabled' )
 
         commands.grid(row=1,column=0, padx=15)
         
-        # ---------- TAB 2 ---------- #
-        Label(tab2, text="About us", foreground='black', 
+        # ---------- TAB 3 ---------- #
+        # - Titulos - #
+        Label(tab3, text="About us", foreground='black', 
               font=("Magneto", 20, "bold")).grid(row=0, column=0, 
                                                  columnspan=2, padx=15)
         
-        about = Text(tab2, width=90,height=19,
+        about = Text(tab3, width=90,height=22,
                         font=('consolas', 14), state='disabled' )
         about.grid(row=1,column=0, padx=15)
 
         # Lee el contenido para commands
-        file_commands= os.path.join(os.path.dirname(__file__), './sprites/commands.txt')
+        file_commands= os.path.join(os.path.dirname(__file__), './sprites/information/commands.txt')
         commands.config(state='normal')
         try:
             with open(file_commands, "r", encoding='utf-8') as archivo:
@@ -1455,7 +1472,7 @@ class FrameOptions(Frame):
         commands.config(state='disabled')
         
         # Lee el contenido para about us
-        file_about= os.path.join(os.path.dirname(__file__), './sprites/about.txt')
+        file_about= os.path.join(os.path.dirname(__file__), './sprites/information/about.txt')
         about.config(state='normal')
         try:
             with open(file_about, "r", encoding='utf-8') as archivo:
@@ -1598,7 +1615,7 @@ root = Tk()
 
 # Función para manejar el cierre de la aplicación
 def on_closing():
-    print("Closing appp...")
+    print("Closing app...")
     mqtt_client.stop()  # Detiene el hilo MQTT
     mqtt_MatLab.stop()
     mqtt_esp_Data.stop()
