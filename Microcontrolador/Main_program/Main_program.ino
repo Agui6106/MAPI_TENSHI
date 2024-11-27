@@ -50,6 +50,7 @@ int nitro = 0;
 Servo servoRasp;
 Servo servoBrazo;
 Servo servoGarra;
+int ang = 90;
 
 // Configuración Sensor Ultrasónico
 #define trigPin2 18     // Pin de Trigger
@@ -200,6 +201,31 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
       d = 0;
     }
 
+     if (message == "l") {
+      // Servo a 40 grados
+      ang -= 2;
+      if (ang < 40) ang = 40;
+      servoRasp.write(ang);
+      
+      
+    } else if (message == "r") {
+      // Servo a 140 grados
+      ang += 2;
+      if (ang > 140) ang = 140;
+
+      servoRasp.write(ang);
+
+    } else if (message == "d"){
+      // Servo baja brazo y abre garra
+      servoBrazo.write(30);
+      servoGarra.write(145);
+
+    } else if (message == "u"){
+      // Servo sube brazo y cierra garra
+      servoBrazo.write(140);  
+      servoGarra.write(179);
+    } 
+
     Serial.println("                         Message: " + message);
 
     digitalWrite(in1, a);
@@ -334,7 +360,7 @@ void loop() { // Datos que recibimos del ESP32
     h = dht.readHumidity();     // Humedad
     //light = analogRead(32);
 
-    servoBrazo.write(30);
+    //servoBrazo.write(30);
 
     // -- SENSOR ULTRASONICO -- //
     // Sensor 1
@@ -483,8 +509,6 @@ void loop() { // Datos que recibimos del ESP32
                      latitude + "," + 
                      longitude + "," +
                      String(concentration) + " ppm\n";
-                     //light + "\n";
-
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
     Serial.print(mensaje);
