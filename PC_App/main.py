@@ -466,7 +466,7 @@ class Frame_Main_MQTT_Control(Frame):
         self.statuts2_label.grid(row=2,column=8)
         self.statuts4_label.grid(row=2,column=9)
         
-        #self.status1.grid_remove()
+        self.status1.grid_remove()
         self.status2.grid_remove()
         self.status3.grid_remove()
     
@@ -739,6 +739,7 @@ class Frame_Main_MQTT_Control(Frame):
             # - TURBO ON - #
             if buttons.get('X', 0):  # Por ejemplo, 'X' activa la lámpara
                 try:
+                    self.status1.grid(row=1,column=7, padx=10)
                     mqtt_esp_Data.publish_message('T')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
@@ -746,6 +747,7 @@ class Frame_Main_MQTT_Control(Frame):
             # - TRBO OFF - #    
             if buttons.get('TRI', 0):  # Por ejemplo, 'X' activa la lámpara
                 try:
+                    self.status1.grid_remove()
                     mqtt_esp_Data.publish_message('t')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
