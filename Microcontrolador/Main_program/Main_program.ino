@@ -207,7 +207,6 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
       if (ang < 40) ang = 40;
       servoRasp.write(ang);
       
-      
     } else if (message == "r") {
       // Servo a 140 grados
       ang += 2;
@@ -235,6 +234,8 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     
     analogWrite(ena, vel + nitro);
     analogWrite(enb, vel + nitro);
+
+
 
 }
 
@@ -359,8 +360,6 @@ void loop() { // Datos que recibimos del ESP32
     t = dht.readTemperature();  // Temperatura
     h = dht.readHumidity();     // Humedad
     //light = analogRead(32);
-
-    //servoBrazo.write(30);
 
     // -- SENSOR ULTRASONICO -- //
     // Sensor 1
@@ -509,6 +508,8 @@ void loop() { // Datos que recibimos del ESP32
                      latitude + "," + 
                      longitude + "," +
                      String(concentration) + " ppm\n";
+                     //light + "\n";
+
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
     Serial.print(mensaje);
