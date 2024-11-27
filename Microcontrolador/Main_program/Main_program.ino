@@ -52,16 +52,16 @@ Servo servoBrazo;
 Servo servoGarra;
 
 // Configuración Sensor Ultrasónico
-#define trigPin 18     // Pin de Trigger
-#define echoPin 19    // Pin de Echo
-long duration;
-float distance;
+#define trigPin2 18     // Pin de Trigger
+#define echoPin2 19    // Pin de Echo
+long duration2;
+float distance2;
 
 // Configuración Sensor Ultrasónico 2
-#define trigPin2 26   // Pin de Trigger
-#define echoPin2 27   // Pin de Echo
-long duration2; 
-float distance2;
+#define trigPin 26   // Pin de Trigger
+#define echoPin 27   // Pin de Echo
+long duration; 
+float distance;
 
 // Coniguración Sensor Infrarrojo 1
 int infrarrojo1 = 5;  // Pin de Sensor Infrarrojo 1
@@ -265,10 +265,10 @@ void setup() {
     dht.begin();   
 
     // Inicilizacion servomotor
-    servoRasp.attach(33);
+    servoRasp.attach(33); 
     servoBrazo.attach(25);
-    //servoGarra.attach();
-
+    servoGarra.attach(32);
+x
 
     // -  Inicializacion de Motor A - //
     pinMode(in1, OUTPUT);
