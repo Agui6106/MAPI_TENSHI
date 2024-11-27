@@ -44,6 +44,7 @@ int ena = 13;
 int enb = 15; 
 int vel = 0;
 bool a = 1,b = 0, c = 1, d = 0;
+int nitro = 0;
 
 // Configuracion Servo
 Servo servoRasp;
@@ -150,26 +151,17 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     for (int i = 0; i < length; i++) {
         message += (char)payload[i];
     }
-    
-    //Serial.print("Mensaje: ");
-    //Serial.println(message);
-/*
-    if(message != "center"){
-      vel += 90;
-      if(vel > 210){
-        vel = 210;
-      }
-    }else{
-      vel-=90;
-      if(vel < 0){
-        vel = 0;
-      }
+
+    if(message == "T"){
+      nitro = 70;
+    } else if(message == "t"){
+      nitro = 0;
     }
-*/
+    
     // - Control del Motor A basado en el mensaje - //
     if (message == "left") {
       // Habilita motor A (giro hacia adelante)
-      vel = 160;
+      vel = 170;
       a = 0;
       b = 1;
       // Habilita motor B (giro hacia adelante)
@@ -177,7 +169,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
       d = 0;
     } else if (message == "right") {
       // Habilita motor A (giro hacia atras)
-      vel = 160;
+      vel = 170;
       a = 1;
       b = 0;
       // Habilita motor B (giro hacia atras)
@@ -185,7 +177,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
       d = 1;
     } else if (message == "down"){
       // Habilita motor A (giro hacia atras)
-      vel = 170;
+      vel = 180;
       a = 1;
       b = 0;
       // Habilita motor B (giro hacia adelante)
@@ -193,7 +185,7 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
       d = 0;
     } else if (message == "up"){
       // Habilita motor A (giro hacia adelante)
-      vel = 170;
+      vel = 180;
       a = 0;
       b = 1;
       // Habilita motor B (giro hacia atras)
@@ -215,9 +207,8 @@ void callback(char* topic, byte* payload, unsigned int length) {      //Datos qu
     digitalWrite(in3, c);
     digitalWrite(in4, d);
     
-    analogWrite(ena, vel);
-    analogWrite(enb, vel);
-
+    analogWrite(ena, vel + nitro);
+    analogWrite(enb, vel + nitro);
 
 }
 
