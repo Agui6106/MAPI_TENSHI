@@ -307,6 +307,17 @@ class Frame_Main_MQTT_Control(Frame):
         # Quieto
         Still= os.path.join(os.path.dirname(__file__), './sprites/Directions/Still.png')
         self.Still = PhotoImage(file=Still)
+        
+        # - Imagenes angulo camara - #
+        # Centro
+        C_Center= os.path.join(os.path.dirname(__file__), './sprites/Cam/C_Center.png')
+        self.C_Center = PhotoImage(file=C_Center)
+        # Left
+        C_Left= os.path.join(os.path.dirname(__file__), './sprites/Cam/C_Left.png')
+        self.C_Left = PhotoImage(file=C_Left)
+        # Right
+        C_Right= os.path.join(os.path.dirname(__file__), './sprites/Cam/C_Right.png')
+        self.C_Right = PhotoImage(file=C_Right)
     
         # - Creacion de objetos TKinter - #
         self.title: Label = self._Create_title()
@@ -325,18 +336,19 @@ class Frame_Main_MQTT_Control(Frame):
         self.lamp_on_label = Label(self.vital_Data_frame, text="Off", font=('Z003', 15, 'bold'), foreground='red')
         
         # - MOTORES - #
-        self.direction = Canvas(self.vital_Data_frame, width=180, height=80,bg='black')
+        self.direction = Canvas(self.vital_Data_frame, width=180, height=80,)
+        self.cam_angel = Canvas(self.vital_Data_frame, width=180, height=80,)
         self.direction.create_image((0,0),image=self.Still, anchor='nw')
+        self.cam_angel.create_image((0,0),image=self.C_Center, anchor='nw')
         
         # - PERIFERICOS - #
-        self.cam_scale: Scale = self._create_joystick_slider()
         self.buz_but: Button = self._button_Buz()
         self.lamp_but: Button = self._button_lamp()
         
         # - STATUS - #
         self.statuts1_label = Label(self.vital_Data_frame, text=" Motors", font=('Z003', 13))
         self.statuts2_label = Label(self.vital_Data_frame, text=" Light ", font=('Z003', 13))
-        self.statuts3_label = Label(self.vital_Data_frame, text=" Serial", font=('Z003', 13))
+        self.statuts3_label = Label(self.vital_Data_frame, text=" Turbo ", font=('Z003', 13))
         self.statuts4_label = Label(self.vital_Data_frame, text=" Cloud ", font=('Z003', 13))
         self.status1: Button = self.stat_1()
         self.status2: Button = self.stat_2()
@@ -434,9 +446,8 @@ class Frame_Main_MQTT_Control(Frame):
         
         # Elementos Motor
         self.direction.grid(row=1,column=0, columnspan=2, rowspan=2)
-        
         # Servo
-        self.cam_scale.grid(row=1,column=2,columnspan=2,padx=5)
+        self.cam_angel.grid(row=1,column=2,columnspan=2, rowspan=2)
         
         # Perifericos
         self.buz_but.grid(row=1,column=4, padx=10)
@@ -445,20 +456,19 @@ class Frame_Main_MQTT_Control(Frame):
         self.lamp_on_label.grid(row=2,column=5, padx=3)
         
         # Status
-        self.statuts1_label.grid(row=2,column=6, padx=10)
-        
-        self.status1.grid(row=1,column=8, padx=10)
-        self.status2.grid(row=1,column=7, padx=10)
         self.status3.grid(row=1,column=6, padx=10)
+        self.status1.grid(row=1,column=7, padx=10)
+        self.status2.grid(row=1,column=8, padx=10)
         self.status4.grid(row=1,column=9, padx=10)
         
-        self.statuts2_label.grid(row=2,column=7)
-        self.statuts3_label.grid(row=2,column=8)
+        self.statuts1_label.grid(row=2,column=6, padx=10)
+        self.statuts3_label.grid(row=2,column=7)
+        self.statuts2_label.grid(row=2,column=8)
         self.statuts4_label.grid(row=2,column=9)
         
         #self.status1.grid_remove()
         self.status2.grid_remove()
-        #self.status3.grid_remove()
+        self.status3.grid_remove()
     
     def init_gui_of_Positions(self) -> None:
         # - CONTENTS POSITIONS - #
@@ -481,7 +491,7 @@ class Frame_Main_MQTT_Control(Frame):
         
     def init_gui_of_RecvData(self) -> None:
         # - CONTENTS DATA - #
-        self.empty_space_recv.grid(row=0,column=0, padx=45)
+        self.empty_space_recv.grid(row=0,column=0, padx=20)
         #self.empty_space_recv2.grid(row=0,column=10, padx=15)
         self.empty_space_recv3.grid(row=0,column=3, padx=17)
         self.empty_space_recv4.grid(row=0,column=7, padx=17)
@@ -563,12 +573,7 @@ class Frame_Main_MQTT_Control(Frame):
         )
     
     # - CONTENIDOS SUBFRAMES - #
-    # - Vital Data - #
-    # Slider
-    def _create_joystick_slider(self) -> Scale:
-        return Scale(self.vital_Data_frame, from_=-1, to=1, 
-                     resolution=0.01, orient='horizontal',sliderlength=20, length=200)
-    
+    # - Vital Data - #    
     # Perifericos
     def _button_Buz(self) -> Button:
         return Button(self.vital_Data_frame, 
@@ -627,12 +632,15 @@ class Frame_Main_MQTT_Control(Frame):
         return Label(self.recv_data_frame, text="0000", font=('Z003', 15,))
     
     # -- OPERATIVO -- #
-    def update_vals(self):        
+    def update_vals(self):
+        """
+        Obtenemos los valores del control y enviamos x MQTT
+        """
         # Verificamos que haya un control Conectado
         if not ps4.check_ps4_connection():
             pass        
         else:
-            stop = False
+            stop = True
             # Obtenemos los valores y redondeamos los necesarios
             controller_state = ps4.get_controller_state()
             # Redondeamos los valores de los ejes necesarios
@@ -641,106 +649,109 @@ class Frame_Main_MQTT_Control(Frame):
             xr = round(controller_state['axes'].get('xR', 0), 2)
             yr = round(controller_state['axes'].get('yR', 0), 2)
         
-            # Obtenemos los valores del control y enviamos x MQTT
-            self.cam_scale.set(xr)
+            # - JOYSTICK IZQUIERDO - #
+            if (yl > -xl) and (yl > xl) and yl > 0.3:
+                # Down
+                stop = True
+                self.direction.create_image((0,0),image=self.GDown, anchor='nw')
+                try:
+                    print(f"Axe value: {yl}")
+                    mqtt_esp_Data.publish_message('down')
+                    print("Send: down")
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
             
-            if not stop:
-                if (yl > -xl) and (yl > xl) and yl < 0.3:
-                    # Down
-                    self.direction.create_image((0,0),image=self.GDown, anchor='nw')
-                    try:
-                        print(f"Axe value: {yl}")
-                        mqtt_esp_Data.publish_message('down')
-                        print("Send: down")
-                    except Exception as e:
-                        print(f"Failed to send info due to: {e}")
-                
-                elif (yl < -xl) and (yl > xl) and xl < -0.3:
-                    # Left
-                    self.direction.create_image((0,0),image=self.GLeft, anchor='nw')
-                    try:
-                        print(f"Axe value: {xl}")
-                        mqtt_esp_Data.publish_message('left')
-                        print("Send: left")
-                    except Exception as e:
-                        print(f"Failed to send info due to: {e}")
-                
-                elif (yl < -xl) and (yl < xl) and yl > -0.3:
-                    # Up
-                    self.direction.create_image((0,0),image=self.GUp, anchor='nw')
-                    try:
-                        print(f"Axe value: {yl}")
-                        mqtt_esp_Data.publish_message('up')
-                        print("Send: up")
-                    except Exception as e:
-                        print(f"Failed to send info due to: {e}")
-                
-                elif (yl > -xl) and (yl < xl) and xl > 0.3:
-                    # Right
-                    self.direction.create_image((0,0),image=self.GRight, anchor='nw')
-                    try:
-                        print(f"Axe value: {xl}")
-                        mqtt_esp_Data.publish_message('right')
-                        print("Send: right")
-                    except Exception as e:
-                        print(f"Failed to send info due to: {e}")
-                        
-            # Hacia Abajo
-            #if yl >= 0.30:
-            #    self.direction.create_image((0,0),image=self.GDown, anchor='nw')
-            #    try:
-            #        print(f"Axe value: {yl}")
-            #        mqtt_esp_Data.publish_message('down')
-            #        print("Send: down")
-            #    except Exception as e:
-            #        print(f"Failed to send info due to: {e}")
-            
-            # Hacia Arriba
-            #if yl <= -0.30:
-            #    self.direction.create_image((0,0),image=self.GUp, anchor='nw')
-            #    try:
-            #        print(f"Axe value: {yl}")
-            #        mqtt_esp_Data.publish_message('up')
-            #        print("Send: up")
-            #    except Exception as e:
-            #        print(f"Failed to send info due to: {e}")
-            
-            # Derecha
-            #if xl >= 0.30:
-            #    self.direction.create_image((0,0),image=self.GRight, anchor='nw')
-            #    try:
-            #        print(f"Axe value: {xl}")
-            #        mqtt_esp_Data.publish_message('right')
-            #        print("Send: right")
-            #    except Exception as e:
-            #        print(f"Failed to send info due to: {e}")
-            #
-            # Izquierda
-            #if xl <= -0.30:
-            #    self.direction.create_image((0,0),image=self.GLeft, anchor='nw')
-            #    try:
-            #        print(f"Axe value: {xl}")
-            #        mqtt_esp_Data.publish_message('left')
-            #        print("Send: left")
-            #    except Exception as e:
-            #        print(f"Failed to send info due to: {e}")
-            
-            # Chequear botones específicos y enviar info por MQTT
-            
-            
-            buttons = controller_state['buttons']
-            if buttons.get('X', 0):  # Por ejemplo, 'X' activa la lámpara
-                self.direction.create_image((0,0),image=self.Still, anchor='nw')
+            elif (yl < -xl) and (yl > xl) and xl < -0.3:
+                # Left
+                stop = False
+                self.direction.create_image((0,0),image=self.GLeft, anchor='nw')
                 try:
                     print(f"Axe value: {xl}")
-                    mqtt_esp_Data.publish_message('center')
-                    print("send: center")
-                    stop = True
+                    mqtt_esp_Data.publish_message('left')
+                    print("Send: left")
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+            
+            elif (yl < -xl) and (yl < xl) and yl < -0.3:
+                # Up
+                stop = True
+                self.direction.create_image((0,0),image=self.GUp, anchor='nw')
+                try:
+                    print(f"Axe value: {yl}")
+                    mqtt_esp_Data.publish_message('up')
+                    print("Send: up")
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+            
+            elif (yl > -xl) and (yl < xl) and xl > 0.3:
+                # Right
+                stop = True
+                self.direction.create_image((0,0),image=self.GRight, anchor='nw')
+                try:
+                    print(f"Axe value: {xl}")
+                    mqtt_esp_Data.publish_message('right')
+                    print("Send: right")
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+            
+            else:
+                stop = False
+                print("Center")
+                mqtt_esp_Data.publish_message('center')
+                self.direction.create_image((0,0),image=self.Still, anchor='nw')
+                
+            # Motors off? 
+            if stop == True:
+                self.status3.grid(row=1,column=6, padx=10)
+            else:
+                self.status3.grid_remove()
+                
+            # - JOYSTICK DERECHO - # self.C_Left
+            if (yr < -xr) and (yr > xr) and xr < -0.3:
+                # Left
+                stop = False
+                self.cam_angel.create_image((0,0),image=self.C_Left, anchor='nw')
+                try:
+                    print(f"Axe value: {xl}")
+                    #mqtt_esp_Data.publish_message('left')
+                    print("Send: left")
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+                    
+            elif (yr > -xr) and (yr < xr) and xr > 0.3:
+                # Right
+                stop = False
+                self.cam_angel.create_image((0,0),image=self.C_Right, anchor='nw')
+                try:
+                    print(f"Axe value: {xl}")
+                    #mqtt_esp_Data.publish_message('right')
+                    print("Send: right")
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+                    
+            else:
+                print("CAM-Center")
+                #mqtt_esp_Data.publish_message('center')
+                self.cam_angel.create_image((0,0),image=self.C_Center, anchor='nw')
+            
+            # - BOTONES -#
+            buttons = controller_state['buttons']
+            # - TURBO ON - #
+            if buttons.get('X', 0):  # Por ejemplo, 'X' activa la lámpara
+                try:
+                    mqtt_esp_Data.publish_message('T')
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+                
+            # - TRBO OFF - #    
+            if buttons.get('TRI', 0):  # Por ejemplo, 'X' activa la lámpara
+                try:
+                    mqtt_esp_Data.publish_message('t')
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
             
             # Llamada recursiva para actualizar cada 50ms
-            self.after(52, self.update_vals)
+            self.after(250, self.update_vals)
             
     # - MQTT PROTOCOL - #     
     # Envio       
@@ -765,7 +776,7 @@ class Frame_Main_MQTT_Control(Frame):
                 self.important_info_msg.config(state='disabled')
 
                 # Mostrar el botón
-                self.status2.grid(row=1, column=7, padx=10)
+                self.status2.grid(row=1, column=8, padx=10)
             elif accion == "light":
                 # Mostrar el mensaje en el Text widget
                 self.important_info_msg.config(state='normal')
@@ -893,8 +904,10 @@ class Frame_Main_Raw_Camera(Frame):
         self.stream_url = server_stream
     
         # - Creacion de objetos TKinter - #
-        self.title: Label = self._Create_title()
-        self.camera: Canvas = self._Camera_canva_()
+        self.title = Label(master=self, text=f'Camara View {day}-{month}-{year}',foreground='black', 
+                           font=("Z003", 20, "bold"))
+        
+        self.camera = Canvas(self, width=640, height=480,bg='black')
         
         # Creamos los objetos
         self.init_gui()
@@ -906,7 +919,6 @@ class Frame_Main_Raw_Camera(Frame):
             print(f"Error: No se pudo abrir el stream en {self.stream_url}")
         else:
             self.update_frame()  # Iniciar actualización de frames
-        
         
     # - Colocamos los elementos visuales - #
     def init_gui(self)-> None:
@@ -922,10 +934,6 @@ class Frame_Main_Raw_Camera(Frame):
             foreground='black',
             font=("Z003", 20, "bold")
         )
-    
-    # - CAMARA VISUAL - #
-    def _Camera_canva_(self) -> Canvas:
-        return Canvas(self, width=640, height=480,bg='black')
     
     # - OPERATIVO - #
     def update_frame(self):
@@ -956,7 +964,9 @@ class Frame_Main_Pros_Camera(Frame):
         self.stream_url = server_stream
     
         # - Creacion de objetos TKinter - #
-        self.title: Label = self._Create_title()
+        self.title = Label(master=self,
+                           text='Camera options', foreground='black',
+                           font=("Z003", 20, "bold"))
         
         # Botones para las funciones
         self.but_colors: Button = self._but_colors()
@@ -978,15 +988,6 @@ class Frame_Main_Pros_Camera(Frame):
         self.but_save.grid(row=2, column=1,)
         
     # - Atributos y elementos de aplicacion - #
-    # - TITULO - #
-    def _Create_title(self) -> Label:
-        return Label(
-            master=self,
-            text='Camera options',
-            foreground='black',
-            font=("Z003", 20, "bold")
-        )
-
     # - Botones - #
     def _but_colors(self) -> Button:
         return Button(self,
@@ -1595,6 +1596,16 @@ class FrameOptions(Frame):
 # ------------------------------------------------------ #
 root = Tk()
 
+# Función para manejar el cierre de la aplicación
+def on_closing():
+    print("Closing appp...")
+    mqtt_client.stop()  # Detiene el hilo MQTT
+    mqtt_MatLab.stop()
+    mqtt_esp_Data.stop()
+    mqtt_esp_Perif.stop()
+    
+    root.destroy()  # Cierra la ventana principal
+    
 if __name__ == '__main__':
     ex = App(root)
     
@@ -1624,7 +1635,8 @@ if __name__ == '__main__':
 
     # Inicia la actualización de datos y el envío a ThingSpeak
     dataAPP = []  # Inicializa la variable global
-
+    root.protocol("WM_DELETE_WINDOW", on_closing)
+    
     # Ejecuta el bucle principal de la interfaz gráfica
     root.mainloop()
 
