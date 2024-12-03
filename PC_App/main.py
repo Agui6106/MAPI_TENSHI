@@ -663,7 +663,7 @@ class Frame_Main_MQTT_Control(Frame):
             
             elif (yl < -xl) and (yl > xl) and xl < -0.3:
                 # Left
-                stop = False
+                stop = True
                 self.direction.create_image((0,0),image=self.GLeft, anchor='nw')
                 try:
                     print(f"Axe value: {xl}")
@@ -713,8 +713,8 @@ class Frame_Main_MQTT_Control(Frame):
                 self.cam_angel.create_image((0,0),image=self.C_Left, anchor='nw')
                 try:
                     print(f"Axe value: {xl}")
-                    #mqtt_esp_Data.publish_message('left')
-                    print("Send: left")
+                    mqtt_esp_Data.publish_message('l')
+                    print("Send Servo: l")
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
                     
@@ -724,8 +724,30 @@ class Frame_Main_MQTT_Control(Frame):
                 self.cam_angel.create_image((0,0),image=self.C_Right, anchor='nw')
                 try:
                     print(f"Axe value: {xl}")
-                    #mqtt_esp_Data.publish_message('right')
-                    print("Send: right")
+                    mqtt_esp_Data.publish_message('r')
+                    print("Send Servo: r")
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+            
+            elif (yr < -xr) and (yr < xr) and yr < -0.3:
+                # Up
+                stop = True
+                #self.direction.create_image((0,0),image=self.GUp, anchor='nw')
+                try:
+                    print(f"Axe value: {yl}")
+                    mqtt_esp_Data.publish_message('u')
+                    print("Send: u")
+                except Exception as e:
+                    print(f"Failed to send info due to: {e}")
+            
+            elif (yr > -xr) and (yr > xr) and yr > 0.3:
+                # Down
+                stop = True
+                #self.direction.create_image((0,0),image=self.GDown, anchor='nw')
+                try:
+                    print(f"Axe value: {yl}")
+                    mqtt_esp_Data.publish_message('d')
+                    print("Send: d")
                 except Exception as e:
                     print(f"Failed to send info due to: {e}")
                     
@@ -794,7 +816,9 @@ class Frame_Main_MQTT_Control(Frame):
 
     # Recepcion        
     def get_response(self):
-        colsmsg =       f'{self.hora_actual} - [Info]: Be aware of objects ahead \n'
+        colsmsg =       f'{self.hora_actual} - [Info]: Be aware of objects AHEAD!!! \n'
+        colsmsgBack =       f'{self.hora_actual} - [Info]: Be aware of objects BEHIND!!! \n'
+        
         # Respuesta del Matlab
         self.response = mqtt_MatLab.last_message
         # Sensores del ESP
@@ -846,7 +870,7 @@ class Frame_Main_MQTT_Control(Frame):
             # Verificamos colision 2
             if self.value[5] == 'collision':
                 self.data_Dist_InfrB.config(text='Danger', foreground='red')
-                self.imprimir_mensaje(colsmsg)
+                self.imprimir_mensaje(colsmsgBack)
                 
             if self.value[5] == 'clear':
                 self.data_Dist_InfrB.config(text='Safe', foreground='Green')
@@ -862,7 +886,9 @@ class Frame_Main_MQTT_Control(Frame):
             Long = self.value[10]
             
             # Concentracion de gas
+            gas_lvl = self.value[11]
             self.gas_levels.config(text=self.value[11])
+            numeric_gas = float(gas_lvl.replace("ppm", ""))
             
             # - Llamado de emergencia - Daddy Yankee- #
             # - Bomberos - #
@@ -880,14 +906,20 @@ class Frame_Main_MQTT_Control(Frame):
             Htemp =         f'{self.hora_actual} - [Info]: Danger of fire... Calling firefighters at location {Lat}, {Long}\n'
             flippedmsg =    f'{self.hora_actual} - [Info]: Robot Cant continue correct operation flipped robot\n'
             helpmsg =       f'{self.hora_actual} - [Info]: Calling Robot ID: #{id_random} for backup...\n'
+            gasmsg =       f'{self.hora_actual} - [Info]: Too much gas!!! Be aware of firefighters .\n'
+            
             
             # - Bomberos - # Htemp
-            if numeric_temp_value >= 40 and numeric_Hum_value <= 20:
+            if numeric_temp_value >= 26 or numeric_Hum_value <= 20:
                 print('Danger of fire... Calling firefighters')
                 self.imprimir_mensaje(Htemp)
+                
+            if numeric_gas >= 400:
+                print('TOO MUCH GAS!!!')
+                self.imprimir_mensaje(gasmsg)
             
             # - BackUp - # flippedmsg helpmsg
-            if numeric_x >= 180:
+            if numeric_x <= 180:
                 self.imprimir_mensaje(flippedmsg)
                 self.imprimir_mensaje(helpmsg)
                  
@@ -943,6 +975,8 @@ class Frame_Main_Raw_Camera(Frame):
 
         if ret:
             # Convertir de BGR a RGB
+            # Rotar el frame 90 grados en sentido horario
+            #frame90 = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
             # Convertir el frame a imagen PIL

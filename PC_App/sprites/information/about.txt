@@ -391,9 +391,12 @@ MAPI-Tenshiコントロールパネルは複数のTenshiロボットをリモー
 
 #----------------------------------------------------------------------------------------#
 
-This proyect was made with love with the support of:
-    - Aseivo
+This proyect was made with love & the support of:
     - Mom
     - Dad
+    - Aseivo
+    - Moy Mecánico
+    - Iván Mecatrónico
+    - Diego & Angel ITC´s
 
 Crafted with love and passion by little engineers with big dreams.
