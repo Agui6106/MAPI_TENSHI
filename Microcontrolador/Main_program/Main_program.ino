@@ -52,16 +52,16 @@ Servo servoBrazo;
 Servo servoGarra;
 
 // Configuración Sensor Ultrasónico
-#define trigPin2 18     // Pin de Trigger
-#define echoPin2 19    // Pin de Echo
-long duration2;
-float distance2;
+#define trigPin 18     // Pin de Trigger
+#define echoPin 19    // Pin de Echo
+long duration;
+float distance;
 
 // Configuración Sensor Ultrasónico 2
-#define trigPin 26   // Pin de Trigger
-#define echoPin 27   // Pin de Echo
-long duration; 
-float distance;
+#define trigPin2 26   // Pin de Trigger
+#define echoPin2 27   // Pin de Echo
+long duration2; 
+float distance2;
 
 // Coniguración Sensor Infrarrojo 1
 int infrarrojo1 = 5;  // Pin de Sensor Infrarrojo 1
@@ -70,7 +70,7 @@ int infrarrojo1 = 5;  // Pin de Sensor Infrarrojo 1
 int infrarrojo2 = 34;  // Pin de Sensor Infrarrojo 2
 
 // Configuracion LDR
-//float light;
+float light;
 
 // Configuración Giroscopio
 // pin 22 SCL / pin 21 SDA
@@ -265,9 +265,10 @@ void setup() {
     dht.begin();   
 
     // Inicilizacion servomotor
-    servoRasp.attach(33); 
+    servoRasp.attach(33);
     servoBrazo.attach(25);
-    servoGarra.attach(32);
+    //servoGarra.attach();
+
 
     // -  Inicializacion de Motor A - //
     pinMode(in1, OUTPUT);
@@ -332,9 +333,7 @@ void loop() { // Datos que recibimos del ESP32
     // -- LECTURA DE SENSORES -- //
     t = dht.readTemperature();  // Temperatura
     h = dht.readHumidity();     // Humedad
-    //light = analogRead(32);
-
-    servoBrazo.write(30);
+    light = analogRead(32);
 
     // -- SENSOR ULTRASONICO -- //
     // Sensor 1
@@ -482,8 +481,8 @@ void loop() { // Datos que recibimos del ESP32
                      String(Angle[2]) + "°," +
                      latitude + "," + 
                      longitude + "," +
-                     String(concentration) + " ppm\n";
-                     //light + "\n";
+                     String(concentration) + " ppm," + 
+                     light + "\n";
 
 
     mqttClient.publish("ESP/Sensors", mensaje.c_str());    
